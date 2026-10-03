@@ -16,6 +16,7 @@ import json
 import re
 import time
 import wave
+from collections import deque
 
 import numpy as np
 import requests
@@ -30,6 +31,10 @@ PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
 MODELS = "../models"
 PORT = 8996
 SR = 16000
+GATE_TAIL = 0.6      # s after playback ends before the mic path reopens
+WAKE_RMS = 200       # int16 frame RMS considered "someone is talking"
+WAKE_FRAMES = 3      # consecutive frames above WAKE_RMS to open the ASR stream
+PREROLL_N = 6        # frames (600 ms) buffered while idle, flushed on wake
 SYS = "You are wiresense, a concise voice assistant. Answer in one or two short sentences."
 EMPTY_THINK = "<|im_start|>assistant\n<think>\n\n</think>\n\n"
 SLOT = 5  # dedicated llama slot for the web assistant (0-4 free for other work)
@@ -98,6 +103,11 @@ def wav_bytes(samples, sr=24000) -> bytes:
 SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
 
+def frame_rms(raw: bytes) -> float:
+    x = np.frombuffer(raw, dtype="<i2").astype(np.float32)
+    return float(np.sqrt(np.mean(x * x)))
+
+
 class Session:
     def __init__(self, ws):
         self.ws = ws
@@ -107,6 +117,8 @@ class Session:
         self.playback = False   # browser actually playing audio out loud
         self.gate_until = 0.0   # + tail guard after either ends
         self.gate_on = False
+        self.loud_streak = 0
+        self.preroll = deque(maxlen=PREROLL_N)  # kept while idle, flushed on wake
 
     def gate_active(self) -> bool:
         return (self.speaking or self.playback
@@ -164,6 +176,12 @@ class Session:
                 elif t == "final":
                     await self.send({"type": "final", "text": m["text"]})
                     await self.respond(m["text"])
+                    # turn over: close the ASR stream so idle room tone can
+                    # never reach a primed decoder (hallucination source)
+                    await self.phonon.close()
+                    self.phonon = None
+                    self.loud_streak = 0
+                    self.preroll.clear()
         except ConnectionClosed:
             self.phonon = None
 
@@ -205,9 +223,9 @@ class Session:
         except Exception as e:
             await self.send({"type": "error", "message": f"llm: {e}"})
             self.speaking = False
-            self.gate_until = time.monotonic() + 0.35
+            self.gate_until = time.monotonic() + GATE_TAIL
             await self.update_gate()
-            self.schedule_gate_release(0.35)
+            self.schedule_gate_release(GATE_TAIL)
             return
         reply = "".join(chunks).strip()
         await self.send({"type": "response_done", "text": reply})
@@ -250,10 +268,24 @@ async def handler(ws):
         async for msg in ws:
             if isinstance(msg, bytes):
                 if session.gate_active():
+                    session.preroll.clear()
                     continue  # half-duplex: never feed TTS playback back to ASR
                 if session.phonon is None:
+                    # idle: wake only on sustained speech energy (VAD latch);
+                    # room tone never reaches the ASR, so no ghost finals
+                    r = frame_rms(msg)
+                    session.loud_streak = session.loud_streak + 1 \
+                        if r >= WAKE_RMS else 0
+                    session.preroll.append(msg)
+                    if session.loud_streak < WAKE_FRAMES:
+                        continue
+                    session.loud_streak = 0
                     await session.phonon_connect()
-                    print(f"[{peer}] phonon stream open", flush=True)
+                    for f in list(session.preroll):  # 600 ms pre-roll
+                        await session.phonon.send(f)
+                    session.preroll.clear()
+                    print(f"[{peer}] wake rms={r:.0f} — phonon stream open",
+                          flush=True)
                 await session.phonon.send(msg)
             else:
                 m = json.loads(msg)
@@ -264,8 +296,8 @@ async def handler(ws):
                 elif m.get("type") == "playback_state":
                     session.playback = bool(m.get("playing"))
                     if not session.playback:
-                        session.gate_until = time.monotonic() + 0.35
-                        session.schedule_gate_release(0.35)
+                        session.gate_until = time.monotonic() + GATE_TAIL
+                        session.schedule_gate_release(GATE_TAIL)
                     await session.update_gate()
     finally:
         if session.phonon is not None:
