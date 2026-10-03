@@ -35,7 +35,7 @@ SR = 16000
 GATE_TAIL = 0.6      # s after playback ends before the mic path reopens
 VAD_ON = 0.5         # Silero p(speech) threshold
 WAKE_FRAMES = 3      # consecutive 100 ms frames >= VAD_ON to open the ASR stream
-PREROLL_N = 6        # frames (600 ms) buffered while idle, flushed on wake
+PREROLL_N = 10        # frames (1 s) buffered while idle, flushed on wake
 SYS = "You are wiresense, a concise voice assistant. Answer in one or two short sentences."
 EMPTY_THINK = "<|im_start|>assistant\n<think>\n\n</think>\n\n"
 SLOT = 5  # dedicated llama slot for the web assistant (0-4 free for other work)
@@ -325,11 +325,12 @@ async def handler(ws):
                         continue
                     session.vad_streak = 0
                     await session.phonon_connect()
-                    for f in list(session.preroll):  # 600 ms pre-roll
-                        await session.phonon.send(f)
+                    for f in list(session.preroll):  # 600 ms pre-roll,
+                        await session.phonon.send(f)  # INCL. the current frame
                     session.preroll.clear()
                     print(f"[{peer}] wake p_speech_max={max(ps):.2f} "
                           "— phonon stream open", flush=True)
+                    continue  # current frame already went out with the flush
                 await session.phonon.send(msg)
             else:
                 m = json.loads(msg)
