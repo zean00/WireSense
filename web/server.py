@@ -104,6 +104,16 @@ class Session:
         self.history = []
         self.phonon = None
         self.speaking = False
+        self.gate_until = 0.0  # mic gate: drop frames while TTS plays + tail
+        self.gate_on = False
+
+    def gate_active(self) -> bool:
+        return self.speaking or time.monotonic() < self.gate_until
+
+    async def set_gate(self, on: bool):
+        if on != self.gate_on:
+            self.gate_on = on
+            await self.send({"type": "mic_state", "listening": not on})
         self.turn = 0
 
     async def send(self, obj):
@@ -155,6 +165,7 @@ class Session:
 
     async def respond(self, utterance):
         self.speaking = True
+        await self.set_gate(True)
         await self.send({"type": "cancel_tts"})
         t0 = time.perf_counter()
         first, chunks = None, []
@@ -181,12 +192,16 @@ class Session:
         except Exception as e:
             await self.send({"type": "error", "message": f"llm: {e}"})
             self.speaking = False
+            self.gate_until = time.monotonic() + 0.35
+            await self.set_gate(False)
             return
         reply = "".join(chunks).strip()
         await self.send({"type": "response_done", "text": reply})
         await self.tts(reply)
         self.history.append((utterance, reply))
         self.speaking = False
+        self.gate_until = time.monotonic() + 0.35  # TTS tail still in the air
+        await self.set_gate(False)
 
     async def tts(self, text):
         sents = [s for s in SENT_SPLIT.split(text) if s.strip()] or [text]
@@ -216,6 +231,8 @@ async def handler(ws):
     try:
         async for msg in ws:
             if isinstance(msg, bytes):
+                if session.gate_active():
+                    continue  # half-duplex: never feed TTS playback back to ASR
                 if session.phonon is None:
                     await session.phonon_connect()
                     print(f"[{peer}] phonon stream open", flush=True)

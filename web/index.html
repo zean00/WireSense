@@ -87,14 +87,20 @@ function onMessage(ev) {
     playNext();
   } else if (m.type === "error") {
     setStats("error: " + m.message);
+  } else if (m.type === "mic_state") {
+    micPaused = !m.listening;
+    renderStats();
   } else if (m.type === "final") {
     window.lastUser = m.text;
   }
 }
 
+let micPaused = false;
 const tStats = {};
 function renderStats() {
-  setStats(Object.entries(tStats).map(([k, v]) => `${k} ${v} ms`).join(" · ") || "…");
+  let s = Object.entries(tStats).map(([k, v]) => `${k} ${v} ms`).join(" · ");
+  if (micPaused) s = "🔊 speaking — mic paused" + (s ? " · " + s : "");
+  setStats(s || "…");
 }
 
 // --- sequential playback ---
