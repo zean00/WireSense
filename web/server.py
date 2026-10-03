@@ -19,6 +19,7 @@ import wave
 from collections import deque
 
 import numpy as np
+import onnxruntime as ort
 import requests
 import websockets
 from websockets.asyncio.server import serve
@@ -32,8 +33,8 @@ MODELS = "../models"
 PORT = 8996
 SR = 16000
 GATE_TAIL = 0.6      # s after playback ends before the mic path reopens
-WAKE_RMS = 200       # int16 frame RMS considered "someone is talking"
-WAKE_FRAMES = 3      # consecutive frames above WAKE_RMS to open the ASR stream
+VAD_ON = 0.5         # Silero p(speech) threshold
+WAKE_FRAMES = 3      # consecutive 100 ms frames >= VAD_ON to open the ASR stream
 PREROLL_N = 6        # frames (600 ms) buffered while idle, flushed on wake
 SYS = "You are wiresense, a concise voice assistant. Answer in one or two short sentences."
 EMPTY_THINK = "<|im_start|>assistant\n<think>\n\n</think>\n\n"
@@ -103,9 +104,49 @@ def wav_bytes(samples, sr=24000) -> bytes:
 SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
 
-def frame_rms(raw: bytes) -> float:
-    x = np.frombuffer(raw, dtype="<i2").astype(np.float32)
-    return float(np.sqrt(np.mean(x * x)))
+_VAD_SESS = None
+
+
+def vad_session() -> ort.InferenceSession:
+    global _VAD_SESS
+    if _VAD_SESS is None:
+        opts = ort.SessionOptions()
+        opts.inter_op_num_threads = 1
+        opts.intra_op_num_threads = 1
+        _VAD_SESS = ort.InferenceSession(f"{MODELS}/silero_vad.onnx",
+                                         sess_options=opts)
+    return _VAD_SESS
+
+
+class SileroVAD:
+    """Stateful Silero wrapper, contract from the official utils_vad.py:
+    each call feeds context(64) + chunk(512) samples at 16 kHz, carries the
+    LSTM state, and the context slides to the last 64 samples."""
+
+    CHUNK, CONTEXT = 512, 64
+
+    def __init__(self):
+        self.sess = vad_session()
+        self.reset()
+
+    def reset(self):
+        self.state = np.zeros((2, 1, 128), dtype=np.float32)
+        self.context = np.zeros((1, self.CONTEXT), dtype=np.float32)
+        self.buf = np.zeros(0, dtype=np.float32)
+
+    def probs(self, pcm16: bytes) -> list[float]:
+        x = np.frombuffer(pcm16, "<i2").astype(np.float32) / 32768.0
+        self.buf = np.concatenate([self.buf, x]) if len(self.buf) else x
+        out = []
+        while len(self.buf) >= self.CHUNK:
+            chunk, self.buf = self.buf[:self.CHUNK], self.buf[self.CHUNK:]
+            inp = np.concatenate([self.context, chunk[None, :]], axis=1)
+            o = self.sess.run(None, {"input": inp, "state": self.state,
+                                     "sr": np.array(16000, dtype=np.int64)})
+            out.append(float(o[0][0, 0]))
+            self.state = o[1]
+            self.context = inp[:, -self.CONTEXT:]
+        return out
 
 
 class Session:
@@ -117,7 +158,8 @@ class Session:
         self.playback = False   # browser actually playing audio out loud
         self.gate_until = 0.0   # + tail guard after either ends
         self.gate_on = False
-        self.loud_streak = 0
+        self.vad = SileroVAD()
+        self.vad_streak = 0
         self.preroll = deque(maxlen=PREROLL_N)  # kept while idle, flushed on wake
 
     def gate_active(self) -> bool:
@@ -180,7 +222,8 @@ class Session:
                     # never reach a primed decoder (hallucination source)
                     await self.phonon.close()
                     self.phonon = None
-                    self.loud_streak = 0
+                    self.vad.reset()
+                    self.vad_streak = 0
                     self.preroll.clear()
         except ConnectionClosed:
             self.phonon = None
@@ -269,23 +312,24 @@ async def handler(ws):
             if isinstance(msg, bytes):
                 if session.gate_active():
                     session.preroll.clear()
+                    session.vad_streak = 0
                     continue  # half-duplex: never feed TTS playback back to ASR
                 if session.phonon is None:
-                    # idle: wake only on sustained speech energy (VAD latch);
-                    # room tone never reaches the ASR, so no ghost finals
-                    r = frame_rms(msg)
-                    session.loud_streak = session.loud_streak + 1 \
-                        if r >= WAKE_RMS else 0
+                    # idle: wake only on sustained SPEECH (Silero VAD latch);
+                    # room tone / music / noise never reach the ASR
+                    ps = session.vad.probs(msg)
+                    session.vad_streak = session.vad_streak + 1 \
+                        if ps and all(p >= VAD_ON for p in ps) else 0
                     session.preroll.append(msg)
-                    if session.loud_streak < WAKE_FRAMES:
+                    if session.vad_streak < WAKE_FRAMES:
                         continue
-                    session.loud_streak = 0
+                    session.vad_streak = 0
                     await session.phonon_connect()
                     for f in list(session.preroll):  # 600 ms pre-roll
                         await session.phonon.send(f)
                     session.preroll.clear()
-                    print(f"[{peer}] wake rms={r:.0f} — phonon stream open",
-                          flush=True)
+                    print(f"[{peer}] wake p_speech_max={max(ps):.2f} "
+                          "— phonon stream open", flush=True)
                 await session.phonon.send(msg)
             else:
                 m = json.loads(msg)

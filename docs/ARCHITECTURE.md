@@ -100,6 +100,31 @@ as a side call per partial — not per token.
 | Kokoro first clause            | ~200–400 ms |
 | **Voice-to-voice**             | **~600–800 ms**, target < 500 ms via semantic endpointing |
 
+### Live-loop gating (`web/`, validated 2026-10-04)
+
+Half-duplex prototype loop — each mechanism below was added because its
+absence produced a live failure (self-hearing, ghost turns):
+
+- **Half-duplex mic gate** — browser reports `playback_state`; the server
+  drops mic frames from first synth byte until actual playback end + 0.6 s.
+  Gate on synthesis time alone leaks the reply's tail back into the ASR.
+- **Silero VAD wake latch** — while idle, mic frames are muted until 3
+  consecutive 100 ms frames have p(speech) ≥ 0.5 (600 ms pre-roll flushed on
+  wake). Room tone must never reach a streaming ASR with a primed decoder:
+  it hallucinates fluent "ghost" utterances and endpoints them. Silero
+  rejects what an RMS gate accepts (440 Hz tone: p < 0.01 vs speech 0.94).
+- **Per-turn ASR streams** — the Phonon WS opens on wake, closes at turn
+  end; state reset kills cross-turn decoder priming (and the 90 s idle
+  timeout). True barge-in is deferred until AEC is proven or an echo-aware
+  VAD pass exists.
+
+Model: `models/silero_vad.onnx`, sha256 `1a153a22f4509e292a94e67d6f9b85e8
+deb25b4988682b7e174c65279d8788e3`, extracted from the official
+`silero-vad` 6.2.3 wheel (`silero_vad/data/silero_vad.onnx`); feeding
+contract is 512-sample chunks + 64-sample rolling context (see
+`web/server.py` SileroVAD — a context-less feed returns ~0.001 for
+everything, speech included).
+
 ## 5. Vision (later)
 
 Two options, in preference order:
