@@ -28,14 +28,23 @@ bindings (llama-cpp-rs / incremental-chat pattern). Prototype over HTTP first.
 
 ## 2. Streaming contracts (as validated against the component docs)
 
-Phonon-2 `fermion serve`:
+Phonon-2 `fermion serve` (protocol confirmed 2026-10-03 against server
+v0.2.7 source and a live WS session — see `tools/validate_phonon_ws.py`):
 
 - `GET /v1/audio/stream` — WebSocket (RFC 6455). Client sends one config JSON
-  frame (`sample_rate`: 16000 only; `pcm_f32le`/`pcm_s16le`), then raw mono
-  PCM binary frames, ends with `{"type":"end"}` or clean close.
-- Server → client: `partial` (whole-hypothesis replacement, NOT a delta;
-  first ~0.35 s), `final` (per segment, after ~0.7 s silence), `done`,
-  `error`.
+  frame `{"sample_rate": 16000, "format": "pcm_f32le"|"pcm_s16le"}` (the key
+  is `format`, NOT `encoding` — a wrong key is silently ignored and the
+  server reads your bytes as f32), then raw mono PCM binary frames, ends
+  with `{"type":"end"}` or a clean close.
+- Server → client: `{"type":"partial","text"}` (whole-hypothesis replacement,
+  NOT a delta), `{"type":"final","text","segment"}` (per segment, ~0.7 s
+  silence), `{"type":"done","text"}` (full transcript).
+- Observed live: first partial at **145 ms** (docs say ~350 ms), 13 partials
+  during 6.5 s of streamed speech, final immediately at end-of-stream.
+- Mid-stream revisions are real and visible: successive partials rewrote
+  "conversation" → "context to the" → "contact state" — the LCP between
+  partials can shrink mid-utterance, then recover. The suffix must tolerate
+  full re-prefill of a short tail.
 - Limits: one stream at a time (close 1013), 90 s idle timeout (1001) —
   long listening sessions need restart logic.
 - Barge-in = close the socket, stop TTS playback, trim the turn, reopen.
@@ -44,10 +53,14 @@ Phonon-2 `fermion serve`:
 
 Kokoro-82M (ONNX):
 
+- Validated 2026-10-03 (`tools/validate_kokoro.py`): **3.4x realtime on
+  CPU** (16 cores), model load 0.5 s — run it as a warm sidecar process.
 - Not natively streaming; feed sentence/clause chunks as the LLM's output
   stream grows. First audio ≈ 200–400 ms after the first clause. 24 kHz.
-- espeak-ng needed only for fallback G2P (misaki); English synthesis mostly
-  avoids it.
+- ONNX export + per-voice .bin files live at
+  `onnx-community/Kokoro-82M-v1.0-ONNX` (NOT in the hexgrad repo); pack
+  voices into an npz for `kokoro-onnx` (`models/voices.npz` built from
+  `af_heart.bin`). espeak-ng needed only for fallback G2P (misaki).
 
 Mapping to the incremental-prefill loop: `partial` → TextChanged (re-tokenize
 + LCP trim + delta decode, margin withheld), `final` → Submit (flush margin,
