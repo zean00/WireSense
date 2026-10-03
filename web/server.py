@@ -103,17 +103,30 @@ class Session:
         self.ws = ws
         self.history = []
         self.phonon = None
-        self.speaking = False
-        self.gate_until = 0.0  # mic gate: drop frames while TTS plays + tail
+        self.speaking = False   # synthesizing/streaming
+        self.playback = False   # browser actually playing audio out loud
+        self.gate_until = 0.0   # + tail guard after either ends
         self.gate_on = False
 
     def gate_active(self) -> bool:
-        return self.speaking or time.monotonic() < self.gate_until
+        return (self.speaking or self.playback
+                or time.monotonic() < self.gate_until)
 
     async def set_gate(self, on: bool):
         if on != self.gate_on:
             self.gate_on = on
             await self.send({"type": "mic_state", "listening": not on})
+
+    async def update_gate(self):
+        await self.set_gate(self.gate_active())
+
+    async def release_gate_later(self, delay: float):
+        await asyncio.sleep(delay)
+        await self.update_gate()
+
+    def schedule_gate_release(self, delay: float):
+        # gate expiry is a timer, so push the mic_state transition then
+        asyncio.create_task(self.release_gate_later(delay))
         self.turn = 0
 
     async def send(self, obj):
@@ -165,7 +178,7 @@ class Session:
 
     async def respond(self, utterance):
         self.speaking = True
-        await self.set_gate(True)
+        await self.update_gate()
         await self.send({"type": "cancel_tts"})
         t0 = time.perf_counter()
         first, chunks = None, []
@@ -193,15 +206,20 @@ class Session:
             await self.send({"type": "error", "message": f"llm: {e}"})
             self.speaking = False
             self.gate_until = time.monotonic() + 0.35
-            await self.set_gate(False)
+            await self.update_gate()
+            self.schedule_gate_release(0.35)
             return
         reply = "".join(chunks).strip()
         await self.send({"type": "response_done", "text": reply})
         await self.tts(reply)
         self.history.append((utterance, reply))
         self.speaking = False
-        self.gate_until = time.monotonic() + 0.35  # TTS tail still in the air
-        await self.set_gate(False)
+        # gate does NOT open here: the browser reports actual playback end
+        # (playback_state) — much later than synthesis on long replies.
+        # The floor covers the race before the first playing:true arrives.
+        self.gate_until = max(self.gate_until, time.monotonic() + 1.0)
+        await self.update_gate()
+        self.schedule_gate_release(1.0)
 
     async def tts(self, text):
         sents = [s for s in SENT_SPLIT.split(text) if s.strip()] or [text]
@@ -243,6 +261,12 @@ async def handler(ws):
                     session.history.clear()
                     await session.send({"type": "reset_ok"})
                     print(f"[{peer}] history reset", flush=True)
+                elif m.get("type") == "playback_state":
+                    session.playback = bool(m.get("playing"))
+                    if not session.playback:
+                        session.gate_until = time.monotonic() + 0.35
+                        session.schedule_gate_release(0.35)
+                    await session.update_gate()
     finally:
         if session.phonon is not None:
             await session.phonon.close()  # Phonon serves one stream at a time

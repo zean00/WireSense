@@ -104,13 +104,28 @@ function renderStats() {
 }
 
 // --- sequential playback ---
-let audioEl = null;
-function stopPlayback() { if (audioEl) { audioEl.pause(); audioEl = null; } playing = false; }
+let audioEl = null, playbackSent = false;
+function setPlayback(p) {
+  if (p !== playbackSent && ws && ws.readyState === 1) {
+    playbackSent = p;
+    ws.send(JSON.stringify({type: "playback_state", playing: p}));
+  }
+}
+function stopPlayback() {
+  if (audioEl) { audioEl.pause(); audioEl = null; }
+  playing = false;
+  setPlayback(false);
+}
 function playNext() {
   if (playing || !audioQueue.length) return;
   playing = true;
+  setPlayback(true);
   audioEl = new Audio(audioQueue.shift());
-  audioEl.onended = () => { playing = false; playNext(); };
+  audioEl.onended = () => {
+    playing = false;
+    if (audioQueue.length) playNext();
+    else setPlayback(false);   // speaker is actually done now
+  };
   audioEl.play();
 }
 
