@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wiresense</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, sans-serif; background: #0b0e14; color: #dbe2ee;
+         max-width: 760px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h1 span { color: #5eead4; }
+  .row { display: flex; gap: 10px; align-items: center; margin: 12px 0; }
+  button { font-size: 16px; padding: 10px 18px; border-radius: 10px; border: 1px solid #334;
+           background: #16202f; color: #dbe2ee; cursor: pointer; }
+  button.on { background: #134e4a; border-color: #14b8a6; }
+  #level { flex: 1; height: 8px; background: #16202f; border-radius: 4px; overflow: hidden; }
+  #levelbar { height: 100%; width: 0%; background: #14b8a6; }
+  .card { background: #101725; border: 1px solid #1d2939; border-radius: 10px;
+          padding: 10px 12px; margin: 8px 0; }
+  .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #7d8aa0; }
+  #partial { min-height: 20px; color: #9fb3c8; font-style: italic; }
+  #reply { min-height: 20px; font-size: 17px; }
+  #decide { font-size: 13px; color: #5eead4; }
+  #stats { font-size: 12px; color: #7d8aa0; }
+  .turn { border-left: 3px solid #14b8a6; padding-left: 10px; margin: 10px 0; }
+  .turn b { color: #9fb3c8; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1><span>wiresense</span> live loop</h1>
+<div id="stats">not connected</div>
+<div class="row">
+  <button id="mic">Start mic</button>
+  <button id="reset">Reset</button>
+  <div id="level"><div id="levelbar"></div></div>
+</div>
+<div class="card"><div class="label">hearing (live partial)</div>
+  <div id="partial">—</div>
+  <div id="decide"></div></div>
+<div class="card"><div class="label">reply</div><div id="reply">—</div></div>
+<div id="log"></div>
+
+<script>
+const wsURL = `ws://${location.host}/ws`;
+let ws, ctx, workletNode, stream, listening = false;
+let audioQueue = [], playing = false;
+
+function log(turn) {
+  const d = document.createElement("div");
+  d.className = "turn"; d.innerHTML = turn;
+  document.getElementById("log").prepend(d);
+}
+function setStats(s) { document.getElementById("stats").textContent = s; }
+
+async function connect() {
+  ws = new WebSocket(wsURL);
+  ws.binaryType = "arraybuffer";
+  ws.onopen = () => setStats("connected — click Start mic, then just talk");
+  ws.onmessage = onMessage;
+  ws.onclose = () => { setStats("disconnected"); if (listening) stopMic(); };
+}
+
+function onMessage(ev) {
+  const m = JSON.parse(ev.data);
+  if (m.type === "partial") {
+    document.getElementById("partial").textContent = m.text;
+  } else if (m.type === "decide") {
+    document.getElementById("decide").textContent =
+      `action: ${m.top1} (${m.score}) · head ${m.head_ms} ms · emb ${m.emb_ms} ms`;
+  } else if (m.type === "cancel_tts") {
+    audioQueue = []; if (playing) { stopPlayback(); }
+  } else if (m.type === "response_start") {
+    document.getElementById("reply").textContent = "";
+    tStats.ttft = m.ttft_ms; renderStats();
+  } else if (m.type === "response_delta") {
+    document.getElementById("reply").textContent += m.text;
+  } else if (m.type === "response_done") {
+    document.getElementById("reply").textContent = m.text;
+    log(`<b>you:</b> ${window.lastUser || "?"}<br><b>wiresense:</b> ${m.text}`);
+    window.lastReply = m.text;
+    document.getElementById("partial").textContent = "—";
+  } else if (m.type === "tts_chunk") {
+    tStats.tts = m.ms; renderStats();
+    const buf = Uint8Array.from(atob(m.audio), c => c.charCodeAt(0));
+    audioQueue.push(URL.createObjectURL(new Blob([buf], {type: "audio/wav"})));
+    playNext();
+  } else if (m.type === "error") {
+    setStats("error: " + m.message);
+  } else if (m.type === "final") {
+    window.lastUser = m.text;
+  }
+}
+
+const tStats = {};
+function renderStats() {
+  setStats(Object.entries(tStats).map(([k, v]) => `${k} ${v} ms`).join(" · ") || "…");
+}
+
+// --- sequential playback ---
+let audioEl = null;
+function stopPlayback() { if (audioEl) { audioEl.pause(); audioEl = null; } playing = false; }
+function playNext() {
+  if (playing || !audioQueue.length) return;
+  playing = true;
+  audioEl = new Audio(audioQueue.shift());
+  audioEl.onended = () => { playing = false; playNext(); };
+  audioEl.play();
+}
+
+// --- mic capture: resample to 16 kHz s16le, 100 ms frames ---
+async function startMic() {
+  stream = await navigator.mediaDevices.getUserMedia({ audio: {
+    echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+  ctx = new AudioContext({ sampleRate: 16000 });  // browser resamples the graph
+  const src = ctx.createMediaStreamSource(stream);
+  await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([`
+    class Capture extends AudioWorkletProcessor {
+      constructor() { super();
+        this.step = sampleRate / 16000;   // 1 when the graph runs at 16 kHz
+        this.pos = 0; this.buf = [];
+      }
+      process(inputs) {
+        const ch = inputs[0][0];
+        if (!ch) return true;
+        if (this.step === 1) {
+          for (let i = 0; i < ch.length; i++) this.buf.push(ch[i]);
+        } else {
+          // linear resample toward 16 kHz (browsers ignoring the rate hint)
+          let pos = this.pos;
+          while (pos < ch.length) {
+            const i = pos | 0, f = pos - i;
+            const a = ch[i], b = ch[Math.min(i + 1, ch.length - 1)];
+            this.buf.push(a + (b - a) * f);
+            pos += this.step;
+          }
+          this.pos = pos - ch.length;
+        }
+        while (this.buf.length >= 1600) {
+          const frame = this.buf.splice(0, 1600);
+          const pcm = new Int16Array(1600);
+          for (let j = 0; j < 1600; j++) {
+            pcm[j] = Math.max(-32768, Math.min(32767, frame[j] * 32767));
+          }
+          this.port.postMessage(pcm.buffer, [pcm.buffer]);
+        }
+        return true;
+      }
+    }
+    registerProcessor("capture", Capture);`])));
+  workletNode = new AudioWorkletNode(ctx, "capture");
+  workletNode.port.onmessage = (e) => {
+    if (ws && ws.readyState === 1) ws.send(e.data);
+    const pcm = new Int16Array(e.data);
+    let peak = 0; for (let j = 0; j < pcm.length; j += 8) peak = Math.max(peak, Math.abs(pcm[j]));
+    document.getElementById("levelbar").style.width = Math.min(100, peak / 327) + "%";
+  };
+  src.connect(workletNode);
+  // worklet output not routed to destination: no local echo
+  listening = true;
+  document.getElementById("mic").textContent = "Stop mic";
+  document.getElementById("mic").classList.add("on");
+}
+
+function stopMic() {
+  listening = false;
+  if (workletNode) workletNode.port.onmessage = null;
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (ctx) ctx.close();
+  document.getElementById("mic").textContent = "Start mic";
+  document.getElementById("mic").classList.remove("on");
+}
+
+document.getElementById("mic").onclick = () => listening ? stopMic() : startMic();
+document.getElementById("reset").onclick = () => {
+  ws.send(JSON.stringify({type: "reset"}));
+  document.getElementById("log").innerHTML = "";
+  window.lastReply = null;
+};
+connect();
+</script>
+</body>
+</html>
