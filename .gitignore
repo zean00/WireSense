@@ -1,0 +1,6 @@
+.venv/
+models/
+audio/
+__pycache__/
+*.pyc
+nohup.out
