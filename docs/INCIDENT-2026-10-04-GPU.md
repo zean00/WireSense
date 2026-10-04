@@ -137,10 +137,19 @@ clean). The RMA recommendation is unchanged: the product's serving format
 is NVFP4, and this GPU cannot run it reliably.
 
 **Shipped interim (production now):** llama-server serves
-`Qwen3.5-4B-Q8_0.gguf` with `-c 16384 -np 8 -b 4096 -ub 1024` (2048 ctx
-per slot; Q8_0 weights do not fit the old 32K/8K-batch footprint on 8 GB).
-`tools/vram_guard.py` is retired from the active path (kept for
-reference). `tools/canary.py` additionally detects all-zero embeddings.
+`unsloth-qwen35-4b-q4xl/Qwen3.5-4B-UD-Q4_K_XL.gguf` (2.6 GiB) with the
+original footprint `-c 32768 -np 8 -b 8192 -ub 2048` (4096 ctx/slot).
+Chosen over Q8_0 (also verified clean, 2048 ctx/slot) for VRAM headroom
+and context. Q4XL embeddings sit at cos ≈ 0.996 to the entry-U refs, but
+`models/sig_embeddings.npy` is still re-recorded from the serving model —
+the arm-C head amplifies residual quant deltas, so only self-consistent
+refs give 227/227 decide self-rank (against the original refs: 164/227;
+with Q8_0-recorded refs: 227/227). Backups kept:
+`sig_embeddings.instruct-nvfp4.npy.bak` (entry-U originals, restore after
+RMA with the NVFP4 model),
+`sig_embeddings.q8_0.npy.bak`. `tools/vram_guard.py` is retired from the
+active path (kept for reference). `tools/canary.py` additionally detects
+all-zero embeddings.
 
 ## Corroborating context
 

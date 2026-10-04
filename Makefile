@@ -34,11 +34,14 @@ READY_GUARD := /tmp/wiresense_guard.ready
 LOG_GUARD   := /tmp/wiresense_guard.log
 
 LLAMA_BIN   := $(HOME)/.local/bin/llama-server
-# Interim engine: Qwen3.5-4B Q8_0 (unsloth). The NVFP4 quant corrupts on this
-# GPU (docs/INCIDENT-2026-10-04-GPU.md); Q8_0 of the same model verifies clean
-# end-to-end. -c 16384 = 2048 per slot x 8; Q8_0 weights (4.2 GiB) do not fit
-# with the old 32K/8K-batch footprint.
-LLAMA_MODEL := $(HOME)/models/unsloth-qwen35-4b-q8/Qwen3.5-4B-Q8_0.gguf
+# Interim engine: Qwen3.5-4B UD-Q4_K_XL (unsloth). The NVFP4 quant corrupts on
+# this GPU (docs/INCIDENT-2026-10-04-GPU.md, Revision 2); this quant verifies
+# clean end-to-end and its embeddings sit at cos ~0.996 to the entry-U refs.
+# Original 32K footprint fits again (2.6 GiB weights): 4096 ctx per slot x 8.
+# NOTE: models/sig_embeddings.npy is re-recorded from the serving model
+# (backups: *.q8_0.npy.bak, *.instruct-nvfp4.npy.bak) — decide needs
+# self-consistent refs, originals don't survive the head.
+LLAMA_MODEL := $(HOME)/models/unsloth-qwen35-4b-q4xl/Qwen3.5-4B-UD-Q4_K_XL.gguf
 
 # shared shell helpers
 define HELPERS
@@ -127,7 +130,7 @@ start:
 	  echo "  llama-server: starting (model load can take ~30 s)..."
 	  nohup $(LLAMA_BIN) -m $(LLAMA_MODEL) --alias wiresense-llm \
 	    --host 127.0.0.1 --port $(PORT_LLAMA) \
-	    -c 16384 -np 8 --flash-attn on -b 4096 -ub 1024 \
+	    -c 32768 -np 8 --flash-attn on -b 8192 -ub 2048 \
 	    --embedding --pooling last -ngl 99 \
 	    > $(LOG_LLAMA) 2>&1 &
 	  echo $$! > $(PID_LLAMA)
