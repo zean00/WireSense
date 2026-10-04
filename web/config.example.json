@@ -1,0 +1,14 @@
+{
+  "_comment1": "Copy to web/config.json (gitignored) to enable the deep-think route (docs/PROTOCOL-deep-think.md). Feature is off entirely while the file is absent or enabled=false.",
+  "_comment2": "provider 'openai-chat' speaks the /chat/completions dialect: point base_url at a second llama-server for the local big-model path (see Makefile deep-model target), or at https://api.openai.com/v1 / any aggregator. 'openai-responses' speaks the /responses surface. 'anthropic' speaks /v1/messages and requires the key.",
+  "_comment3": "api_key_env names an environment variable; the key itself never lives in this file. Local providers need no key — leave api_key_env unset.",
+  "deep_think": {
+    "enabled": false,
+    "provider": "openai-chat",
+    "base_url": "http://127.0.0.1:8012/v1",
+    "model": "qwen3-8b",
+    "api_key_env": "WIRESENSE_DEEP_KEY",
+    "timeout_s": 120,
+    "max_tokens": 700
+  }
+}

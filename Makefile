@@ -121,7 +121,7 @@ kill_pids() { # name pids...
 }
 endef
 
-.PHONY: start stop restart status canary logs detector test-omdet record-router eval-router eval-followup tree-probe test-voice help
+.PHONY: start stop restart status canary logs detector test-omdet test-deep record-router eval-router eval-followup tree-probe test-voice help
 
 start:
 	@$(HELPERS)
@@ -216,6 +216,9 @@ test-voice:
 test-omdet:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_omdet.py
 
+test-deep:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_deep_think.py
+
 logs:
 	@tail -n 25 -F $(LOG_LLAMA) $(LOG_PHONON) $(LOG_WEB) $(LOG_OMDET)
 
@@ -235,3 +238,4 @@ help:
 	@echo "  make tree-probe     subtree feasibility probe (think/vision nodes)"
 	@echo "  make test-voice     e2e: synthesized speech -> route/reply assertions"
 	@echo "  make test-omdet     detector sidecar: health + latency budget"
+	@echo "  make test-deep      deep-think adapters: offline parser/config tests"

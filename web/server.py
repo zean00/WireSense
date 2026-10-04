@@ -30,6 +30,8 @@ from PIL import Image
 
 from kokoro_onnx import Kokoro
 
+import deep_think
+
 LLAMA = "http://127.0.0.1:8998"
 PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
 OMDET = "http://127.0.0.1:8011"
@@ -182,6 +184,7 @@ def _now(offset_s=0) -> str:
 KOKORO = None
 READOUT = None
 WALKER = None
+DEEP = None  # optional big-model think provider (web/config.json), or None
 
 
 def norm_rows(x):
@@ -657,6 +660,11 @@ class Session:
                 # brief answer instead of pretending
                 spec = dict(spec, action="llm", max_tokens=96,
                             directive=TOOL_FALLBACK_DIRECTIVE)
+        deep_meta = None
+        if reply is None and spec.get("deep") and DEEP is not None:
+            # explicit-depth turn: try the configured big model first;
+            # any failure falls through to the local think path below
+            reply, deep_meta = await self.deep_reply(utterance, spec)
         if reply is None:
             open_think = bool(spec.get("think"))
             trace_sent = ans_sent = 0
@@ -758,7 +766,8 @@ class Session:
         await self.tts(reply)
         self.history.append((utterance, reply))
         self.speaking = False
-        await self.send_metrics(timings, round(first, 1) if first else None, corrupt)
+        await self.send_metrics(timings, round(first, 1) if first else None,
+                                corrupt, deep=deep_meta)
         # gate does NOT open here: the browser reports actual playback end
         # (playback_state) — much later than synthesis on long replies.
         # The floor covers the race before the first playing:true arrives.
@@ -855,6 +864,41 @@ class Session:
         except Exception as e:
             await self.send({"type": "error", "message": f"vision: {e}"[:120]})
             return None
+
+    async def deep_reply(self, utterance, spec):
+        """Big-model think turn through the configured provider
+        (docs/PROTOCOL-deep-think.md). Streams the same events as the
+        local think path — reasoning -> think_delta (UI only, never
+        spoken), answer -> response_start/response_delta. Returns
+        (reply, meta); on ANY failure reply is None and respond() falls
+        back to the local think path, with the fallback recorded in the
+        metrics event rather than spoken as an apology."""
+        t0 = time.perf_counter()
+        first = None
+        meta = {"model": f"{DEEP.provider}:{DEEP.model}", "fallback": False}
+        ans = []
+        try:
+            async for kind, delta in DEEP.stream(utterance,
+                                                 spec.get("directive"),
+                                                 self.history, SYS):
+                if kind == "reasoning":
+                    await self.send({"type": "think_delta", "text": delta})
+                    continue
+                if first is None:
+                    first = (time.perf_counter() - t0) * 1000
+                    meta["ttft_ms"] = round(first, 1)
+                    await self.send({"type": "response_start",
+                                     "ttft_ms": meta["ttft_ms"]})
+                ans.append(delta)
+                await self.send({"type": "response_delta", "text": delta})
+            meta["ms"] = round((time.perf_counter() - t0) * 1000)
+            if not "".join(ans).strip():
+                raise RuntimeError("empty answer")
+        except Exception as e:
+            meta["fallback"] = True
+            meta["error"] = type(e).__name__
+            return None, meta
+        return "".join(ans).strip(), meta
 
     async def tool_flow(self, utterance):
         """Manifest-JSON generation -> validate -> execute -> confirm.
@@ -988,7 +1032,7 @@ class Session:
             seq += 1
         await self.send({"type": "tts_done"})
 
-    async def send_metrics(self, timings, ttft_ms, corrupt=False):
+    async def send_metrics(self, timings, ttft_ms, corrupt=False, deep=None):
         ds = self.decide_stats
         llm = {}
         if timings:
@@ -999,7 +1043,7 @@ class Session:
                    "predicted_n": gn,
                    "predicted_ms": round(gms, 1) if gms else None,
                    "decode_tps": round(gn / gms * 1000, 1) if gms and gn else None}
-        await self.send({
+        metrics = {
             "type": "metrics",
             "asr": {
                 "wake_to_final_ms": round((self.t_final - self.t_wake) * 1000, 1)
@@ -1022,7 +1066,10 @@ class Session:
                     "total_ms": round(self.tts_total_ms, 1),
                     "sentences": self.tts_n},
             "e2e_ms": self.tts_first_ms,  # final → first audio out of server
-        })
+        }
+        if deep is not None:
+            metrics["deep"] = deep  # provider turn (or its honest fallback)
+        await self.send(metrics)
         # reset per-turn accumulators (t_final too: a pre-final TTS chunk
         # like a backchannel must not measure against the previous turn)
         self.t_wake = None
@@ -1156,11 +1203,15 @@ async def http_page(connection, request):
 
 
 async def main():
-    global KOKORO, READOUT, WALKER
+    global KOKORO, READOUT, WALKER, DEEP
     t0 = time.perf_counter()
     KOKORO = Kokoro(f"{MODELS}/kokoro-v1.0.onnx", f"{MODELS}/voices.npz")
     READOUT = DecideReadout()
     WALKER = TreeWalker(READOUT._project)
+    DEEP = deep_think.from_config(deep_think.load_config())
+    if DEEP is not None:
+        print(f"deep think: {DEEP.provider} {DEEP.model} @ {DEEP.base_url}",
+              flush=True)
     print(f"kokoro + readout + decision tree loaded in "
           f"{time.perf_counter() - t0:.1f}s", flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=http_page,

@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 nohup.out
 web/memory.json
+web/config.json
