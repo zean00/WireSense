@@ -40,7 +40,8 @@ LLAMA_BIN   := $(HOME)/.local/bin/llama-server
 # Original 32K footprint fits again (2.6 GiB weights): 4096 ctx per slot x 8.
 # NOTE: models/sig_embeddings.npy is re-recorded from the serving model
 # (backups: *.q8_0.npy.bak, *.instruct-nvfp4.npy.bak) — decide needs
-# self-consistent refs, originals don't survive the head.
+# self-consistent refs, originals don't survive the head. Any change to
+# serving numerics (model, context, KV type) requires re-recording refs.
 LLAMA_MODEL := $(HOME)/models/unsloth-qwen35-4b-q4xl/Qwen3.5-4B-UD-Q4_K_XL.gguf
 
 # shared shell helpers
@@ -131,6 +132,7 @@ start:
 	  nohup $(LLAMA_BIN) -m $(LLAMA_MODEL) --alias wiresense-llm \
 	    --host 127.0.0.1 --port $(PORT_LLAMA) \
 	    -c 32768 -np 8 --flash-attn on -b 8192 -ub 2048 \
+	    -ctk q8_0 -ctv q8_0 \
 	    --embedding --pooling last -ngl 99 \
 	    > $(LOG_LLAMA) 2>&1 &
 	  echo $$! > $(PID_LLAMA)
