@@ -1,7 +1,6 @@
 # wiresense service control
 #
 #   make start     launch Phonon (:8010), llama-server (:8998), web (:8996)
-#                  (starts the VRAM placement guard first — fp4 NaN fault)
 #   make stop      stop the three wiresense services (only ours; nothing else)
 #   make restart   stop + start
 #   make status    health of each service + GPU snapshot
@@ -35,7 +34,11 @@ READY_GUARD := /tmp/wiresense_guard.ready
 LOG_GUARD   := /tmp/wiresense_guard.log
 
 LLAMA_BIN   := $(HOME)/.local/bin/llama-server
-LLAMA_MODEL := $(HOME)/models/qwen35-4b-nvfp4/qwen35-4b-instruct-nvfp4.gguf
+# Interim engine: Qwen3.5-4B Q8_0 (unsloth). The NVFP4 quant corrupts on this
+# GPU (docs/INCIDENT-2026-10-04-GPU.md); Q8_0 of the same model verifies clean
+# end-to-end. -c 16384 = 2048 per slot x 8; Q8_0 weights (4.2 GiB) do not fit
+# with the old 32K/8K-batch footprint.
+LLAMA_MODEL := $(HOME)/models/unsloth-qwen35-4b-q8/Qwen3.5-4B-Q8_0.gguf
 
 # shared shell helpers
 define HELPERS
@@ -121,21 +124,10 @@ start:
 	if port_up $(PORT_LLAMA); then
 	  echo "  llama-server: already up"
 	else
-	  if [ -f $(PID_GUARD) ] && kill -0 "$$(cat $(PID_GUARD))" 2>/dev/null; then
-	    echo "  vram-guard: already up (pid $$(cat $(PID_GUARD)))"
-	  else
-	    echo "  vram-guard: reserving $(GUARD_GB) GB (VRAM placement guard)..."
-	    rm -f $(READY_GUARD)
-	    nohup $(WS_ROOT)/.venv-asr/bin/python $(WS_ROOT)/tools/vram_guard.py $(GUARD_GB) $(READY_GUARD) > $(LOG_GUARD) 2>&1 &
-	    echo $$! > $(PID_GUARD)
-	    guard_ok=0
-	    for i in $$(seq 1 40); do [ -f $(READY_GUARD) ] && guard_ok=1 && break; sleep 1; done
-	    [ "$$guard_ok" = 1 ] || { echo "  vram-guard: FAILED — see $(LOG_GUARD)" >&2; exit 1; }
-	  fi
 	  echo "  llama-server: starting (model load can take ~30 s)..."
 	  nohup $(LLAMA_BIN) -m $(LLAMA_MODEL) --alias wiresense-llm \
 	    --host 127.0.0.1 --port $(PORT_LLAMA) \
-	    -c 32768 -np 8 --flash-attn on -b 8192 -ub 2048 \
+	    -c 16384 -np 8 --flash-attn on -b 4096 -ub 1024 \
 	    --embedding --pooling last -ngl 99 \
 	    > $(LOG_LLAMA) 2>&1 &
 	  echo $$! > $(PID_LLAMA)
@@ -171,11 +163,6 @@ status:
 	if command -v nvidia-smi >/dev/null; then
 	  nvidia-smi --query-gpu=memory.used,memory.total,temperature.gpu,power.draw --format=csv,noheader | sed 's/^/  gpu: /'
 	fi
-	if [ -f $(PID_GUARD) ] && kill -0 "$$(cat $(PID_GUARD))" 2>/dev/null; then
-	  echo "  vram-guard: UP (pid $$(cat $(PID_GUARD)), $(GUARD_GB) GB)"
-	else
-	  echo "  vram-guard: DOWN"
-	fi
 
 canary:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/canary.py $(PORT_LLAMA)
@@ -185,8 +172,8 @@ logs:
 
 help:
 	@echo "wiresense services:"
-	@echo "  make start     launch Phonon (:$(PORT_PHONON)), llama-server (:$(PORT_LLAMA)), web (:$(PORT_WEB)) + vram-guard"
-	@echo "  make stop      stop the four wiresense services (only ours; nothing else)"
+	@echo "  make start     launch Phonon (:$(PORT_PHONON)), llama-server (:$(PORT_LLAMA)), web (:$(PORT_WEB))"
+	@echo "  make stop      stop the three wiresense services (only ours; nothing else)"
 	@echo "  make restart   stop + start"
 	@echo "  make status    health of each service + GPU snapshot"
 	@echo "  make canary    GPU fp4 health check (docs/INCIDENT-2026-10-04-GPU.md)"

@@ -106,6 +106,42 @@ the absolute addresses shift. If `?????` ever returns after a reboot:
 rerun `make canary`, and if it fails, sweep the guard size (0.3 → 0.5 →
 0.8 GB) — or accept the RMA path.
 
+## Revision 2: fault isolated to the NVFP4 path — interim engine shipped
+
+Unsloth's **Qwen3.5-4B-Q8_0.gguf** (4.17 GiB, same tokenizer and 2560-dim
+embeddings, chat-tuned release) of the same model runs the **full battery
+clean at natural layout, no guard**:
+
+- chat completions: real replies with thinking on and off (the llama UI
+  works — every NVFP4 instance today returned `?` on the chat path)
+- plain completions: clean, including the ~16-word prompts that corrupted
+  on NVFP4
+- embeddings: 3 passes × 227 sig vectors, strict checker (null/NaN/zero
+  aware — llama serializes NaN as JSON `null`, which a naive `x != x`
+  list check misses), 0/681 corrupt
+- decide layer: reference vectors re-recorded from Q8_0
+  (`models/sig_embeddings.npy`; original preserved as
+  `models/sig_embeddings.instruct-nvfp4.npy.bak` for post-RMA restore);
+  self-rank through the arm-C head: **227/227**
+- sustained load: no degradation across the full stress (the NVFP4
+  instruct had shown use-dependent corruption that recovered at idle —
+  a transient clock/voltage-corner signature, not persistent page damage)
+
+**Conclusion.** The failing hardware is specific to the NVFP4
+block-scaled fp4 datapath (data-dependent, transient under sustained
+load); general VRAM traffic — K-quants, fp8/fp16/bf16/int8 — verifies
+clean. This supersedes the placement-only reading in Revision 1 (the
+0.3 GB guard fixed embeddings/completions but chat stayed corrupt on
+*both* NVFP4 models, and the Q8_0 quant of the same weights is fully
+clean). The RMA recommendation is unchanged: the product's serving format
+is NVFP4, and this GPU cannot run it reliably.
+
+**Shipped interim (production now):** llama-server serves
+`Qwen3.5-4B-Q8_0.gguf` with `-c 16384 -np 8 -b 4096 -ub 1024` (2048 ctx
+per slot; Q8_0 weights do not fit the old 32K/8K-batch footprint on 8 GB).
+`tools/vram_guard.py` is retired from the active path (kept for
+reference). `tools/canary.py` additionally detects all-zero embeddings.
+
 ## Corroborating context
 
 The same power cycle also left the internal mic input railed (DC offset
