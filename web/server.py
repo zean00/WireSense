@@ -67,6 +67,8 @@ TOOL_MANIFEST = {
 }
 MEMORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            "memory.json")
+TREE_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                         "tools", "decision_tree.json")
 REL_TIME = re.compile(r"\bin (\d+) (second|minute|hour)s?\b", re.I)
 
 TOOL_FALLBACK_DIRECTIVE = ("No available tool fits this request. Answer briefly; "
@@ -1001,9 +1003,10 @@ async def handler(ws):
 
 
 async def http_page(connection, request):
-    # websockets process_request hook: serve the page + mic worklet, else
-    # upgrade. The worklet is a same-origin file (blob: module URLs are
-    # blocked in some webviews).
+    # websockets process_request hook: serve the page + mic worklet + tree,
+    # else upgrade. The worklet is a same-origin file (blob: module URLs are
+    # blocked in some webviews); tree.json feeds the live tree visualization
+    # straight from tools/decision_tree.json so the two cannot drift.
     from websockets.datastructures import Headers
     from websockets.http11 import Response
     if request.path == "/":
@@ -1016,6 +1019,11 @@ async def http_page(connection, request):
         hdrs = Headers([("Content-Type", "text/javascript; charset=utf-8"),
                         ("Content-Length", str(len(js)))])
         return Response(200, "OK", hdrs, js)
+    if request.path == "/tree.json":
+        data = open(TREE_JSON, "rb").read()
+        hdrs = Headers([("Content-Type", "application/json; charset=utf-8"),
+                        ("Content-Length", str(len(data)))])
+        return Response(200, "OK", hdrs, data)
     return None
 
 
