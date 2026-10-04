@@ -165,6 +165,17 @@ class Session:
         self.ctx_rate = 0  # browser AudioContext rate; 16k = no resample path
         self.cap = None    # debug wav of exactly what Phonon consumes
         self.preroll = deque(maxlen=PREROLL_N)  # kept while idle, flushed on wake
+        # per-turn timing (perf_counter base, all within one event loop)
+        self.t_wake = None
+        self.n_frames = 0        # 100 ms frames forwarded to Phonon this turn
+        self.first_partial_t = None
+        self.partial_count = 0
+        self.decide_stats = []
+        self.t_final = None
+        self.tts_first_ms = None
+        self.tts_total_ms = 0.0
+        self.tts_n = 0
+        self.last_status = 0.0
 
     def gate_active(self) -> bool:
         return (self.speaking or self.playback
@@ -185,7 +196,6 @@ class Session:
     def schedule_gate_release(self, delay: float):
         # gate expiry is a timer, so push the mic_state transition then
         asyncio.create_task(self.release_gate_later(delay))
-        self.turn = 0
 
     async def send(self, obj):
         try:
@@ -217,6 +227,9 @@ class Session:
                 m = json.loads(s)
                 t = m.get("type")
                 if t == "partial":
+                    self.partial_count += 1
+                    if self.first_partial_t is None:
+                        self.first_partial_t = time.perf_counter()
                     await self.send({"type": "partial", "text": m["text"]})
                     asyncio.create_task(self.decide(m["text"]))
                 elif t == "final":
@@ -237,16 +250,18 @@ class Session:
             loop = asyncio.get_event_loop()
             ro = await loop.run_in_executor(None, READOUT.score,
                                             build_prompt(self.history, partial))
+            self.decide_stats.append(ro)
             await self.send({"type": "decide", **ro})
         except Exception as e:  # readout must never break the voice loop
             await self.send({"type": "decide_error", "message": str(e)[:120]})
 
     async def respond(self, utterance):
         self.speaking = True
+        self.t_final = time.perf_counter()
         await self.update_gate()
         await self.send({"type": "cancel_tts"})
         t0 = time.perf_counter()
-        first, chunks = None, []
+        first, chunks, timings = None, [], None
         try:
             with requests.post(f"{LLAMA}/v1/completions", json={
                     "prompt": build_prompt(self.history, utterance),
@@ -259,7 +274,10 @@ class Session:
                     payload = line[len(b"data: "):]
                     if payload == b"[DONE]":
                         break
-                    delta = json.loads(payload)["choices"][0].get("text", "")
+                    j = json.loads(payload)
+                    delta = j["choices"][0].get("text", "")
+                    if j.get("timings"):
+                        timings = j["timings"]  # llama.cpp reports on chunks
                     if delta and first is None:
                         first = (time.perf_counter() - t0) * 1000
                         await self.send({"type": "response_start",
@@ -279,6 +297,7 @@ class Session:
         await self.tts(reply)
         self.history.append((utterance, reply))
         self.speaking = False
+        await self.send_metrics(timings, round(first, 1) if first else None)
         # gate does NOT open here: the browser reports actual playback end
         # (playback_state) — much later than synthesis on long replies.
         # The floor covers the race before the first playing:true arrives.
@@ -300,11 +319,61 @@ class Session:
             except Exception as e:
                 await self.send({"type": "error", "message": f"tts: {e}"})
                 break
-            await self.send({"type": "tts_chunk", "seq": seq,
-                             "ms": round((time.perf_counter() - t0) * 1000, 1),
+            ms = (time.perf_counter() - t0) * 1000
+            if self.tts_first_ms is None:
+                self.tts_first_ms = round((time.perf_counter() - self.t_final)
+                                          * 1000, 1)
+            self.tts_total_ms += ms
+            self.tts_n += 1
+            await self.send({"type": "tts_chunk", "seq": seq, "ms": round(ms, 1),
                              "audio": base64.b64encode(audio).decode()})
             seq += 1
         await self.send({"type": "tts_done"})
+
+    async def send_metrics(self, timings, ttft_ms):
+        ds = self.decide_stats
+        llm = {}
+        if timings:
+            pn, pms = timings.get("prompt_n"), timings.get("prompt_ms")
+            gn, gms = timings.get("predicted_n"), timings.get("predicted_ms")
+            llm = {"prompt_n": pn, "prompt_ms": round(pms, 1) if pms else None,
+                   "prefill_tps": round(pn / pms * 1000, 1) if pms and pn else None,
+                   "predicted_n": gn,
+                   "predicted_ms": round(gms, 1) if gms else None,
+                   "decode_tps": round(gn / gms * 1000, 1) if gms and gn else None}
+        await self.send({
+            "type": "metrics",
+            "asr": {
+                "wake_to_final_ms": round((self.t_final - self.t_wake) * 1000, 1)
+                                    if self.t_wake else None,
+                "audio_s": round(self.n_frames * 0.1, 1),
+                "partials": self.partial_count,
+                "first_partial_ms": round((self.first_partial_t - self.t_wake)
+                                          * 1000, 1) if self.first_partial_t
+                                          and self.t_wake else None,
+            },
+            "decide": {
+                "n": len(ds),
+                "last_ms": round(ds[-1]["head_ms"] + ds[-1]["emb_ms"], 1)
+                           if ds else None,
+                "max_ms": round(max(d["head_ms"] + d["emb_ms"] for d in ds), 1)
+                          if ds else None,
+            },
+            "llm": {"ttft_ms": ttft_ms, **llm},
+            "tts": {"first_ms": self.tts_first_ms,
+                    "total_ms": round(self.tts_total_ms, 1),
+                    "sentences": self.tts_n},
+            "e2e_ms": self.tts_first_ms,  # final → first audio out of server
+        })
+        # reset per-turn accumulators
+        self.t_wake = None
+        self.n_frames = 0
+        self.first_partial_t = None
+        self.partial_count = 0
+        self.decide_stats = []
+        self.tts_first_ms = None
+        self.tts_total_ms = 0.0
+        self.tts_n = 0
 
 
 async def handler(ws):
@@ -332,6 +401,13 @@ async def handler(ws):
                     session.vad_streak = session.vad_streak + 1 \
                         if ps and all(p >= VAD_ON for p in ps) else 0
                     session.preroll.append(msg)
+                    now = time.monotonic()
+                    if now - session.last_status > 0.5:  # live VAD readout
+                        session.last_status = now
+                        await session.send({
+                            "type": "mic_status",
+                            "vad": round(max(ps), 3) if ps else None,
+                            "listening": True})
                     if session.vad_streak < WAKE_FRAMES:
                         continue
                     session.vad_streak = 0
@@ -343,11 +419,17 @@ async def handler(ws):
                         for f in frames:
                             session.cap.writeframes(f)
                     session.preroll.clear()
+                    session.t_wake = time.perf_counter()
+                    session.n_frames = len(frames)
+                    session.first_partial_t = None
+                    session.partial_count = 0
+                    session.decide_stats = []
                     print(f"[{peer}] wake p_speech_max={max(ps):.2f} "
                           f"ctx={session.ctx_rate}Hz — phonon stream open",
                           flush=True)
                     continue  # current frame already went out with the flush
                 await session.phonon.send(msg)
+                session.n_frames += 1
                 if session.cap:
                     session.cap.writeframes(msg)
             else:

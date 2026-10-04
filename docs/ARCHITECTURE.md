@@ -125,6 +125,36 @@ contract is 512-sample chunks + 64-sample rolling context (see
 `web/server.py` SileroVAD — a context-less feed returns ~0.001 for
 everything, speech included).
 
+### Mic health + pipeline metrics (`web/`, added 2026-10-04)
+
+Motivated by a live failure that looked like an ASR quality regression:
+"Tell me some random thing" → "Owning some burning thing". Diagnosis
+(replay of saved mic bytes through Phonon reproduced live behavior;
+Kokoro-synth baseline transcribed perfectly): the laptop's internal-mic
+analog input carried a **DC offset of 272–624 mV at the ADC**, saturating
+the converter — speech rode a railed front end, consonant-band energy
+(3 kHz+) collapsed to ~1% of total power, and fricatives vanished before
+the ASR saw them. Not fixable in software (survives gain changes,
+`alsactl init`, card-profile cycle); codec-level reset (charger unplug /
+reboot) or an external mic is the remedy.
+
+The web UI now surfaces this class of fault directly:
+
+- **Mic health panel (client-side):** per-100 ms-frame RMS, peak, DC
+  offset, clip % (from the Int16 frames the page already has) + an
+  AnalyserNode tap for the 3 kHz+ energy share; 2.5 s rolling window,
+  500 ms refresh, verdict badge — ok / warn / **DEGRADED** with reasons
+  (DC ≥ 0.10, clip ≥ 3%, rms < 0.008, HF share < 0.5% are the bad
+  thresholds; the DC + HF checks encode the fault above).
+- **Live server status:** `mic_status` pushes Silero p(speech) every
+  500 ms pre-wake (VAD confidence is visible before any wake decision).
+- **Per-turn pipeline metrics** (`metrics` message after `tts_done`):
+  ASR wake→final + first-partial latency + partial count; decide readout
+  last/max; llama.cpp streaming `timings` → TTFT, prefill tok/s, decode
+  tok/s; TTS final→first-audio, synthesis total; e2e final→first audio;
+  browser-measured playback start → voice→voice estimate. Rendered as a
+  metrics card + per-turn chips in the turn log.
+
 ## 5. Vision (later)
 
 Two options, in preference order:

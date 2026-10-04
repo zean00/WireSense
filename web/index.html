@@ -25,6 +25,24 @@
   #stats { font-size: 12px; color: #7d8aa0; }
   .turn { border-left: 3px solid #14b8a6; padding-left: 10px; margin: 10px 0; }
   .turn b { color: #9fb3c8; font-weight: 600; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 11px;
+           text-transform: none; letter-spacing: 0; margin-left: 6px; }
+  .badge.ok   { background: #134e4a; color: #5eead4; }
+  .badge.warn { background: #4d3a10; color: #fbbf24; }
+  .badge.bad  { background: #4c1d1d; color: #f87171; }
+  .badge.idle { background: #1d2939; color: #7d8aa0; }
+  .hgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 14px;
+           font-size: 12.5px; margin-top: 6px; }
+  .hgrid .k { color: #7d8aa0; }
+  .hgrid .v { text-align: right; font-variant-numeric: tabular-nums; }
+  #h_reasons { font-size: 12px; margin-top: 6px; color: #fbbf24; }
+  .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 18px;
+           font-size: 12.5px; margin-top: 6px; }
+  .mgrid .k { color: #7d8aa0; }
+  .mgrid .v { text-align: right; font-variant-numeric: tabular-nums; }
+  .sec { font-size: 11px; color: #5eead4; margin-top: 6px; text-transform: uppercase;
+         letter-spacing: .06em; }
+  .mm { font-size: 11.5px; color: #7d8aa0; margin-top: 4px; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
@@ -35,6 +53,23 @@
   <button id="reset">Reset</button>
   <div id="level"><div id="levelbar"></div></div>
 </div>
+<div class="card">
+  <div class="label">mic health<span id="micverdict" class="badge idle">mic off</span></div>
+  <div class="hgrid">
+    <span class="k">level (rms)</span><span class="v" id="h_rms">–</span><span class="k" id="h_rms_note"></span>
+    <span class="k">peak</span><span class="v" id="h_peak">–</span><span class="k" id="h_peak_note"></span>
+    <span class="k">dc offset</span><span class="v" id="h_dc">–</span><span class="k" id="h_dc_note"></span>
+    <span class="k">clipped</span><span class="v" id="h_clip">–</span><span class="k" id="h_clip_note"></span>
+    <span class="k">hf energy (3k+)</span><span class="v" id="h_hf">–</span><span class="k" id="h_hf_note"></span>
+    <span class="k">vad p(speech)</span><span class="v" id="h_vad">–</span><span class="k" id="h_vad_note"></span>
+    <span class="k">capture rate</span><span class="v" id="h_rate">–</span><span class="k"></span>
+  </div>
+  <div id="h_reasons"></div>
+</div>
+<div class="card">
+  <div class="label">last turn — pipeline metrics</div>
+  <div class="mgrid" id="metrics"><span class="k">no turn yet</span></div>
+</div>
 <div class="card"><div class="label">hearing (live partial)</div>
   <div id="partial">—</div>
   <div id="decide"></div></div>
@@ -43,15 +78,17 @@
 
 <script>
 const wsURL = `ws://${location.host}/ws`;
-let ws, ctx, workletNode, stream, listening = false;
+let ws, ctx, workletNode, analyser, stream, listening = false;
 let audioQueue = [], playing = false;
 
 function log(turn) {
   const d = document.createElement("div");
   d.className = "turn"; d.innerHTML = turn;
   document.getElementById("log").prepend(d);
+  return d;
 }
 function setStats(s) { document.getElementById("stats").textContent = s; }
+const el = id => document.getElementById(id);
 
 async function connect() {
   ws = new WebSocket(wsURL);
@@ -61,37 +98,47 @@ async function connect() {
   ws.onclose = () => { setStats("disconnected"); if (listening) stopMic(); };
 }
 
+let lastTurnEl = null;
 function onMessage(ev) {
   const m = JSON.parse(ev.data);
   if (m.type === "partial") {
-    document.getElementById("partial").textContent = m.text;
+    el("partial").textContent = m.text;
   } else if (m.type === "decide") {
-    document.getElementById("decide").textContent =
-      `action: ${m.top1} (${m.score}) · head ${m.head_ms} ms · emb ${m.emb_ms} ms`;
+    el("decide").textContent =
+      `action: ${m.top1} (${m.score}) · readout ${m.head_ms + m.emb_ms} ms (head ${m.head_ms} + emb ${m.emb_ms})`;
   } else if (m.type === "cancel_tts") {
     audioQueue = []; if (playing) { stopPlayback(); }
   } else if (m.type === "response_start") {
-    document.getElementById("reply").textContent = "";
     tStats.ttft = m.ttft_ms; renderStats();
   } else if (m.type === "response_delta") {
-    document.getElementById("reply").textContent += m.text;
+    el("reply").textContent += m.text;
   } else if (m.type === "response_done") {
-    document.getElementById("reply").textContent = m.text;
-    log(`<b>you:</b> ${window.lastUser || "?"}<br><b>wiresense:</b> ${m.text}`);
+    el("reply").textContent = m.text;
+    lastTurnEl = log(`<b>you:</b> ${window.lastUser || "?"}<br><b>wiresense:</b> ${m.text}`);
     window.lastReply = m.text;
-    document.getElementById("partial").textContent = "—";
+    el("partial").textContent = "—";
+  } else if (m.type === "final") {
+    window.lastUser = m.text;
+    firstChunkOfTurn = true; playLatMs = null;
   } else if (m.type === "tts_chunk") {
+    chunkRx = performance.now();
     tStats.tts = m.ms; renderStats();
     const buf = Uint8Array.from(atob(m.audio), c => c.charCodeAt(0));
     audioQueue.push(URL.createObjectURL(new Blob([buf], {type: "audio/wav"})));
     playNext();
+  } else if (m.type === "mic_status") {
+    if (m.vad != null) {
+      el("h_vad").textContent = m.vad.toFixed(2);
+      el("h_vad_note").textContent = m.vad >= 0.5 ? "speech" : "noise/silence";
+    }
+    if (m.listening === false) setMicHealthIdle();
+  } else if (m.type === "metrics") {
+    renderMetrics(m);
   } else if (m.type === "error") {
     setStats("error: " + m.message);
   } else if (m.type === "mic_state") {
     micPaused = !m.listening;
     renderStats();
-  } else if (m.type === "final") {
-    window.lastUser = m.text;
   }
 }
 
@@ -102,6 +149,42 @@ function renderStats() {
   if (micPaused) s = "🔊 speaking — mic paused" + (s ? " · " + s : "");
   setStats(s || "…");
 }
+
+// --- last-turn pipeline metrics ---
+function renderMetrics(m) {
+  lastMetrics = m;
+  const g = el("metrics"); g.innerHTML = "";
+  const row = (k, v) => { g.insertAdjacentHTML("beforeend",
+    `<span class="k">${k}</span><span class="v">${v ?? "–"}</span>`); };
+  const sec = t => { g.insertAdjacentHTML("beforeend",
+    `<span class="sec" style="grid-column:1/3">${t}</span>`); };
+  sec("asr");
+  row("wake → final", m.asr.wake_to_final_ms != null ? m.asr.wake_to_final_ms + " ms" : null);
+  row("speech duration", m.asr.audio_s + " s · " + m.asr.partials + " partials");
+  row("first partial", m.asr.first_partial_ms != null ? m.asr.first_partial_ms + " ms" : null);
+  row("decide readouts", m.decide.n ? `${m.decide.n} · last ${m.decide.last_ms} / max ${m.decide.max_ms} ms` : null);
+  sec("llm");
+  row("ttft", m.llm.ttft_ms != null ? m.llm.ttft_ms + " ms" : null);
+  row("prefill", m.llm.prefill_tps ? `${m.llm.prompt_n} tok in ${m.llm.prompt_ms} ms — ${m.llm.prefill_tps} tok/s` : null);
+  row("decode", m.llm.decode_tps ? `${m.llm.predicted_n} tok in ${m.llm.predicted_ms} ms — ${m.llm.decode_tps} tok/s` : null);
+  sec("tts + end-to-end");
+  row("final → first audio", m.tts.first_ms != null ? m.tts.first_ms + " ms" : null);
+  row("synthesis total", m.tts.total_ms + " ms · " + m.tts.sentences + " sentence(s)");
+  row("playback start (browser)", playLatMs != null ? Math.round(playLatMs) + " ms" : null);
+  const v2v = (m.tts.first_ms != null && playLatMs != null)
+    ? `≈ ${Math.round(m.tts.first_ms + playLatMs)} ms` : null;
+  row("voice → voice", v2v);
+  if (lastTurnEl) {
+    const bits = [];
+    if (m.asr.wake_to_final_ms != null) bits.push(`asr ${Math.round(m.asr.wake_to_final_ms)}ms`);
+    if (m.llm.ttft_ms != null) bits.push(`ttft ${Math.round(m.llm.ttft_ms)}ms`);
+    if (m.llm.decode_tps) bits.push(`${m.llm.decode_tps} tok/s`);
+    if (m.tts.first_ms != null) bits.push(`tts ${Math.round(m.tts.first_ms)}ms`);
+    if (bits.length) lastTurnEl.insertAdjacentHTML("beforeend",
+      `<div class="mm">${bits.join(" · ")}</div>`);
+  }
+}
+let lastMetrics = null, playLatMs = null, firstChunkOfTurn = true, chunkRx = 0;
 
 // --- sequential playback ---
 let audioEl = null, playbackSent = false;
@@ -120,7 +203,15 @@ function playNext() {
   if (playing || !audioQueue.length) return;
   playing = true;
   setPlayback(true);
+  const rx = chunkRx, isFirst = firstChunkOfTurn;
+  firstChunkOfTurn = false;
   audioEl = new Audio(audioQueue.shift());
+  audioEl.onplaying = () => {
+    if (isFirst && playLatMs == null) {
+      playLatMs = performance.now() - rx;
+      if (lastMetrics) renderMetrics(lastMetrics);
+    }
+  };
   audioEl.onended = () => {
     playing = false;
     if (audioQueue.length) playNext();
@@ -129,12 +220,89 @@ function playNext() {
   audioEl.play();
 }
 
+// --- mic health: stats per 100 ms frame, analyser band ratios, verdict ---
+const micRing = [];              // last ~3 s of frame stats
+let lastHf = null;
+function pushFrameStats(pcm) {
+  let sum = 0, sumsq = 0, peak = 0, sat = 0, zc = 0;
+  let prevPos = pcm[0] > 0;
+  for (let j = 0; j < pcm.length; j++) {
+    const v = pcm[j], a = v < 0 ? -v : v;
+    sum += v; sumsq += v * v;
+    if (a > peak) peak = a;
+    if (a >= 32200) sat++;               // ≥0.983 FS
+    if ((v > 0) !== prevPos) zc++;
+    prevPos = v > 0;
+  }
+  const n = pcm.length;
+  micRing.push({ rms: Math.sqrt(sumsq / n) / 32768, peak: peak / 32768,
+                 dc: sum / n / 32768, clip: sat / n });
+  if (micRing.length > 30) micRing.shift();
+}
+function bandRatio() {                  // HF (3 kHz+) share of total power
+  if (!analyser) return null;
+  const n = analyser.frequencyBinCount, d = new Float32Array(n);
+  analyser.getFloatFrequencyData(d);
+  const binHz = ctx.sampleRate / analyser.fftSize;
+  let tot = 0, hf = 0;
+  for (let i = 1; i < n; i++) {
+    const p = d[i] === -Infinity ? 0 : Math.pow(10, d[i] / 10);
+    tot += p;
+    if (i * binHz >= 3000) hf += p;
+  }
+  return tot > 0 ? hf / tot : null;
+}
+function classifyMic(a) {
+  const reasons = []; let worst = "ok";
+  const bump = w => { if (w === "bad" || (w === "warn" && worst !== "bad")) worst = w; };
+  if (a.dc >= 0.10)      { reasons.push("large DC offset — capture hardware fault (railed input)"); bump("bad"); }
+  else if (a.dc >= 0.04) { reasons.push("DC offset present"); bump("warn"); }
+  if (a.clip >= 0.03)    { reasons.push("clipping — signal saturating"); bump("bad"); }
+  else if (a.clip >= 0.01) { reasons.push("near clipping"); bump("warn"); }
+  if (a.rms < 0.008)     { reasons.push("too quiet — check gain/device"); bump("bad"); }
+  else if (a.rms < 0.02) { reasons.push("low level"); bump("warn"); }
+  if (a.hf != null) {
+    if (a.hf < 0.005)      { reasons.push("muffled: consonant band (3 kHz+) missing"); bump("bad"); }
+    else if (a.hf < 0.015) { reasons.push("HF energy low — consonants may smear"); bump("warn"); }
+  }
+  return { worst, reasons };
+}
+function setMicHealthIdle() {
+  el("h_vad").textContent = "–"; el("h_vad_note").textContent = "gated";
+}
+function refreshHealth() {
+  if (!listening || micRing.length < 5) return;
+  const rms = Math.max(...micRing.map(s => s.rms));
+  const peak = Math.max(...micRing.map(s => s.peak));
+  const dc = micRing.reduce((a, s) => a + s.dc, 0) / micRing.length;
+  const clip = Math.max(...micRing.map(s => s.clip));
+  lastHf = bandRatio();
+  el("h_rms").textContent = rms.toFixed(3);
+  el("h_peak").textContent = peak.toFixed(3);
+  el("h_dc").textContent = (dc >= 0 ? "+" : "") + dc.toFixed(3);
+  el("h_clip").textContent = (clip * 100).toFixed(1) + "%";
+  el("h_hf").textContent = lastHf != null ? (lastHf * 100).toFixed(1) + "%" : "–";
+  if (rms < 0.02) {   // no signal in window: report meters, neutral verdict
+    el("micverdict").textContent = "waiting for voice"; el("micverdict").className = "badge idle";
+    el("h_reasons").textContent = "";
+    return;
+  }
+  const v = classifyMic({ rms, peak, dc, clip, hf: lastHf });
+  el("micverdict").textContent = v.worst === "ok" ? "mic OK" : v.worst === "warn" ? "warn" : "DEGRADED";
+  el("micverdict").className = "badge " + v.worst;
+  el("h_reasons").textContent = v.reasons.join(" · ");
+}
+setInterval(refreshHealth, 500);
+
 // --- mic capture: resample to 16 kHz s16le, 100 ms frames ---
 async function startMic() {
   stream = await navigator.mediaDevices.getUserMedia({ audio: {
     echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
   ctx = new AudioContext({ sampleRate: 16000 });  // browser resamples the graph
   const src = ctx.createMediaStreamSource(stream);
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 2048;
+  src.connect(analyser);      // analysis tap only
   await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([`
     class Capture extends AudioWorkletProcessor {
       constructor() { super();
@@ -173,16 +341,18 @@ async function startMic() {
   workletNode.port.onmessage = (e) => {
     if (ws && ws.readyState === 1) ws.send(e.data);
     const pcm = new Int16Array(e.data);
+    pushFrameStats(pcm);
     let peak = 0; for (let j = 0; j < pcm.length; j += 8) peak = Math.max(peak, Math.abs(pcm[j]));
-    document.getElementById("levelbar").style.width = Math.min(100, peak / 327) + "%";
+    el("levelbar").style.width = Math.min(100, peak / 327) + "%";
   };
   src.connect(workletNode);
   if (ws && ws.readyState === 1)
     ws.send(JSON.stringify({type: "hello", ctx_rate: ctx.sampleRate}));
+  el("h_rate") && (el("h_rate").textContent = ctx.sampleRate + " Hz");
   // worklet output not routed to destination: no local echo
   listening = true;
-  document.getElementById("mic").textContent = "Stop mic";
-  document.getElementById("mic").classList.add("on");
+  el("mic").textContent = "Stop mic";
+  el("mic").classList.add("on");
 }
 
 function stopMic() {
@@ -190,14 +360,16 @@ function stopMic() {
   if (workletNode) workletNode.port.onmessage = null;
   if (stream) stream.getTracks().forEach(t => t.stop());
   if (ctx) ctx.close();
-  document.getElementById("mic").textContent = "Start mic";
-  document.getElementById("mic").classList.remove("on");
+  micRing.length = 0; lastHf = null;
+  el("micverdict").textContent = "mic off"; el("micverdict").className = "badge idle";
+  el("mic").textContent = "Start mic";
+  el("mic").classList.remove("on");
 }
 
-document.getElementById("mic").onclick = () => listening ? stopMic() : startMic();
-document.getElementById("reset").onclick = () => {
+el("mic").onclick = () => listening ? stopMic() : startMic();
+el("reset").onclick = () => {
   ws.send(JSON.stringify({type: "reset"}));
-  document.getElementById("log").innerHTML = "";
+  el("log").innerHTML = "";
   window.lastReply = null;
 };
 connect();
