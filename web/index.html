@@ -54,9 +54,13 @@
 <div id="stats">not connected</div>
 <div class="row">
   <button id="mic">Start mic</button>
+  <button id="cam">📷 Start camera</button>
   <button id="reset">Reset</button>
   <div id="level"><div id="levelbar"></div></div>
 </div>
+<video id="camview" playsinline muted
+       style="display:none; width:160px; border-radius:8px; margin-top:6px"></video>
+<canvas id="camcanvas" style="display:none"></canvas>
 <div class="card">
   <div class="label">mic health<span id="micverdict" class="badge idle">mic off</span></div>
   <div class="hgrid">
@@ -120,6 +124,9 @@ function onMessage(ev) {
     audioQueue = []; if (playing) { stopPlayback(); }
   } else if (m.type === "tool_event") {
     handleToolEvent(m);
+  } else if (m.type === "need_frame") {
+    const b64 = grabFrame();
+    if (b64) ws.send(JSON.stringify({type: "camera_frame", b64}));
   } else if (m.type === "response_start") {
     tStats.ttft = m.ttft_ms; renderStats();
   } else if (m.type === "response_delta") {
@@ -192,6 +199,41 @@ function handleToolEvent(m) {
     toast(`🔔 reminder: ${m.text}`, 15000);
   }
 }
+
+// --- camera (vision path): local-only until a turn needs a frame ---
+let cameraStream = null;
+async function toggleCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+    el("cam").textContent = "📷 Start camera";
+    el("camview").style.display = "none";
+    ws.send(JSON.stringify({type: "camera_state", on: false}));
+    return;
+  }
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia(
+      {video: {width: 640, height: 480}});
+    el("camview").srcObject = cameraStream;
+    await el("camview").play();
+    el("camview").style.display = "block";
+    el("cam").textContent = "📷 Stop camera";
+    ws.send(JSON.stringify({type: "camera_state", on: true}));
+  } catch (e) {
+    setStats("camera unavailable: " + e.message);
+    ws.send(JSON.stringify({type: "camera_state", on: false}));
+  }
+}
+function grabFrame() {
+  const v = el("camview"), c = el("camcanvas");
+  if (!cameraStream || !v.videoWidth) return null;
+  const scale = Math.min(1, 448 / Math.max(v.videoWidth, v.videoHeight));
+  c.width = Math.round(v.videoWidth * scale);
+  c.height = Math.round(v.videoHeight * scale);
+  c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.8).split(",")[1];
+}
+el("cam").onclick = toggleCamera;
 
 let micPaused = false;
 const tStats = {};

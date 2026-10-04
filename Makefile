@@ -46,6 +46,7 @@ LLAMA_BIN   := $(HOME)/.local/bin/llama-server
 # linear, warm turn 66 ms, decode ~50 tok/s; thinking ON costs ~5.7 s to
 # first content token — the voice path pre-closes thinking (EMPTY_THINK).
 LLAMA_MODEL := $(HOME)/models/unsloth-qwen35-4b-q4xl/Qwen3.5-4B-UD-Q4_K_XL.gguf
+LLAMA_MODEL_DIR := $(HOME)/models/unsloth-qwen35-4b-q4xl
 
 # shared shell helpers
 define HELPERS
@@ -137,6 +138,8 @@ start:
 	    -c 65536 -np 8 --flash-attn on -b 8192 -ub 2048 \
 	    -ctk q8_0 -ctv q8_0 \
 	    --embedding --pooling last -ngl 99 \
+	    -mm $(LLAMA_MODEL_DIR)/mmproj-F16.gguf \
+	    --image-max-tokens 1024 \
 	    > $(LOG_LLAMA) 2>&1 &
 	  echo $$! > $(PID_LLAMA)
 	  wait_ready llama-server "http://127.0.0.1:$(PORT_LLAMA)/health" 180

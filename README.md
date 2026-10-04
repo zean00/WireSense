@@ -19,7 +19,7 @@ mic 16kHz → VAD → streaming ASR (partials) → incremental LLM prefill
 | Decide  | CLM-style state/action heads       | ~40MB  | project    | from refleqwen entry U; frozen-encoder contrastive heads |
 | ASR     | FermionResearch/Phonon-2           | 164MB  | CC-BY-4.0  | streaming WS `partial` = whole-hypothesis replacement; 16kHz mono PCM |
 | TTS     | hexgrad/Kokoro-82M (ONNX)          | 326MB  | Apache-2.0 | sentence-chunked streaming, 24kHz |
-| Vision  | (later) small VLM captioner or Qwen3.5-VL mmproj | — | — | context injection, not a turn participant |
+| Vision  | Qwen3.5-4B mmproj-F16 (unsloth GGUF) | 672MB  | Apache-2.0 | same llama-server via `--mmproj`; frame per vision turn, ~1 GiB VRAM |
 
 **English-first** by design; other languages are a later extension (both ASR
 and TTS choices above are English-only — revisit then).
@@ -73,10 +73,17 @@ cosine conf is miscalibrated as an error signal.
 - **decide** — trade-off directive, commits to a recommendation.
 - **social** — warm, brief tone; no filler.
 - **vision** — camera request ("What do you think about my new glasses?").
-  Interim behavior is an honesty directive (the assistant says it cannot see
-  yet); the capture hook in `respond()` grabs a frame, attaches it, and
-  takes the think path once the VLM (mmproj) lands. Budget: ~1.6 GiB VRAM
-  free at the 64K footprint — quantized mmproj only, else CPU captioner.
+  Act-then-decide: `respond()` asks the client for a frame (`need_frame` →
+  canvas grab, ≤448 px JPEG, `camera_frame`), and with one attached the turn
+  runs through `/v1/chat/completions` (mtmd images only work on the chat
+  endpoint; `chat_template_kwargs: {enable_thinking: false}` pre-closes
+  thinking; the Qwen template renders the same ChatML as our raw prompts so
+  the KV prefix stays warm). Without a frame — camera off, denied, or
+  timeout — an honesty directive keeps the answer honest; never asks twice.
+  `--image-max-tokens 1024` bounds image KV (upstream #21750: large images
+  crash >4B Qwen3.5 VL). mmproj-F16 (672 MB) + vision activations fit beside
+  the 64K footprint (~760 MiB VRAM still free); text numerics verified
+  bit-identical (eval-router 52/56 + 20/20 on unchanged refs).
 - **Backchannels** — during long user speech (>6 s, max 2/turn), a listening
   cue ("Uh-huh.", "And then?") is selected 1-NN from the partial's embedding
   and spoken while the user is still talking; the browser mic runs echo

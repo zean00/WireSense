@@ -11,8 +11,9 @@
                    "filler": true},
         "social": {"action": "llm", "max_tokens": 96,
                    "directive": "Respond warmly and briefly, like a friend."},
-        "vision": {"action": "vision_generic", "max_tokens": 96,
-                   "directive": "You currently have no camera access. If asked about something visual, say honestly that you cannot see it yet."}
+        "vision": {"action": "vision", "max_tokens": 96,
+                   "directive": "You can see the attached camera frame. Answer the user's question about what you see, briefly.",
+                   "fallback_directive": "You currently have no camera access. If asked about something visual, say honestly that you cannot see it yet."}
       },
       "pools": {
         "direct": [

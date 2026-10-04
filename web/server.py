@@ -371,6 +371,11 @@ class Session:
         self.bc_last_t = 0.0
         self._pending = set()  # background tasks (reminder fires) — kept
                                # referenced or the loop may GC them mid-sleep
+        # camera state (vision path): client declares readiness via
+        # camera_state, answers need_frame with camera_frame (b64 JPEG)
+        self.camera = False
+        self.frame_b64 = None
+        self._frame_evt = asyncio.Event()
 
     def gate_active(self) -> bool:
         return (self.speaking or self.playback
@@ -508,11 +513,14 @@ class Session:
                 cls = f"{cls}.{sub_cls}"
             else:
                 await self.send({"type": "route", "mode": cls, "conf": conf})
-            if spec["action"] == "vision_generic":
-                # capture hook for the VLM phase: request a frame from the
-                # client here, attach it, and take the think path. Until
-                # that lands the honesty directive keeps vision turns honest.
-                pass
+            if spec.get("action") == "vision":
+                # act-then-decide: grab a frame first; with one, the turn
+                # becomes a VLM query, without one the honesty directive
+                # keeps the answer honest (never asks twice)
+                frame_b64 = await self.request_frame()
+                if not frame_b64:
+                    spec = dict(spec, directive=spec.get(
+                        "fallback_directive", spec.get("directive")))
             if spec.get("filler"):
                 fb = WALKER.feedback(emb, spec.get("feedback") or cls)
                 await self.send({"type": "feedback", "text": fb})
@@ -523,7 +531,9 @@ class Session:
         t0 = time.perf_counter()
         first, chunks, timings = None, [], None
         reply = None
-        if spec.get("action") == "tool":
+        if spec.get("action") == "vision" and frame_b64:
+            reply = await self.vision_reply(utterance, frame_b64, spec)
+        if reply is None and spec.get("action") == "tool":
             reply = await self.tool_flow(utterance)
             if reply is None:
                 # nothing fit the manifest (or JSON failed twice): honest
@@ -580,6 +590,64 @@ class Session:
         self.gate_until = max(self.gate_until, time.monotonic() + 1.0)
         await self.update_gate()
         self.schedule_gate_release(1.0)
+
+    async def request_frame(self, timeout=3.0):
+        """Ask the client for a camera frame; returns b64 JPEG or None
+        (no camera, denied, or timeout — the honesty fallback covers all
+        three, act-then-decide: we never ask the user twice)."""
+        if not self.camera:
+            return None
+        self.frame_b64 = None
+        self._frame_evt.clear()
+        await self.send({"type": "need_frame"})
+        try:
+            await asyncio.wait_for(self._frame_evt.wait(), timeout)
+        except asyncio.TimeoutError:
+            return None
+        return self.frame_b64
+
+    async def vision_reply(self, utterance, frame_b64, spec):
+        """VLM turn through /v1/chat/completions (mtmd images only work
+        on the chat endpoint, not raw completions). The Qwen template
+        renders the same ChatML as our raw prompts, so the KV prefix of
+        system+history stays warm. Thinking is disabled per-request."""
+        msgs = [{"role": "system", "content": SYS}]
+        for hu, ha in self.history:
+            msgs += [{"role": "user", "content": hu},
+                     {"role": "assistant", "content": ha}]
+        msgs.append({"role": "user", "content": [
+            {"type": "image_url",
+             "image_url": {"url": f"data:image/jpeg;base64,{frame_b64}"}},
+            {"type": "text", "text": f"{utterance}\n({spec.get('directive')})"}]})
+
+        def gen():
+            with requests.post(f"{LLAMA}/v1/chat/completions", json={
+                    "model": "wiresense-llm", "messages": msgs,
+                    "max_tokens": spec.get("max_tokens", 96),
+                    "temperature": 0, "cache_prompt": True,
+                    "id_slot": SLOT, "stream": True,
+                    "chat_template_kwargs": {"enable_thinking": False}},
+                    stream=True, timeout=120) as r:
+                r.raise_for_status()
+                out = []
+                for line in r.iter_lines():
+                    if not line or not line.startswith(b"data: "):
+                        continue
+                    payload = line[len(b"data: "):]
+                    if payload == b"[DONE]":
+                        break
+                    j = json.loads(payload)
+                    out.append(j["choices"][0].get("delta", {}).get("content")
+                               or "")
+                return "".join(out)
+
+        try:
+            loop = asyncio.get_event_loop()
+            reply = await loop.run_in_executor(None, gen)
+            return reply.strip() or None
+        except Exception as e:
+            await self.send({"type": "error", "message": f"vision: {e}"[:120]})
+            return None
 
     async def tool_flow(self, utterance):
         """Manifest-JSON generation -> validate -> execute -> confirm.
@@ -795,6 +863,15 @@ async def handler(ws):
                     session.ctx_rate = int(m.get("ctx_rate") or 0)
                     print(f"[{peer}] browser ctx {session.ctx_rate} Hz "
                           "(16000 = no resample path)", flush=True)
+                elif m.get("type") == "camera_state":
+                    session.camera = bool(m.get("on"))
+                    print(f"[{peer}] camera {'on' if session.camera else 'off'}",
+                          flush=True)
+                elif m.get("type") == "camera_frame":
+                    b = m.get("b64")
+                    if b and len(b) < 2_000_000:  # ~1.5 MB JPEG ceiling
+                        session.frame_b64 = b
+                        session._frame_evt.set()
                 elif m.get("type") == "reset":
                     session.history.clear()
                     await session.send({"type": "reset_ok"})

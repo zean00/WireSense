@@ -29,7 +29,9 @@ FRAME = 1600  # 100 ms of 16 kHz s16le
 
 # (expected route class, utterance, checks) — monologue is not a class;
 # long unstructured speech adjudicated to the social path (19eb109).
-# checks: timer=<seconds>, reminder=<text fragment> (with due), note=<fragment>
+# checks: timer=<seconds>, reminder=<text fragment> (with due),
+# note=<fragment>, honest=True (no-frame vision), frame=True (vision with
+# synthetic camera frame; reply must mention the frame content)
 UTTERANCES = [
     ("direct", "What is the capital of France?", {}),
     ("think.long_think", "If I leave at five pm and the drive takes three hours, "
@@ -45,6 +47,7 @@ UTTERANCES = [
     ("think.tool", "Make a note that the wifi password is falcon nimbus.",
      {"note": "falcon nimbus"}),
     ("think.tool", "What's the weather in Jakarta?", {"honest": True}),
+    ("vision", "What do you see right now?", {"frame": True}),
 ]
 
 HONEST_MARKERS = ("can't", "cannot", "can not", "not able", "no camera",
@@ -73,6 +76,30 @@ def memory_items() -> list:
         return []
 
 
+def red_circle_b64() -> str:
+    """Synthetic camera frame: white background, red circle. Pure-Python
+    24-bit BMP (no PIL in the project venv); mtmd's decoder sniffs the
+    format from the bytes."""
+    import base64
+    import struct
+
+    w = h = 224
+    row = (w * 3 + 3) & ~3
+    px = bytearray()
+    for y in range(h - 1, -1, -1):  # BMP rows are bottom-up, BGR
+        for x in range(w):
+            dx, dy = x - w // 2, y - h // 2
+            if dx * dx + dy * dy <= (w // 3) ** 2:
+                px += bytes((30, 30, 200))   # red circle (BGR)
+            else:
+                px += bytes((255, 255, 255))
+    px += b"\x00" * (row * h - len(px))
+    hdr = b"BM" + struct.pack("<IHHI", 54 + len(px), 0, 0, 54)
+    dib = struct.pack("<IiiHHIIiiII", 40, w, h, 1, 24, 0, len(px),
+                      2835, 2835, 0, 0)
+    return base64.b64encode(hdr + dib + px).decode()
+
+
 async def feed(ws, pcm):
     for i in range(0, len(pcm), FRAME * 2):
         await ws.send(pcm[i:i + FRAME * 2])
@@ -83,6 +110,8 @@ async def run() -> int:
     events = []
     failures = []
     T0 = time.monotonic()
+    want_frame = [False]
+    frame_b64 = red_circle_b64()
     async with websockets.connect(WS, max_size=2 ** 22) as ws:
         await ws.send(json.dumps({"type": "hello", "ctx_rate": 16000}))
 
@@ -90,6 +119,11 @@ async def run() -> int:
             try:
                 async for raw in ws:
                     m = json.loads(raw)
+                    if m.get("type") == "need_frame":
+                        if want_frame[0]:
+                            await ws.send(json.dumps(
+                                {"type": "camera_frame", "b64": frame_b64}))
+                        continue
                     m["_arr"] = round((time.monotonic() - T0) * 1000)
                     events.append(m)
             except websockets.ConnectionClosed:
@@ -102,6 +136,9 @@ async def run() -> int:
             t_start = time.monotonic()
             print(f"\n--- expect {want}: {text!r}")
             events.clear()
+            want_frame[0] = bool(checks.get("frame"))
+            if want_frame[0]:
+                await ws.send(json.dumps({"type": "camera_state", "on": True}))
             await feed(ws, synth(text))
             # keep the line silent but OPEN until Phonon endpoints the turn;
             # wait for metrics too or every reading attributes to the
@@ -146,6 +183,14 @@ async def run() -> int:
             if checks.get("honest") and not any(m in reply.lower()
                                                 for m in HONEST_MARKERS):
                 print("  WARN: reply not recognizably honest (guard may be off)")
+            if checks.get("frame"):
+                low = reply.lower()
+                if not ("red" in low or "circle" in low):
+                    failures.append(f"{want}: frame reply does not mention the "
+                                    f"red circle: {reply[:80]!r}")
+                if "cannot see" in low or "can't see" in low:
+                    failures.append(f"{want}: frame attached but reply claims "
+                                    "blindness — frame did not reach the VLM")
             if "timer" in checks:
                 fired = [e for e in events if e.get("type") == "tool_event"
                          and e.get("tool") == "timer"
