@@ -13,6 +13,7 @@ import asyncio
 import base64
 import io
 import json
+import os
 import re
 import time
 import wave
@@ -31,6 +32,7 @@ LLAMA = "http://127.0.0.1:8998"
 PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
 MODELS = "../models"
 PORT = 8996
+MIC_CAPTURE = os.environ.get("WIRESENSE_MIC_CAPTURE", "")  # debug: save mic feed
 SR = 16000
 GATE_TAIL = 0.6      # s after playback ends before the mic path reopens
 VAD_ON = 0.5         # Silero p(speech) threshold
@@ -160,6 +162,8 @@ class Session:
         self.gate_on = False
         self.vad = SileroVAD()
         self.vad_streak = 0
+        self.ctx_rate = 0  # browser AudioContext rate; 16k = no resample path
+        self.cap = None    # debug wav of exactly what Phonon consumes
         self.preroll = deque(maxlen=PREROLL_N)  # kept while idle, flushed on wake
 
     def gate_active(self) -> bool:
@@ -307,6 +311,13 @@ async def handler(ws):
     session = Session(ws)
     peer = ws.remote_address[0] if ws.remote_address else "?"
     print(f"[connect] {peer}", flush=True)
+    if MIC_CAPTURE:
+        session.cap = wave.open(f"{MIC_CAPTURE}-{peer}.wav", "wb")
+        session.cap.setnchannels(1)
+        session.cap.setsampwidth(2)
+        session.cap.setframerate(SR)
+        print(f"[{peer}] capturing mic feed to {MIC_CAPTURE}-{peer}.wav",
+              flush=True)
     try:
         async for msg in ws:
             if isinstance(msg, bytes):
@@ -325,16 +336,27 @@ async def handler(ws):
                         continue
                     session.vad_streak = 0
                     await session.phonon_connect()
-                    for f in list(session.preroll):  # 600 ms pre-roll,
-                        await session.phonon.send(f)  # INCL. the current frame
+                    frames = list(session.preroll)
+                    for f in frames:  # 1 s pre-roll, INCL. the current frame
+                        await session.phonon.send(f)
+                    if session.cap:
+                        for f in frames:
+                            session.cap.writeframes(f)
                     session.preroll.clear()
                     print(f"[{peer}] wake p_speech_max={max(ps):.2f} "
-                          "— phonon stream open", flush=True)
+                          f"ctx={session.ctx_rate}Hz — phonon stream open",
+                          flush=True)
                     continue  # current frame already went out with the flush
                 await session.phonon.send(msg)
+                if session.cap:
+                    session.cap.writeframes(msg)
             else:
                 m = json.loads(msg)
-                if m.get("type") == "reset":
+                if m.get("type") == "hello":
+                    session.ctx_rate = int(m.get("ctx_rate") or 0)
+                    print(f"[{peer}] browser ctx {session.ctx_rate} Hz "
+                          "(16000 = no resample path)", flush=True)
+                elif m.get("type") == "reset":
                     session.history.clear()
                     await session.send({"type": "reset_ok"})
                     print(f"[{peer}] history reset", flush=True)
@@ -345,6 +367,9 @@ async def handler(ws):
                         session.schedule_gate_release(GATE_TAIL)
                     await session.update_gate()
     finally:
+        if session.cap:
+            session.cap.close()
+            session.cap = None
         if session.phonon is not None:
             await session.phonon.close()  # Phonon serves one stream at a time
             print(f"[{peer}] phonon stream closed", flush=True)

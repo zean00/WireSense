@@ -177,6 +177,8 @@ async function startMic() {
     document.getElementById("levelbar").style.width = Math.min(100, peak / 327) + "%";
   };
   src.connect(workletNode);
+  if (ws && ws.readyState === 1)
+    ws.send(JSON.stringify({type: "hello", ctx_rate: ctx.sampleRate}));
   // worklet output not routed to destination: no local echo
   listening = true;
   document.getElementById("mic").textContent = "Stop mic";
