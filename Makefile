@@ -42,6 +42,9 @@ LLAMA_BIN   := $(HOME)/.local/bin/llama-server
 # (backups: *.q8_0.npy.bak, *.instruct-nvfp4.npy.bak) — decide needs
 # self-consistent refs, originals don't survive the head. Any change to
 # serving numerics (model, context, KV type) requires re-recording refs.
+# Voice-loop budget (measured, docs in git history): prefill ~0.55 ms/tok
+# linear, warm turn 66 ms, decode ~50 tok/s; thinking ON costs ~5.7 s to
+# first content token — the voice path pre-closes thinking (EMPTY_THINK).
 LLAMA_MODEL := $(HOME)/models/unsloth-qwen35-4b-q4xl/Qwen3.5-4B-UD-Q4_K_XL.gguf
 
 # shared shell helpers
@@ -131,7 +134,7 @@ start:
 	  echo "  llama-server: starting (model load can take ~30 s)..."
 	  nohup $(LLAMA_BIN) -m $(LLAMA_MODEL) --alias wiresense-llm \
 	    --host 127.0.0.1 --port $(PORT_LLAMA) \
-	    -c 32768 -np 8 --flash-attn on -b 8192 -ub 2048 \
+	    -c 65536 -np 8 --flash-attn on -b 8192 -ub 2048 \
 	    -ctk q8_0 -ctv q8_0 \
 	    --embedding --pooling last -ngl 99 \
 	    > $(LOG_LLAMA) 2>&1 &
