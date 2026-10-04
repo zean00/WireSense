@@ -62,6 +62,46 @@ degradation (ASUS TUF A14).
    models invalidates the decide-layer embedding pin (heads are fitted on
    qwen35-4b embeddings) — that trade is a separate decision.
 
+## Outcome: escalated to hardware service
+
+The full power drain / EC reset was performed (shutdown, charger unplugged,
+power button held 30 s; boot 2026-10-04 10:50). The fault persists with the
+identical signature:
+
+- canary on the fresh boot: embeddings NaN from the first request, verdict
+  STILL FAULTY (`make canary`)
+- the independent cuBLASLt fp4 test (`torch._scaled_mm`, float4_e2m1fn_x2,
+  all-ones inputs, all-1.0 e4m3 scales) returns the same bimodal output as
+  the first faulty boot: 4096 elements at 256.0, 4096 at 0.0 (alternating
+  16-column tiles) where a healthy card returns uniform 256.0
+
+The EC reset was the last remedy addressable from the user side. A fault
+that survives it, reproduces identically across three boots, and leaves
+every other GPU datapath (memory, PCIe, fp16/bf16/int8/fp8 matmuls, other
+GGUF quants) fast and correct is failing silicon in the fp4 block-scaled
+tensor-core datapath or its power domain. Together with the mic input
+railed at DC (worse after each power event), the evidence points at
+board-level degradation → warranty service / RMA.
+
+## For the service ticket (summary)
+
+Laptop: ASUS TUF A14, RTX 5060 Laptop GPU (8 GB). Two hardware symptoms,
+both absent before 2026-10-04 and present after that morning's power-on:
+
+1. GPU computes garbage on NVFP4 (fp4 tensor-core) workloads only: all-NaN
+   embeddings and '?'-only generation from the first request after boot,
+   reproducible across three boots and after a full EC reset. Independent
+   reproducer with cuBLASLt via PyTorch returns corrupted output (zeroed
+   output tiles) for an all-ones fp4 matmul. All other GPU datapaths
+   verified correct and at full speed (VRAM fill-verify clean, fp8/fp16/
+   bf16/int8 matmuls exact, Qwen3-8B Q4_K_M at 1854 tok/s prefill /
+   49 tok/s decode). No Xid errors, no driver/software changes since the
+   last known-good boot (model file sha256-verified, two llama.cpp builds
+   affected identically, CUDA JIT cache cleared and regenerated).
+2. Internal microphone input railed at DC (~1070 mV offset after the last
+   power event, 272–624 mV before), destroying consonants in ASR; survives
+   driver-level resets and reboots.
+
 ## State at close of incident
 
 Services restored and verified end-to-end (WS replay of entry_v utterance:
