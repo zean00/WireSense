@@ -96,6 +96,45 @@ Accepted regression: 2 new root misses vs the pre-deep tree (52/56 →
 (decide→deep). Both are meta-space pulls; both would be answered well
 by the deep model at egress cost. Within the frozen ≥49/56 bar.
 
+## Revision 2 (2026-10-05, bench adjudication)
+
+The bench gate FAILED on its own terms, and exposed a design flaw in the
+gate itself. Measured (frozen 10-question set, temp 0):
+
+- local 4B open-think: **10/10**, median total 13.8 s (ttft ~88 ms,
+  first answer token after the full ~13.8 s think trace)
+- deep Qwen3.8-27B (LAN, openai-chat): **9/10** — the miss is a genuine
+  reasoning error (listed the five correct dice pairs for sum 8, then
+  wrote "6 favorable pairs" and answered 6/36 = 1/6); median total
+  5.0 s, first answer token ~4.1 s
+
+Bar was `deep >= 7/10 AND >= local`: 9 >= 7 holds, **9 >= 10 fails**.
+
+Flaw: the set is easy enough that local sits at ceiling — no model can
+beat 10/10, so the `>= local` clause is unsatisfiable in this regime
+and the bench cannot demonstrate the deep route's intended value
+(questions the 4B gets wrong). Adjudication:
+
+- the quality claim is **not made**; the frozen set stays frozen (no
+  harder "v2 set" registered now — that would be moving goalposts).
+- the router change stands on the routing gates (all passed) plus the
+  opt-in contract: with no config, deep-routed turns fall through to
+  local think — byte-identical to pre-deep behavior. The bench's role
+  is recording, not adoption; adoption is the user's config choice.
+- recommendation as measured: do not enable for this question regime —
+  local think is perfect here AND the voice UX of a ~14 s local think
+  trace vs the 27B's ~4.1 s-to-first-answer is the one measured deep
+  advantage (2.6x faster wall-clock by compressing reasoning). If a
+  regime where the 4B demonstrably fails matters, that needs a NEW
+  pre-registered harder set, its own adjudication.
+
 ## Results
 
-(adjudication numbers land in the next commit; none claimed yet)
+- routing gates (final tree, refs 132/132 self-consistent):
+  ROOT_EVAL 56/62 (frozen-56 subset 50/56 >= 49; deep held-out 6/6 >= 5)
+  THINK_EVAL 24/26 (original 19/20 >= 18; deep held-out 5/6 >= 5)
+  eval-followup PASS (>= 6/8); test-voice 11/11 unchanged
+- live spoken turn: cue -> ASR -> route deep -> 27B streamed ->
+  TTS; metrics carry {model, ttft_ms 3810.1, ms 4204, fallback false}
+- bench: local 10/10 (median 13.8 s) vs deep 9/10 (median 5.0 s);
+  bar FAILED on the `>= local` clause — see Revision 2

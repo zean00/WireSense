@@ -233,7 +233,7 @@ help:
 	@echo "  make logs      tail the service logs"
 	@echo "voice loop evals:"
 	@echo "  make record-router  re-record router refs (any serving-numerics change)"
-	@echo "  make eval-router    56 held-out root-route evals"
+	@echo "  make eval-router    62 held-out root-route evals (+26 subtree)"
 	@echo "  make eval-followup  fragment rewrite vs raw routing (frozen 8-case bar)"
 	@echo "  make tree-probe     subtree feasibility probe (think/vision nodes)"
 	@echo "  make test-voice     e2e: synthesized speech -> route/reply assertions"

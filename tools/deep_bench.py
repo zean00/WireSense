@@ -79,6 +79,7 @@ def run_local(q, prompt):
     t0 = time.perf_counter()
 
     def gen(p):
+        nonlocal first_tok, first_ans
         with requests.post(f"{LLAMA}/v1/completions", json={
                 "prompt": p, "max_tokens": MAX_TOKENS, "temperature": 0,
                 "cache_prompt": True, "id_slot": 0, "stream": True},

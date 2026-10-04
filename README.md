@@ -21,6 +21,7 @@ mic 16kHz → VAD → streaming ASR (partials) → incremental LLM prefill
 | TTS     | hexgrad/Kokoro-82M (ONNX)          | 326MB  | Apache-2.0 | sentence-chunked streaming, 24kHz |
 | Vision  | Qwen3.5-4B mmproj-F16 (unsloth GGUF) | 672MB  | Apache-2.0 | same llama-server via `--mmproj`; frame per vision turn, ~1 GiB VRAM |
 | Detect  | OmDet-Turbo-Tiny (ONNX, CPU)        | ~780MB | Apache-2.0 | open-vocab detector sidecar :8011 (`web/omdet_sidecar.py`); split enc/dec graphs + numpy top-900 selection |
+| Deep    | external provider (config)          | —      | —          | optional big-model think route (`web/deep_think.py`, `web/config.json`); openai-chat / openai-responses / anthropic dialects; off by default |
 
 **English-first** by design; other languages are a later extension (both ASR
 and TTS choices above are English-only — revisit then).
@@ -56,7 +57,8 @@ fail in some webviews.
 
 The loop routes every turn through a **decision tree** (`tools/decision_tree.json`,
 walked by `TreeWalker` in `web/server.py`): the root picks **direct / think /
-decide / social / vision**, and the think subtree splits **long_think vs tool**.
+decide / social / vision / deep**, and the think subtree splits
+**long_think vs tool vs deep**.
 Every node is the same arm-C head that powers the decide layer — head-projected
 class centroids over the slot-6 embedding of the raw utterance; subtree walks
 reuse the root's embedding (numpy only, no second embed). Both refs
@@ -67,8 +69,10 @@ punctuation-free) or the class margins collapse. Mode directives ride the
 current user turn (never the system block), so the KV prefix stays warm
 across mode switches.
 
-Held-out eval (`make eval-router`): root **52/56 = 93%**, think subtree
-**20/20**; end-to-end component accuracy tree **47/56 vs flat 35/56**
+Held-out eval (`make eval-router`): root **56/62** (frozen-56 subset
+**50/56** ≥ 49; the 6 v4 deep held-out **6/6**), think subtree **24/26**
+(original **19/20** ≥ 18, deep **5/6** ≥ 5); end-to-end component accuracy
+tree **47/56 vs flat 35/56**
 (`make tree-probe`). Per the tree-probe experiment: no confidence gating —
 cosine conf is miscalibrated as an error signal.
 
@@ -144,6 +148,46 @@ rewrite failures.
   detect tool has no router entry yet — the routing pool top-up
   (`record-router` + frozen eval re-runs) is the registered next step, not
   done silently.
+- **deep** — explicit-effort cues and open-ended meta requests ("Think this
+  through carefully", "Walk me through why the experiment failed") route to
+  the optional external provider instead of local open-think; cue+content
+  compounds ("Think hard about this math problem…") stay local — content
+  dominates the cue (measured; see **Deep think** below).
+
+## Deep think (2026-10-05)
+
+Optional big-model route for the deep class, fully config-gated in
+`web/config.json` (gitignored; `web/config.example.json` documents the
+contract). **Off by default**: with no config, deep turns fall through to
+the local think path — byte-identical pre-deep behavior.
+
+```json
+{"deep_think": {"enabled": true, "provider": "openai-chat",
+  "base_url": "http://host:8995/v1", "model": "…",
+  "api_key_env": "WIRESENSE_DEEP_KEY", "timeout_s": 120, "max_tokens": 700}}
+```
+
+`provider` is one of **openai-chat** (`/chat/completions`; doubles as the
+local-provider path — llama.cpp, vLLM, LM Studio, Ollama),
+**openai-responses** (`/responses`, system via `instructions`), or
+**anthropic** (`/v1/messages`, `x-api-key` + `anthropic-version` header).
+All three SSE dialects normalize to a (reasoning, text) stream: reasoning
+renders as `think_delta` (UI only, never spoken), text enters TTS and
+history exactly like local think. The key is read only from the env var
+named by `api_key_env` — never from disk. Any provider failure (connect,
+auth, timeout, mid-stream) falls back to the local think path, and the
+metrics event carries `deep: {model, ttft_ms, ms, fallback, error}` — a
+provider turn is never indistinguishable from a local one.
+
+Adjudicated bench (`tools/deep_bench.py`: frozen 10 numeric questions,
+regex-checked, no LLM judge): the pre-registered bar "deep ≥ 7/10 AND
+≥ local" **FAILED** — local 10/10 (median 13.8 s) vs deep 9/10 (median
+5.0 s via the remote 27B); the miss was a genuine dice-probability error
+(5/36 answered 1/6). The `≥ local` clause is a ceiling flaw in this regime
+(nothing beats 10/10), documented as protocol Rev 2 — **no quality claim is
+made**; the frozen set stays frozen. The one measured deep advantage is
+wall-clock: 2.6× faster overall, ~4.1 s to first answer vs the local think
+trace. For this question regime: keep it off.
 - **Backchannels** — during long user speech (>6 s, max 2/turn), a listening
   cue ("Uh-huh.", "And then?") is selected 1-NN from the partial's embedding
   and spoken while the user is still talking; the browser mic runs echo

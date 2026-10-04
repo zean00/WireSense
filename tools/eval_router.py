@@ -7,12 +7,12 @@ serving model:
 
     make eval-router
 
-Sections: ROOT_EVAL (56 items, root node) and THINK_EVAL (20 items,
-think subtree — long_think vs tool; the tool set itself is adjudicated
-in the e2e harness). Re-run after any pool edit or re-record. The eval
-sets are pre-registered: do not add utterances that already appear in
-the pools, and treat any change to the eval lists themselves as a
-protocol change (note it in git).
+Sections: ROOT_EVAL (62 items: the frozen 56 + 6 deep held-out added in
+the v4 deep top-up, see docs/PROTOCOL-deep-think.md Rev 1) and
+THINK_EVAL (26 items: original 20 + 6 deep). Re-run after any pool edit
+or re-record. The eval sets are pre-registered: do not add utterances
+that already appear in the pools, and treat any change to the eval
+lists themselves as a protocol change (note it in git).
 """
 import json
 import sys
