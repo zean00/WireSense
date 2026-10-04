@@ -1,6 +1,7 @@
 # wiresense service control
 #
 #   make start     launch Phonon (:8010), llama-server (:8998), web (:8996)
+#                  (starts the VRAM placement guard first — fp4 NaN fault)
 #   make stop      stop the three wiresense services (only ours; nothing else)
 #   make restart   stop + start
 #   make status    health of each service + GPU snapshot
@@ -25,6 +26,13 @@ LOG_WEB    := /tmp/wiresense_web.log
 PID_LLAMA  := /tmp/wiresense-llama.pid
 PID_PHONON := /tmp/wiresense-phonon.pid
 PID_WEB    := /tmp/wiresense-web.pid
+PID_GUARD  := /tmp/wiresense-guard.pid
+
+# VRAM placement guard — shifts llama-server allocations ~0.3 GB up to avoid
+# the fp4 NaN fault (docs/INCIDENT-2026-10-04-GPU.md)
+GUARD_GB    := 0.3
+READY_GUARD := /tmp/wiresense_guard.ready
+LOG_GUARD   := /tmp/wiresense_guard.log
 
 LLAMA_BIN   := $(HOME)/.local/bin/llama-server
 LLAMA_MODEL := $(HOME)/models/qwen35-4b-nvfp4/qwen35-4b-instruct-nvfp4.gguf
@@ -39,6 +47,16 @@ wait_up() { # name port [tries]
     sleep 1
   done
   echo "  $$name: not answering on :$$port — check its log" >&2
+  return 1
+}
+wait_ready() { # name url [tries] — wait until endpoint answers HTTP 200
+  local name=$$1 url=$$2 tries=$${3:-120} i code
+  for ((i=0; i<tries; i++)); do
+    code=$$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 "$$url" || true)
+    [ "$$code" = 200 ] && { echo "  $$name: ready"; return 0; }
+    sleep 1
+  done
+  echo "  $$name: no 200 at $$url — check its log" >&2
   return 1
 }
 find_pids() { # frag... → pids owned by us whose cmdline contains every frag
@@ -70,8 +88,10 @@ find_web() { # 'python server.py' processes whose cwd is the web/ dir
   return 0
 }
 kill_pids() { # name pids...
-  local name=$$1; shift
-  [ -z "$$1" ] && { echo "  $$name: not running"; return 0; }
+  local name=$${1:-}
+  [ "$$name" = "" ] && return 0
+  shift
+  [ "$$#" -eq 0 ] && { echo "  $$name: not running"; return 0; }
   echo "  $$name: stopping pid $$*"
   kill "$$@" 2>/dev/null || true
   local left i
@@ -101,6 +121,17 @@ start:
 	if port_up $(PORT_LLAMA); then
 	  echo "  llama-server: already up"
 	else
+	  if [ -f $(PID_GUARD) ] && kill -0 "$$(cat $(PID_GUARD))" 2>/dev/null; then
+	    echo "  vram-guard: already up (pid $$(cat $(PID_GUARD)))"
+	  else
+	    echo "  vram-guard: reserving $(GUARD_GB) GB (VRAM placement guard)..."
+	    rm -f $(READY_GUARD)
+	    nohup $(WS_ROOT)/.venv-asr/bin/python $(WS_ROOT)/tools/vram_guard.py $(GUARD_GB) $(READY_GUARD) > $(LOG_GUARD) 2>&1 &
+	    echo $$! > $(PID_GUARD)
+	    guard_ok=0
+	    for i in $$(seq 1 40); do [ -f $(READY_GUARD) ] && guard_ok=1 && break; sleep 1; done
+	    [ "$$guard_ok" = 1 ] || { echo "  vram-guard: FAILED — see $(LOG_GUARD)" >&2; exit 1; }
+	  fi
 	  echo "  llama-server: starting (model load can take ~30 s)..."
 	  nohup $(LLAMA_BIN) -m $(LLAMA_MODEL) --alias wiresense-llm \
 	    --host 127.0.0.1 --port $(PORT_LLAMA) \
@@ -108,7 +139,7 @@ start:
 	    --embedding --pooling last -ngl 99 \
 	    > $(LOG_LLAMA) 2>&1 &
 	  echo $$! > $(PID_LLAMA)
-	  wait_up llama-server $(PORT_LLAMA) 120
+	  wait_ready llama-server "http://127.0.0.1:$(PORT_LLAMA)/health" 180
 	fi
 	if port_up $(PORT_WEB); then
 	  echo "  web: already up"
@@ -126,7 +157,8 @@ stop:
 	kill_pids web    $$(find_web)
 	kill_pids phonon $$(find_pids "fermion serve phonon-2")
 	kill_pids llama  $$(find_pids "llama-server" "$(PORT_LLAMA)")
-	rm -f $(PID_LLAMA) $(PID_PHONON) $(PID_WEB)
+	kill_pids guard  $$(find_pids "tools/vram_guard.py")
+	rm -f $(PID_LLAMA) $(PID_PHONON) $(PID_WEB) $(PID_GUARD) $(READY_GUARD)
 
 restart: stop start
 
@@ -139,6 +171,11 @@ status:
 	if command -v nvidia-smi >/dev/null; then
 	  nvidia-smi --query-gpu=memory.used,memory.total,temperature.gpu,power.draw --format=csv,noheader | sed 's/^/  gpu: /'
 	fi
+	if [ -f $(PID_GUARD) ] && kill -0 "$$(cat $(PID_GUARD))" 2>/dev/null; then
+	  echo "  vram-guard: UP (pid $$(cat $(PID_GUARD)), $(GUARD_GB) GB)"
+	else
+	  echo "  vram-guard: DOWN"
+	fi
 
 canary:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/canary.py $(PORT_LLAMA)
@@ -148,8 +185,8 @@ logs:
 
 help:
 	@echo "wiresense services:"
-	@echo "  make start     launch Phonon (:$(PORT_PHONON)), llama-server (:$(PORT_LLAMA)), web (:$(PORT_WEB))"
-	@echo "  make stop      stop the three wiresense services (only ours; nothing else)"
+	@echo "  make start     launch Phonon (:$(PORT_PHONON)), llama-server (:$(PORT_LLAMA)), web (:$(PORT_WEB)) + vram-guard"
+	@echo "  make stop      stop the four wiresense services (only ours; nothing else)"
 	@echo "  make restart   stop + start"
 	@echo "  make status    health of each service + GPU snapshot"
 	@echo "  make canary    GPU fp4 health check (docs/INCIDENT-2026-10-04-GPU.md)"

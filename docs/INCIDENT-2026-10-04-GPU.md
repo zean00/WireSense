@@ -1,5 +1,12 @@
 # Incident 2026-10-04 — GPU FP4 datapath corrupts after reboot
 
+> **Revision (later the same day): the diagnosis below is corrected.** The
+> fp4 datapath is NOT dead — the fault is **VRAM-placement-dependent** and
+> only the production instruct model's weights hit it. See
+> [Revision: placement-dependent VRAM fault](#revision-2026-10-04-later-the-same-day)
+> for the differential evidence and the shipped mitigation. The RMA
+> recommendation stands; the mechanism in the ticket summary is corrected.
+
 ## Symptom
 
 The day before (Oct 3), the pinned serving stack (qwen35-4b NVFP4 on
@@ -40,6 +47,64 @@ The **FP4 (e2m1) block-scaled tensor-core datapath**:
   scaled_mm on the same card is clean.
 - Everything else on the card (memory system, PCIe, standard matmuls, other
   GGUF quants) verifies clean and fast.
+
+## Revision: 2026-10-04 later the same day
+
+**Differential test — two other NVFP4 models, same GPU / boot / binary:**
+
+| Model | Size | Result |
+|---|---|---|
+| qwen3.5-4b **base** (same arch, different weights) | 2.37 GiB | **clean** — 5/5 embeddings sane, 2/2 generations real text |
+| gemma-4-e2b-it (different arch) | 3.13 GiB | **clean** — same |
+| qwen35-4b **instruct** (production) | 2.9 GiB | NaN from first request |
+
+If the fp4 datapath were dead, all three would fail. Only the production
+model fails → the fault depends on the model file **and where its weights
+land in VRAM**.
+
+**Placement experiment (instruct model, single-GPU 8 GB, hog = a verified
+0.3 GB torch reservation made before llama-server starts):**
+
+- natural layout (no hog): NaN on every boot, every run — deterministic
+- weights shifted ~0.3 GB up (hog first): **canary clean AND full corruption
+  stress clean** — 3 passes × 227 sig embeddings + 20 generations = 0 NaN,
+  0 garbage — reproduced on two fresh server instances
+- production config (`-c 32768 -np 8`) with the same 0.3 GB guard: full
+  stress clean, slots 0–7 probed clean, decide slot 6 and conversation
+  slot 5 clean
+- an apparent failure of a +0.9 GB offset under stress was **invalid**:
+  leftover test processes changed the layout (server log showed 3688 MiB
+  free vs 6250 in the clean run) — it tested a different, ungated placement
+
+**Interpretation.** Marginal VRAM cells that fail only for specific data
+patterns at specific addresses — consistent with the synthetic memtests
+passing (zeros/ones/random fills, 4 GiB+) while real kernel workloads hit
+the weak cells. The fault survives EC reset and reproduces across boots
+whenever the weights land at the natural base address, which makes it a
+hardware fault (RMA), but a *localized* one, not a dead datapath.
+
+**The earlier `torch._scaled_mm` "bimodal tile" result is discounted as
+corroboration**: with two NVFP4 models running clean through real kernels,
+a synthetic all-ones scaled_mm showing alternating zeroed 16-column tiles
+is more plausibly a harness/layout artifact of the hand-packed blocked
+scale format than card evidence. Do not cite it to the service center.
+
+**Mitigation shipped (in the repo):**
+
+- `tools/vram_guard.py` — reserves 0.3 GB (self-verified) before
+  llama-server starts, shifting the weights off the bad placement
+- `Makefile start` — launches `vram-guard` first, waits for its ready
+  file, then llama-server; `stop`/`status` know about it
+- `make canary` + the web UI's "⚠ LLM corrupt" badge remain the detectors
+- observed once: a single NaN on the first embedding after load that then
+  never recurred (32/32 subsequent probes clean on the same instance) —
+  marginal hardware is intermittent; treat any canary failure as real
+
+**Residual risk.** The guard fixes placement relative to the guard block;
+if the desktop's baseline VRAM usage changes substantially between boots,
+the absolute addresses shift. If `?????` ever returns after a reboot:
+rerun `make canary`, and if it fails, sweep the guard size (0.3 → 0.5 →
+0.8 GB) — or accept the RMA path.
 
 ## Corroborating context
 
@@ -88,16 +153,26 @@ board-level degradation → warranty service / RMA.
 Laptop: ASUS TUF A14, RTX 5060 Laptop GPU (8 GB). Two hardware symptoms,
 both absent before 2026-10-04 and present after that morning's power-on:
 
-1. GPU computes garbage on NVFP4 (fp4 tensor-core) workloads only: all-NaN
-   embeddings and '?'-only generation from the first request after boot,
-   reproducible across three boots and after a full EC reset. Independent
-   reproducer with cuBLASLt via PyTorch returns corrupted output (zeroed
-   output tiles) for an all-ones fp4 matmul. All other GPU datapaths
-   verified correct and at full speed (VRAM fill-verify clean, fp8/fp16/
-   bf16/int8 matmuls exact, Qwen3-8B Q4_K_M at 1854 tok/s prefill /
-   49 tok/s decode). No Xid errors, no driver/software changes since the
-   last known-good boot (model file sha256-verified, two llama.cpp builds
+1. GPU computes garbage on NVFP4 (fp4 tensor-core) workloads in a
+   **VRAM-placement-dependent** way: the production model's weights produce
+   all-NaN embeddings and '?'-only generation when placed at the GPU's
+   natural base address (reproducible across three boots and after a full
+   EC reset), but run **flawlessly when the allocation base is shifted
+   ~0.3 GB** (3 × 227 embedding vectors + 20 generations, zero faults,
+   reproduced on fresh server instances). Two *other* NVFP4 models (a
+   same-architecture Qwen3.5-4B base and a Gemma-4-E2B) run clean at the
+   natural layout on the same boot — so the fp4 datapath itself executes
+   correctly; specific weight blocks at specific addresses corrupt.
+   Synthetic VRAM tests (4 GiB+ zero/one/random fill-verify) all pass,
+   which is expected for pattern-sensitive marginal cells. All other GPU
+   datapaths verified correct and at full speed (fp8/fp16/bf16/int8
+   matmuls exact, Qwen3-8B Q4_K_M at 1854 tok/s prefill / 49 tok/s
+   decode). No Xid errors, no driver/software changes since the last
+   known-good boot (model file sha256-verified, two llama.cpp builds
    affected identically, CUDA JIT cache cleared and regenerated).
+   Ask the service center to run an extended VRAM stress (e.g.
+   memtest_vulkan / video memory stress test with varied patterns), not
+   just a standard fill test.
 2. Internal microphone input railed at DC (~1070 mV offset after the last
    power event, 272–624 mV before), destroying consonants in ASR; survives
    driver-level resets and reboots.
@@ -109,3 +184,10 @@ ASR final "What's the weather looking like tomorrow morning?", TTS audio,
 metrics flow; llm ttft 386 ms, prefill 261 tok/s, decode 69.5 tok/s):
 llama-server :8998 (pinned entry-U/V flags, slots 0–7), Phonon :8010, web
 :8996. The LLM text output is `????…` until the hardware issue is resolved.
+
+**Superseded by the revision above**: as of the same day's final state,
+the vram-guard mitigation is integrated into `make start` and the full
+stack (including the production NVFP4 model on GPU) is verified clean —
+full corruption stress 0/681 NaN embeddings, 0/20 garbage generations,
+slots 0–7 and the decide layer verified. Text output is real again; the
+hardware fault itself remains and is pending warranty service.
