@@ -1,6 +1,6 @@
 {
- "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py — re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating — cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
- "version": 3,
+ "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py \u2014 re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating \u2014 cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
+ "version": 4,
  "nodes": {
   "root": {
    "classes": {
@@ -29,6 +29,15 @@
      "max_tokens": 96,
      "directive": "You can see the attached camera frame. Answer the user's question about what you see, briefly.",
      "fallback_directive": "You currently have no camera access. If asked about something visual, say honestly that you cannot see it yet."
+    },
+    "deep": {
+     "action": "llm",
+     "deep": true,
+     "think": true,
+     "filler": true,
+     "max_tokens": 700,
+     "feedback": "think",
+     "directive": "Think this through carefully and give a thorough, correct answer."
     }
    },
    "pools": {
@@ -61,11 +70,9 @@
      "Set a timer for 10 minutes.",
      "How many seconds are there in a leap year?",
      "Write a short story about a dragon.",
-     "Walk me through why the experiment failed.",
      "Explain the difference between HTTP and HTTPS.",
      "What's the square root of 1764?",
      "Set an alarm for six tomorrow morning.",
-     "Summarize this article for me.",
      "If a train travels 60 kilometers per hour for 90 minutes, how far does it go?",
      "Search for flights to Denver next week.",
      "Draft an email to my landlord about the leak.",
@@ -77,7 +84,6 @@
      "Make a note that my gate is B22.",
      "Note down that the meeting moved to three.",
      "Remember that I parked on level two.",
-     "Turn this paragraph into bullet points.",
      "Convert the measurements in this recipe to grams."
     ],
     "decide": [
@@ -95,7 +101,9 @@
      "What's the best option here?",
      "Is it smarter to fix the car or sell it?",
      "Where should we go for vacation?",
-     "Do you recommend the blue one or the black one?"
+     "Do you recommend the blue one or the black one?",
+     "Should I drive or take the train to the conference?",
+     "Should I rent a car or use transit on my trip?"
     ],
     "social": [
      "I had such a long day at work.",
@@ -130,6 +138,19 @@
      "How is my posture in this video call?",
      "Can you identify this bird outside my window?",
      "Is there anything stuck between my teeth?"
+    ],
+    "deep": [
+     "Think hard about this and give me the best answer.",
+     "Think long and hard before you answer this one.",
+     "Work through this step by step and double check yourself.",
+     "This one is hard, so think it through completely.",
+     "Think really hard about this before you reply.",
+     "Reason carefully about whether my argument is correct.",
+     "Put real thought into this answer, don't rush it.",
+     "Use your deepest thinking mode on this one.",
+     "Walk me through why the experiment failed.",
+     "Summarize this article for me.",
+     "Turn this paragraph into bullet points."
     ]
    }
   },
@@ -144,6 +165,15 @@
     "tool": {
      "action": "tool",
      "feedback": "tool"
+    },
+    "deep": {
+     "action": "llm",
+     "deep": true,
+     "think": true,
+     "filler": true,
+     "max_tokens": 700,
+     "feedback": "think",
+     "directive": "Think this through carefully and give a thorough, correct answer."
     }
    },
    "pools": {
@@ -154,7 +184,6 @@
      "Explain the difference between HTTP and HTTPS.",
      "Work out the monthly payment on a 20 thousand dollar loan.",
      "Draft an email to my landlord about the leak.",
-     "Summarize this article for me.",
      "How much paint do I need for a 12 by 15 foot room?",
      "Compare renting versus buying a house.",
      "Count the vowels in the word extraordinary.",
@@ -176,6 +205,16 @@
      "Make a note that my gate is B22.",
      "Write down that the meeting is at three.",
      "Keep a note that I lent Mark twenty bucks."
+    ],
+    "deep": [
+     "Think hard about this math problem and work out the exact answer.",
+     "Take your time and reason through this puzzle carefully.",
+     "Think really hard and double check the numbers before you answer.",
+     "Use your deepest thinking mode on this puzzle for me.",
+     "Slow down and think this problem through with me, carefully.",
+     "Think long and hard about how I should structure this plan.",
+     "Reason carefully through my hard question, step by step.",
+     "Give this your full attention and think it through completely."
     ]
    }
   }

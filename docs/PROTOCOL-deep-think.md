@@ -67,6 +67,35 @@ CPU-only (VRAM is full; RAM has headroom) via the `openai-chat` dialect —
 the same wire path a cloud provider uses. Record both scores and
 TTFT/total ms per side; adjudicate on the numbers, not the vibes.
 
+## Revision 1 (2026-10-05, during adjudication — documented, not silent)
+
+The first pool iteration exposed a placement flaw: pure effort cues
+never reach the think subtree at root (measured: "Think hard about
+this..." root-routes to vision, "Take your time..." to social), so the
+subtree-only class was unreachable for cue-only phrasings — and the
+per-node self-consistency gate cannot see root-level reachability.
+
+Measured geometry (slot-6 embeddings, head-projected): open-ended
+meta-requests ("Summarize this article for me", "Turn this paragraph
+into bullet points") share the effort-cue direction, not the content-task
+direction — enriching root.think with meta-task refs pulled the NEW refs
+to deep too. Revision:
+
+- root gains a `deep` class: pure effort cues (8 refs) + the three
+  meta-task refs reclassified from root.think. Deep's semantic is now
+  "explicit effort cues and open-ended meta-requests" — the 27B serves
+  that family genuinely better; the egress cost is accepted and recorded.
+- think subtree `deep` reworked to cue+content compounds (8 refs) for
+  turns that root-route to think with an explicit cue attached.
+- ROOT_EVAL +6 deep items (drafted before any root-deep scoring
+  existed); THINK_EVAL +6 as pre-registered in the original protocol.
+
+Accepted regression: 2 new root misses vs the pre-deep tree (52/56 →
+51/56 on the frozen 56): "Turn this recipe into a shopping list."
+(think→deep) and "Which of these two resumes is stronger?"
+(decide→deep). Both are meta-space pulls; both would be answered well
+by the deep model at egress cost. Within the frozen ≥49/56 bar.
+
 ## Results
 
-(filled at adjudication; none exist yet)
+(adjudication numbers land in the next commit; none claimed yet)

@@ -88,6 +88,14 @@ EVAL = [
     ("Am I holding the wrench the right way?", "vision"),
     ("Is the picture hanging straight behind me?", "vision"),
     ("What does the error on my screen say?", "vision"),
+    # deep (v4 root class; protocol Rev 1 — added before any root-deep
+    # scoring existed)
+    ("Think this over carefully before you answer me.", "deep"),
+    ("Give this hard question your best thinking.", "deep"),
+    ("Take your time and really work this one out.", "deep"),
+    ("Use your sharpest reasoning on this one.", "deep"),
+    ("Think it through fully, then answer me.", "deep"),
+    ("Ponder this carefully and give me a considered answer.", "deep"),
 ]
 
 # think subtree (long_think vs tool) — disjoint from all pools
@@ -112,6 +120,13 @@ THINK_EVAL = [
         ("Remind me about the dentist on Friday.", "tool"),
         ("Order a taxi to the airport.", "tool"),
         ("Start a 5 minute plank timer.", "tool"),
+        # deep (v4 pool top-up; protocol: docs/PROTOCOL-deep-think.md)
+    ("Think hard about whether my proof holds water.", "deep"),
+    ("Take your time with this puzzle and solve it properly.", "deep"),
+    ("Deep think how we could double our revenue this year.", "deep"),
+    ("This is a hard one, think it through fully before answering.", "deep"),
+    ("Reason through the physics of why planes fly, carefully.", "deep"),
+    ("Use your deepest thinking on this math problem.", "deep"),
     ]
 
 
