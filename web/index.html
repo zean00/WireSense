@@ -167,6 +167,9 @@ function renderMetrics(m) {
   row("ttft", m.llm.ttft_ms != null ? m.llm.ttft_ms + " ms" : null);
   row("prefill", m.llm.prefill_tps ? `${m.llm.prompt_n} tok in ${m.llm.prompt_ms} ms — ${m.llm.prefill_tps} tok/s` : null);
   row("decode", m.llm.decode_tps ? `${m.llm.predicted_n} tok in ${m.llm.predicted_ms} ms — ${m.llm.decode_tps} tok/s` : null);
+  if (m.llm.corrupt)
+    g.insertAdjacentHTML("beforeend",
+      `<span class="badge bad" style="grid-column:1/3">⚠ LLM output corrupt — GPU fp4 fault (make canary)</span>`);
   sec("tts + end-to-end");
   row("final → first audio", m.tts.first_ms != null ? m.tts.first_ms + " ms" : null);
   row("synthesis total", m.tts.total_ms + " ms · " + m.tts.sentences + " sentence(s)");
@@ -176,15 +179,26 @@ function renderMetrics(m) {
   row("voice → voice", v2v);
   if (lastTurnEl) {
     const bits = [];
+    if (m.llm.corrupt) bits.push("⚠ LLM corrupt");
     if (m.asr.wake_to_final_ms != null) bits.push(`asr ${Math.round(m.asr.wake_to_final_ms)}ms`);
     if (m.llm.ttft_ms != null) bits.push(`ttft ${Math.round(m.llm.ttft_ms)}ms`);
     if (m.llm.decode_tps) bits.push(`${m.llm.decode_tps} tok/s`);
     if (m.tts.first_ms != null) bits.push(`tts ${Math.round(m.tts.first_ms)}ms`);
-    if (bits.length) lastTurnEl.insertAdjacentHTML("beforeend",
-      `<div class="mm">${bits.join(" · ")}</div>`);
+    if (bits.length) {
+      // renderMetrics runs twice per turn (on metrics, then again once
+      // playback latency resolves) — update the turn's chip, don't append
+      if (turnChip && turnChip.turn === lastTurnEl && turnChip.el.isConnected)
+        turnChip.el.textContent = bits.join(" · ");
+      else {
+        const d = document.createElement("div");
+        d.className = "mm"; d.textContent = bits.join(" · ");
+        lastTurnEl.appendChild(d);
+        turnChip = {turn: lastTurnEl, el: d};
+      }
+    }
   }
 }
-let lastMetrics = null, playLatMs = null, firstChunkOfTurn = true, chunkRx = 0;
+let lastMetrics = null, playLatMs = null, firstChunkOfTurn = true, chunkRx = 0, turnChip = null;
 
 // --- sequential playback ---
 let audioEl = null, playbackSent = false;

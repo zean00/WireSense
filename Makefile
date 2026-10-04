@@ -95,7 +95,7 @@ start:
 	  echo "  phonon: already up"
 	else
 	  echo "  phonon: starting..."
-	  ( cd $(WS_ROOT) && nohup .venv-asr/bin/fermion serve phonon-2 --port $(PORT_PHONON) > $(LOG_PHONON) 2>&1 & echo $$! > $(PID_PHONON) )
+	  ( cd $(WS_ROOT) ; nohup .venv-asr/bin/fermion serve phonon-2 --port $(PORT_PHONON) > $(LOG_PHONON) 2>&1 & echo $$! > $(PID_PHONON) )
 	  wait_up phonon $(PORT_PHONON) 90
 	fi
 	if port_up $(PORT_LLAMA); then
@@ -115,7 +115,7 @@ start:
 	else
 	  echo "  web: starting..."
 	  mkdir -p /tmp/wiresense_mic
-	  ( cd $(WS_ROOT)/web && WIRESENSE_MIC_CAPTURE=/tmp/wiresense_mic nohup $(WS_ROOT)/.venv/bin/python server.py > $(LOG_WEB) 2>&1 & echo $$! > $(PID_WEB) )
+	  ( cd $(WS_ROOT)/web ; WIRESENSE_MIC_CAPTURE=/tmp/wiresense_mic nohup $(WS_ROOT)/.venv/bin/python server.py > $(LOG_WEB) 2>&1 & echo $$! > $(PID_WEB) )
 	  wait_up web $(PORT_WEB) 30
 	fi
 	echo "all services up — web UI: http://127.0.0.1:$(PORT_WEB)"

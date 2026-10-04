@@ -293,11 +293,14 @@ class Session:
             self.schedule_gate_release(GATE_TAIL)
             return
         reply = "".join(chunks).strip()
+        # fp4-fault signature: output is essentially all '?' (see
+        # docs/INCIDENT-2026-10-04-GPU.md) — surfaced to the UI, never fatal
+        corrupt = len(reply) >= 8 and reply.count("?") >= 0.9 * len(reply)
         await self.send({"type": "response_done", "text": reply})
         await self.tts(reply)
         self.history.append((utterance, reply))
         self.speaking = False
-        await self.send_metrics(timings, round(first, 1) if first else None)
+        await self.send_metrics(timings, round(first, 1) if first else None, corrupt)
         # gate does NOT open here: the browser reports actual playback end
         # (playback_state) — much later than synthesis on long replies.
         # The floor covers the race before the first playing:true arrives.
@@ -330,7 +333,7 @@ class Session:
             seq += 1
         await self.send({"type": "tts_done"})
 
-    async def send_metrics(self, timings, ttft_ms):
+    async def send_metrics(self, timings, ttft_ms, corrupt=False):
         ds = self.decide_stats
         llm = {}
         if timings:
@@ -359,7 +362,7 @@ class Session:
                 "max_ms": round(max(d["head_ms"] + d["emb_ms"] for d in ds), 1)
                           if ds else None,
             },
-            "llm": {"ttft_ms": ttft_ms, **llm},
+            "llm": {"ttft_ms": ttft_ms, "corrupt": corrupt, **llm},
             "tts": {"first_ms": self.tts_first_ms,
                     "total_ms": round(self.tts_total_ms, 1),
                     "sentences": self.tts_n},
