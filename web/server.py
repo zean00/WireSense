@@ -26,11 +26,13 @@ import requests
 import websockets
 from websockets.asyncio.server import serve
 from websockets.exceptions import ConnectionClosed
+from PIL import Image
 
 from kokoro_onnx import Kokoro
 
 LLAMA = "http://127.0.0.1:8998"
 PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
+OMDET = "http://127.0.0.1:8011"
 MODELS = "../models"
 TOOLS = "../tools"
 PORT = 8996
@@ -64,6 +66,7 @@ TOOL_MANIFEST = {
     "timer": "start a countdown; args: seconds (int 1-86400), label (optional short string)",
     "reminder": "save a reminder; args: when (short phrase, e.g. 'in 10 minutes' or 'Friday 9am'), text (what to remind)",
     "note": "save a note for later; args: text (the note)",
+    "detect": "look through the camera and say which listed objects are visible; args: labels (array of 1-12 short object names, e.g. [\"person\", \"coffee mug\"])",
 }
 MEMORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            "memory.json")
@@ -125,6 +128,17 @@ def validate_tool(name, args) -> dict:
         if not text:
             raise ValueError("note needs text")
         return {"text": text[:500]}
+    if name == "detect":
+        raw = args.get("labels")
+        if not isinstance(raw, list):
+            raise ValueError("detect needs labels (array of object names)")
+        labels = [str(x).strip().lower()[:40] for x in raw if str(x).strip()]
+        if not 1 <= len(labels) <= 12:
+            raise ValueError("detect needs 1-12 labels")
+        # dedupe, keep order (the sidecar task prompt is built from these)
+        seen = set()
+        labels = [x for x in labels if not (x in seen or seen.add(x))]
+        return {"labels": labels}
     raise ValueError(f"unknown tool {name}")
 
 
@@ -455,6 +469,7 @@ class Session:
         # camera_state, answers need_frame with camera_frame (b64 JPEG)
         self.camera = False
         self.frame_b64 = None
+        self.detect_last = None  # last detect tool result (labels/dets/ms)
         self._frame_evt = asyncio.Event()
 
     def gate_active(self) -> bool:
@@ -910,7 +925,41 @@ class Session:
             append_memory({"type": "note", "text": args["text"],
                            "created": _now()})
             return f"note saved: {args['text']}"
+        if name == "detect":
+            return await self.run_detect(args["labels"])
         raise ValueError(name)  # validate_tool guards every caller
+
+    async def run_detect(self, labels):
+        """Grab a frame and ask the omdet sidecar (:8011). Returns a short
+        spoken-ready summary; the full detection list lands in the tool_call
+        event via DETECT_LAST (per-session, for the UI/debug path)."""
+        frame = await self.request_frame()
+        if frame is None:
+            return "camera unavailable: I can't look right now"
+
+        def run():
+            im = Image.open(io.BytesIO(base64.b64decode(frame)))
+            w, h = im.size
+            r = requests.post(f"{OMDET}/detect", json={
+                "frame": frame, "width": w, "height": h,
+                "labels": labels}, timeout=20)
+            r.raise_for_status()
+            return r.json()
+
+        try:
+            loop = asyncio.get_event_loop()
+            out = await loop.run_in_executor(None, run)
+        except Exception as e:
+            return f"detector unavailable: {type(e).__name__}"
+        dets = out.get("detections", [])
+        self.detect_last = {"labels": labels, "detections": dets,
+                            "ms": out.get("ms")}
+        if not dets:
+            return (f"none of those visible (looked for: {', '.join(labels)})")
+        parts = [f"{d['label']} {int(round(d['conf'] * 100))}%"
+                 for d in dets[:5]]
+        more = f" (+{len(dets) - 5} more)" if len(dets) > 5 else ""
+        return "I see: " + ", ".join(parts) + more
 
     async def tts(self, text, guard_turn=None):
         sents = [s for s in SENT_SPLIT.split(text) if s.strip()] or [text]

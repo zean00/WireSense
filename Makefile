@@ -1,11 +1,12 @@
 # wiresense service control
 #
-#   make start     launch Phonon (:8010), llama-server (:8998), web (:8996)
-#   make stop      stop the three wiresense services (only ours; nothing else)
+#   make start     launch Phonon (:8010), llama-server (:8998), web (:8996),
+#                  omdet detector sidecar (:8011)
+#   make stop      stop the wiresense services (only ours; nothing else)
 #   make restart   stop + start
 #   make status    health of each service + GPU snapshot
 #   make canary    GPU fp4 health check (docs/INCIDENT-2026-10-04-GPU.md)
-#   make logs      tail the three service logs
+#   make logs      tail the service logs
 #   make help      this list (default)
 
 SHELL := /bin/bash
@@ -17,15 +18,18 @@ WS_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 PORT_PHONON := 8010
 PORT_LLAMA  := 8998
 PORT_WEB    := 8996
+PORT_OMDET  := 8011
 
 LOG_LLAMA  := /tmp/llama_server_8998.log
 LOG_PHONON := /tmp/phonon_8010.log
 LOG_WEB    := /tmp/wiresense_web.log
+LOG_OMDET  := /tmp/omdet_8011.log
 
 PID_LLAMA  := /tmp/wiresense-llama.pid
 PID_PHONON := /tmp/wiresense-phonon.pid
 PID_WEB    := /tmp/wiresense-web.pid
 PID_GUARD  := /tmp/wiresense-guard.pid
+PID_OMDET  := /tmp/wiresense-omdet.pid
 
 # VRAM placement guard — shifts llama-server allocations ~0.3 GB up to avoid
 # the fp4 NaN fault (docs/INCIDENT-2026-10-04-GPU.md)
@@ -117,7 +121,7 @@ kill_pids() { # name pids...
 }
 endef
 
-.PHONY: start stop restart status canary logs record-router eval-router eval-followup tree-probe test-voice help
+.PHONY: start stop restart status canary logs detector test-omdet record-router eval-router eval-followup tree-probe test-voice help
 
 start:
 	@$(HELPERS)
@@ -152,22 +156,38 @@ start:
 	  ( cd $(WS_ROOT)/web ; WIRESENSE_MIC_CAPTURE=/tmp/wiresense_mic nohup $(WS_ROOT)/.venv/bin/python server.py > $(LOG_WEB) 2>&1 & echo $$! > $(PID_WEB) )
 	  wait_up web $(PORT_WEB) 30
 	fi
+	$(MAKE) detector
 	echo "all services up — web UI: http://127.0.0.1:$(PORT_WEB)"
 
 stop:
 	@$(HELPERS)
 	echo "stopping wiresense services..."
-	kill_pids web    $$(find_web)
-	kill_pids phonon $$(find_pids "fermion serve phonon-2")
-	kill_pids llama  $$(find_pids "llama-server" "$(PORT_LLAMA)")
-	kill_pids guard  $$(find_pids "tools/vram_guard.py")
-	rm -f $(PID_LLAMA) $(PID_PHONON) $(PID_WEB) $(PID_GUARD) $(READY_GUARD)
+	kill_pids web      $$(find_web)
+	kill_pids phonon   $$(find_pids "fermion serve phonon-2")
+	kill_pids llama    $$(find_pids "llama-server" "$(PORT_LLAMA)")
+	kill_pids guard    $$(find_pids "tools/vram_guard.py")
+	kill_pids detector $$(find_pids "omdet_sidecar.py")
+	rm -f $(PID_LLAMA) $(PID_PHONON) $(PID_WEB) $(PID_GUARD) $(PID_OMDET) $(READY_GUARD)
 
 restart: stop start
 
+detector:
+	@$(HELPERS)
+	if port_up $(PORT_OMDET); then
+	  echo "  detector: already up"
+	else
+	  if [ ! -f "$(WS_ROOT)/models/omdet/detector_enc_640.onnx" ]; then
+	    echo "  detector: models/omdet/*.onnx missing — export first (omdet workspace export_onnx_cpu.py)" >&2
+	    exit 1
+	  fi
+	  echo "  detector: starting..."
+	  ( cd $(WS_ROOT)/web ; nohup $(WS_ROOT)/.venv/bin/python omdet_sidecar.py > $(LOG_OMDET) 2>&1 & echo $$! > $(PID_OMDET) )
+	  wait_up detector $(PORT_OMDET) 120
+	fi
+
 status:
 	@$(HELPERS)
-	for spec in "phonon:$(PORT_PHONON)" "llama-server:$(PORT_LLAMA)" "web:$(PORT_WEB)"; do
+	for spec in "phonon:$(PORT_PHONON)" "llama-server:$(PORT_LLAMA)" "web:$(PORT_WEB)" "detector:$(PORT_OMDET)"; do
 	  name=$${spec%%:*}; port=$${spec##*:}
 	  if port_up $$port; then echo "  $$name: UP   (127.0.0.1:$$port)"; else echo "  $$name: DOWN (127.0.0.1:$$port)"; fi
 	done
@@ -193,20 +213,25 @@ tree-probe:
 test-voice:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_voice.py
 
+test-omdet:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_omdet.py
+
 logs:
-	@tail -n 25 -F $(LOG_LLAMA) $(LOG_PHONON) $(LOG_WEB)
+	@tail -n 25 -F $(LOG_LLAMA) $(LOG_PHONON) $(LOG_WEB) $(LOG_OMDET)
 
 help:
 	@echo "wiresense services:"
-	@echo "  make start     launch Phonon (:$(PORT_PHONON)), llama-server (:$(PORT_LLAMA)), web (:$(PORT_WEB))"
-	@echo "  make stop      stop the three wiresense services (only ours; nothing else)"
+	@echo "  make start     launch Phonon (:$(PORT_PHONON)), llama-server (:$(PORT_LLAMA)), web (:$(PORT_WEB)), detector (:$(PORT_OMDET))"
+	@echo "  make detector  start/verify the omdet detector sidecar only"
+	@echo "  make stop      stop the wiresense services (only ours; nothing else)"
 	@echo "  make restart   stop + start"
 	@echo "  make status    health of each service + GPU snapshot"
 	@echo "  make canary    GPU fp4 health check (docs/INCIDENT-2026-10-04-GPU.md)"
-	@echo "  make logs      tail the three service logs"
+	@echo "  make logs      tail the service logs"
 	@echo "voice loop evals:"
 	@echo "  make record-router  re-record router refs (any serving-numerics change)"
 	@echo "  make eval-router    56 held-out root-route evals"
 	@echo "  make eval-followup  fragment rewrite vs raw routing (frozen 8-case bar)"
 	@echo "  make tree-probe     subtree feasibility probe (think/vision nodes)"
 	@echo "  make test-voice     e2e: synthesized speech -> route/reply assertions"
+	@echo "  make test-omdet     detector sidecar: health + latency budget"

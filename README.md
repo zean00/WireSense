@@ -20,6 +20,7 @@ mic 16kHz → VAD → streaming ASR (partials) → incremental LLM prefill
 | ASR     | FermionResearch/Phonon-2           | 164MB  | CC-BY-4.0  | streaming WS `partial` = whole-hypothesis replacement; 16kHz mono PCM |
 | TTS     | hexgrad/Kokoro-82M (ONNX)          | 326MB  | Apache-2.0 | sentence-chunked streaming, 24kHz |
 | Vision  | Qwen3.5-4B mmproj-F16 (unsloth GGUF) | 672MB  | Apache-2.0 | same llama-server via `--mmproj`; frame per vision turn, ~1 GiB VRAM |
+| Detect  | OmDet-Turbo-Tiny (ONNX, CPU)        | ~780MB | Apache-2.0 | open-vocab detector sidecar :8011 (`web/omdet_sidecar.py`); split enc/dec graphs + numpy top-900 selection |
 
 **English-first** by design; other languages are a later extension (both ASR
 and TTS choices above are English-only — revisit then).
@@ -96,7 +97,7 @@ rewrite failures.
   (`</think>` appended to the trace) and reads the answer off the warm slot
   cache — a ~4-token prefill.
 - **think.tool** — tool filler ("Let me do that for you."), then the tool
-  flow: the LLM picks from a V1 manifest (timer / reminder / note) as
+  flow: the LLM picks from a V1 manifest (timer / reminder / note / detect) as
   manifest-JSON, args are validated and executed (timer → client `tool_event`
   beep + toast; reminder/note → `web/memory.json`, relative-time reminders
   fire back through `tool_event`), and a confirmation sentence is generated.
@@ -119,6 +120,30 @@ rewrite failures.
   crash >4B Qwen3.5 VL). mmproj-F16 (672 MB) + vision activations fit beside
   the 64K footprint (~760 MiB VRAM still free); text numerics verified
   bit-identical (eval-router 52/56 + 20/20 on unchanged refs).
+- **detect tool** — fast open-vocab looking, separate from the VLM path.
+  `OmDet-Turbo-Tiny` runs as a CPU sidecar (:8011, stdlib HTTP +
+  onnxruntime, `web/omdet_sidecar.py`): JPEG frame in → detections (label,
+  conf, original-pixel box) out, p50 467 ms / p95 653 ms, 2.08 FPS sustained
+  (Ryzen AI 7 350, 8 ORT threads; targets pre-registered in
+  `tools/test_omdet.py` — `make test-omdet`). The tool manifest gains
+  `detect` (labels array, 1-12); on a hit the server grabs a frame through
+  the same `need_frame` → `camera_frame` round trip and speaks a summary
+  ("I see: person 89%, clock 79%"). RTX 5060 has no free VRAM and the
+  Radeon 860M has no Linux inference stack, so CPU ONNX Runtime is the
+  deployment; onnx-vulkan-rs (iGPU) stays a parked future option.
+  Numerics: the stock forward's ONNX export diverges (box_pred ~5e-01) —
+  bisected to the in-graph top-900 query selection, where ~1e-6 ORT-vs-torch
+  score noise re-ranks the selection cutoff and the decoder amplifies the
+  flip. The export (`omdet` workspace, `export_onnx_cpu.py`) therefore
+  splits at the selection: encoder + decoder graphs (every stage ≤1.4e-04
+  vs torch, verified with real image + real text), selection in numpy
+  (deterministic, matches torch topk 900/900 on identical scores), and
+  end-to-end detection parity vs the reference DetEngine — exact counts and
+  every detection matched (IoU ≥ 0.9, |Δconf| ≤ 0.05) on all cases.
+  Routing note: detect phrasings currently route **vision** (VLM), so the
+  detect tool has no router entry yet — the routing pool top-up
+  (`record-router` + frozen eval re-runs) is the registered next step, not
+  done silently.
 - **Backchannels** — during long user speech (>6 s, max 2/turn), a listening
   cue ("Uh-huh.", "And then?") is selected 1-NN from the partial's embedding
   and spoken while the user is still talking; the browser mic runs echo
