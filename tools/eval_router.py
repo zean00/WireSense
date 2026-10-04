@@ -1,4 +1,5 @@
-"""Held-out eval for the agentic router (tools/router_pools.json).
+"""Held-out eval for the root node of the agentic decision tree
+(tools/decision_tree.json).
 
 Protocol: 56 utterances disjoint from the signature pools, embedded via
 the production path (norm_router_text -> slot 6 -> head -> centroids),
@@ -18,7 +19,7 @@ import numpy as np
 import requests
 
 LLAMA = "http://127.0.0.1:8998"
-POOLS = "tools/router_pools.json"
+TREE = "tools/decision_tree.json"
 REFS = "models/router_embeddings.npz"
 HEADS = "models/arm_C_heads.npz"
 
@@ -109,7 +110,7 @@ def emb(text):
 
 
 def main():
-    pools = json.load(open(POOLS))
+    tree = json.load(open(TREE))
     z = np.load(REFS)
     h = np.load(HEADS)
 
@@ -123,13 +124,14 @@ def main():
     def norm(x):
         return x / np.linalg.norm(x, axis=-1, keepdims=True)
 
-    classes = list(pools["router"])
-    cents = norm(np.stack([norm(project(z[f"router.{c}"])).mean(0) for c in classes]))
+    root = tree["nodes"]["root"]
+    classes = list(root["classes"])
+    cents = norm(np.stack([norm(project(z[f"root.{c}"])).mean(0) for c in classes]))
 
     # protocol guard: no eval utterance may appear in a pool
     pool_texts = {norm_router_text(t)
-                  for grp in ("router", "feedback") for ts in pools[grp].values()
-                  for t in ts}
+                  for node in tree["nodes"].values()
+                  for ts in node["pools"].values() for t in ts}
     clash = [t for t, _ in EVAL if norm_router_text(t) in pool_texts]
     if clash:
         print(f"PROTOCOL VIOLATION — eval utterances also in pools: {clash}")

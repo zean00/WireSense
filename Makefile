@@ -116,7 +116,7 @@ kill_pids() { # name pids...
 }
 endef
 
-.PHONY: start stop restart status canary logs help
+.PHONY: start stop restart status canary logs record-router eval-router tree-probe test-voice help
 
 start:
 	@$(HELPERS)
@@ -184,6 +184,9 @@ eval-router:
 tree-probe:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/tree_probe.py
 
+test-voice:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_voice.py
+
 logs:
 	@tail -n 25 -F $(LOG_LLAMA) $(LOG_PHONON) $(LOG_WEB)
 
@@ -195,3 +198,8 @@ help:
 	@echo "  make status    health of each service + GPU snapshot"
 	@echo "  make canary    GPU fp4 health check (docs/INCIDENT-2026-10-04-GPU.md)"
 	@echo "  make logs      tail the three service logs"
+	@echo "voice loop evals:"
+	@echo "  make record-router  re-record router refs (any serving-numerics change)"
+	@echo "  make eval-router    56 held-out root-route evals"
+	@echo "  make tree-probe     subtree feasibility probe (think/vision nodes)"
+	@echo "  make test-voice     e2e: synthesized speech -> route/reply assertions"

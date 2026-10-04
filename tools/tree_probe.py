@@ -6,7 +6,7 @@ long thinking, a tool call, or a specific visual service?
 
 Protocol (pre-registered in this file):
 - Root node reuses tools/eval_router.py's 56 held-out utterances and the
-  committed router refs (router_pools.json + router_embeddings.npz).
+  committed refs (decision_tree.json pools + router_embeddings.npz).
 - Two simulated subtree nodes get their own pools + held-out evals here:
   think -> {long_think, tool}, vision -> {vqa, object, face_id,
   face_track, expression}. Pools are ASR-normalized like production.
@@ -30,11 +30,12 @@ sys.path.insert(0, "tools")
 from eval_router import EVAL as ROOT_EVAL, norm_router_text  # noqa: E402
 
 LLAMA = "http://127.0.0.1:8998"
-POOLS = "tools/router_pools.json"
+TREE_CFG = "tools/decision_tree.json"
 REFS = "models/router_embeddings.npz"
 HEADS = "models/arm_C_heads.npz"
 
-# --- subtree pools (pre-registered; NOT in production router_pools.json) ---
+# --- subtree pools (pre-registered; not yet in decision_tree.json —
+# they land there with their own refs in the think/vision phases) ---
 THINK_POOLS = {
     "long_think": [
         "Plan a three-day trip to Tokyo.",
@@ -237,7 +238,8 @@ def main():
         return norm_rows(head.project(x))
 
     # ---- embed every pool + eval text once (slot 6) ----
-    pools_root = json.load(open(POOLS))
+    tree = json.load(open(TREE_CFG))
+    root_pools = tree["nodes"]["root"]["pools"]
     uniq, pool_norm = {}, set()
 
     def keep(t, is_pool=False):
@@ -245,7 +247,7 @@ def main():
         if is_pool:
             pool_norm.add(norm_router_text(t))
 
-    for ts in pools_root["router"].values():
+    for ts in root_pools.values():
         for t in ts:
             keep(t, is_pool=True)
     for node_pools in TREE.values():
@@ -268,8 +270,8 @@ def main():
     # ---- build the tree ----
     z = np.load(REFS)
     nodes = {}
-    nodes["root"] = build_node("root", pools_root["router"],
-                               [z[f"router.{c}"] for c in pools_root["router"]],
+    nodes["root"] = build_node("root", root_pools,
+                               [z[f"root.{c}"] for c in root_pools],
                                project)
     for node_name, node_pools in TREE.items():
         if not node_pools:

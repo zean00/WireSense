@@ -43,30 +43,21 @@ SYS = "You are wiresense, a concise voice assistant. Answer in one or two short 
 EMPTY_THINK = "<|im_start|>assistant\n<think>\n\n</think>\n\n"
 SLOT = 5  # dedicated llama slot for the web assistant (0-4 free for other work)
 
-# Agentic routing (tools/router_pools.json): 3-way router at final —
-# direct / think / decide, tool use folded into think. Non-direct turns
-# speak a pre-answer filler first; long user speech gets listening cues.
+# Agentic decision tree (tools/decision_tree.json): root routes every
+# turn to a component (llm paths / tool flow / vision guard); subtrees
+# refine think (long_think|tool) and vision. Non-llm-direct turns speak
+# a pre-answer filler first; long user speech gets listening cues.
 # Mid-speech TTS is safe because the browser mic runs echo cancellation
 # (index.html getUserMedia) and a final cancels playback client-side.
+# Per the tree-probe experiment: NO confidence gating (cosine conf is
+# miscalibrated as an error signal).
 BC_FIRST_S = 6.0   # min user speech before the first backchannel
 BC_GAP_S = 5.0     # min spacing between backchannels
 BC_MAX = 2         # backchannels per turn
-MODE_MAX_TOKENS = {"direct": 96, "think": 220, "decide": 160,
-                   "social": 96, "vision": 96}
-MODE_SUFFIX = {
-    "think": " Reason step by step, then give a clear, concise answer.",
-    "decide": " Weigh the trade-offs briefly, then commit to a clear recommendation.",
-    "social": " Respond warmly and briefly, like a friend.",
-    # interim honesty guard until the camera pipeline (mmproj capture)
-    # lands — vision-routed turns must never bluff about what they see
-    "vision": " You currently have no camera access. If asked about "
-              "something visual, say honestly that you cannot see it yet.",
-}
-FILLER_MODES = ("think", "decide")  # social/vision: no filler (see below)
 
 KOKORO = None
 READOUT = None
-ROUTER = None
+WALKER = None
 
 
 def norm_rows(x):
@@ -82,15 +73,21 @@ def norm_router_text(t: str) -> str:
     return re.sub(r"\s+", " ", t).strip()
 
 
-def system_block(mode="direct") -> str:
-    return f"<|im_start|>system\n{SYS}{MODE_SUFFIX.get(mode, '')}<|im_end|>\n"
+def system_block() -> str:
+    # byte-stable across all turns and modes — the frozen prefix the
+    # two-zone context discipline depends on
+    return f"<|im_start|>system\n{SYS}<|im_end|>\n"
 
 
-def build_prompt(history, utterance, mode="direct") -> str:
-    p = system_block(mode)
-    for u, a in history:
-        p += f"<|im_start|>user\n{u}<|im_end|>\n<|im_start|>assistant\n{a}<|im_end|>\n"
-    p += f"<|im_start|>user\n{utterance}<|im_end|>\n" + EMPTY_THINK
+def build_prompt(history, utterance, directive=None) -> str:
+    # mode directives ride the CURRENT user turn (never the system block):
+    # the KV prefix stays warm across mode switches, and the decide
+    # readout's input is identical whether or not a directive is appended
+    u = utterance if not directive else f"{utterance}\n({directive})"
+    p = system_block()
+    for hu, ha in history:
+        p += f"<|im_start|>user\n{hu}<|im_end|>\n<|im_start|>assistant\n{ha}<|im_end|>\n"
+    p += f"<|im_start|>user\n{u}<|im_end|>\n" + EMPTY_THINK
     return p
 
 
@@ -136,43 +133,51 @@ class DecideReadout:
         return ro, emb
 
 
-class Router:
-    """3-way voice-loop router + feedback/backchannel selection.
+class TreeWalker:
+    """Walks tools/decision_tree.json: each node is a CLM readout
+    (head-projected class centroids over slot-6 embeddings of RAW text,
+    refs keyed <node>.<class> in models/router_embeddings.npz, recorded
+    by tools/record_router.py; re-record on any serving-numerics change,
+    same rule as decide sigs). Live turns embed the bare utterance —
+    prompt/history-shaped vectors were measured and dropped (domain
+    shift cost two route misses in the first live trial).
 
-    Head-projected class centroids over slot-6 embeddings of RAW text
-    (refs recorded by tools/record_router.py; re-record on any
-    serving-numerics change, same rule as decide sigs). Live turns embed
-    the bare utterance — prompt/history-shaped vectors were measured and
-    dropped (domain shift cost two route misses in the first live trial).
-    Feasibility on a 36-utterance held-out eval: 35/36 with head-projected
-    centroids (decide separates clean; residual confusion sits on the
-    genuinely fuzzy direct<->think boundary).
+    Feasibility (pre-registered evals): root 49/56 held-out; think
+    subtree 18/20 with perfect tool recall; vision subtree 17/20 (probe:
+    tools/tree_probe.py). No confidence gating by adjudicated decision.
     """
 
     def __init__(self, project):
         self._project = project
-        pools = json.load(open(f"{TOOLS}/router_pools.json"))
+        self.cfg = json.load(open(f"{TOOLS}/decision_tree.json"))
         z = np.load(f"{MODELS}/router_embeddings.npz")
-        self.classes = list(pools["router"])
-        cents = [norm_rows(self._project(z[f"router.{c}"])).mean(0)
-                 for c in self.classes]
-        self.cents = norm_rows(np.stack(cents))
-        self.fb = {}
-        for mode, texts in pools["feedback"].items():
-            self.fb[mode] = (texts, norm_rows(self._project(z[f"feedback.{mode}"])))
-        self.bc_texts = pools["backchannel"]
+        self.nodes = {}
+        for nid, node in self.cfg["nodes"].items():
+            classes = list(node["classes"])
+            cents = [norm_rows(self._project(z[f"{nid}.{c}"])).mean(0)
+                     for c in classes]
+            self.nodes[nid] = (classes, norm_rows(np.stack(cents)))
+        self.fb = {mode: (texts, norm_rows(self._project(z[f"feedback.{mode}"])))
+                   for mode, texts in self.cfg["feedback"].items()}
+        self.bc_texts = self.cfg["backchannel"]
         self.bc_vecs = norm_rows(self._project(z["backchannel"]))
 
-    def route(self, emb):
+    def route(self, emb, node_id="root"):
+        """Return (class, spec, conf) for the node's best class. Spec is
+        the class's config entry (action params)."""
+        classes, cents = self.nodes[node_id]
         v = norm_rows(self._project(emb[None, :]))[0]
-        sims = self.cents @ v
+        sims = cents @ v
         i = int(np.argmax(sims))
-        return self.classes[i], round(float(sims[i]), 3)
+        cls = classes[i]
+        spec = dict(self.cfg["nodes"][node_id]["classes"][cls])
+        spec["_class"] = cls
+        return cls, spec, round(float(sims[i]), 3)
 
-    def feedback(self, emb, mode):
-        if mode not in self.fb:
-            mode = "think"
-        texts, vecs = self.fb[mode]
+    def feedback(self, emb, key):
+        if key not in self.fb:
+            key = "think"
+        texts, vecs = self.fb[key]
         v = norm_rows(self._project(emb[None, :]))[0]
         return texts[int(np.argmax(vecs @ v))]
 
@@ -365,7 +370,7 @@ class Session:
             loop = asyncio.get_event_loop()
             emb, _ = await loop.run_in_executor(None, READOUT.embed,
                                                 norm_router_text(partial))
-            text = ROUTER.backchannel(emb)
+            text = WALKER.backchannel(emb)
         except Exception:
             return
         await self.send({"type": "backchannel", "text": text})
@@ -390,31 +395,32 @@ class Session:
         # refs are raw texts — prompt/history-shaped vectors measured
         # markedly worse). Non-direct turns speak a filler first so the
         # LLM work happens behind speech instead of dead air.
-        mode = "direct"
+        cls, spec = "direct", {"action": "llm", "max_tokens": 96}
         try:
             loop = asyncio.get_event_loop()
             emb, _ = await loop.run_in_executor(None, READOUT.embed,
                                                 norm_router_text(utterance))
-            mode, conf = ROUTER.route(emb)
-            await self.send({"type": "route", "mode": mode, "conf": conf})
-            if mode == "vision":
-                # capture hook for the VLM phase: grab a camera frame here,
-                # attach it, and take the think path. Until that lands the
-                # honesty suffix above keeps vision turns honest.
+            cls, spec, conf = WALKER.route(emb)
+            await self.send({"type": "route", "mode": cls, "conf": conf})
+            if spec["action"] == "vision_generic":
+                # capture hook for the VLM phase: request a frame from the
+                # client here, attach it, and take the think path. Until
+                # that lands the honesty directive keeps vision turns honest.
                 pass
-            if mode in FILLER_MODES:
-                fb = ROUTER.feedback(emb, mode)
+            if spec.get("filler"):
+                fb = WALKER.feedback(emb, cls)
                 await self.send({"type": "feedback", "text": fb})
                 await self.tts(fb, guard_turn=my_turn)
         except Exception:
-            mode = "direct"
-        self.route_mode = mode
+            cls, spec = "direct", {"action": "llm", "max_tokens": 96}
+        self.route_mode = cls
         t0 = time.perf_counter()
         first, chunks, timings = None, [], None
         try:
             with requests.post(f"{LLAMA}/v1/completions", json={
-                    "prompt": build_prompt(self.history, utterance, mode),
-                    "max_tokens": MODE_MAX_TOKENS.get(mode, 96),
+                    "prompt": build_prompt(self.history, utterance,
+                                           spec.get("directive")),
+                    "max_tokens": spec.get("max_tokens", 96),
                     "temperature": 0, "cache_prompt": True,
                     "id_slot": SLOT, "stream": True}, stream=True, timeout=120) as r:
                 r.raise_for_status()
@@ -628,13 +634,13 @@ async def http_page(connection, request):
 
 
 async def main():
-    global KOKORO, READOUT, ROUTER
+    global KOKORO, READOUT, WALKER
     t0 = time.perf_counter()
     KOKORO = Kokoro(f"{MODELS}/kokoro-v1.0.onnx", f"{MODELS}/voices.npz")
     READOUT = DecideReadout()
-    ROUTER = Router(READOUT._project)
-    print(f"kokoro + readout + router loaded in {time.perf_counter() - t0:.1f}s",
-          flush=True)
+    WALKER = TreeWalker(READOUT._project)
+    print(f"kokoro + readout + decision tree loaded in "
+          f"{time.perf_counter() - t0:.1f}s", flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=http_page,
                      max_size=2 ** 20, ping_interval=20):
         print(f"wiresense web on 0.0.0.0:{PORT}", flush=True)
