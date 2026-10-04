@@ -75,6 +75,8 @@ TOOL_FALLBACK_DIRECTIVE = ("No available tool fits this request. Answer briefly;
 TOOL_RETRY_DIRECTIVE = ('Your last reply was not valid tool JSON. Reply with '
                         'ONLY a JSON object: {"tool": "<name>", "args": {...}} '
                         'or {"tool": null}. No other text.')
+THINK_NOCLOSE_REPLY = ("I thought it through, but ran out of room for a "
+                       "clean answer.")
 
 
 def tool_manifest_directive() -> str:
@@ -185,7 +187,7 @@ def system_block() -> str:
     return f"<|im_start|>system\n{SYS}<|im_end|>\n"
 
 
-def build_prompt(history, utterance, directive=None) -> str:
+def build_prompt(history, utterance, directive=None, open_think=False) -> str:
     # mode directives ride the CURRENT user turn (never the system block):
     # the KV prefix stays warm across mode switches, and the decide
     # readout's input is identical whether or not a directive is appended
@@ -193,7 +195,10 @@ def build_prompt(history, utterance, directive=None) -> str:
     p = system_block()
     for hu, ha in history:
         p += f"<|im_start|>user\n{hu}<|im_end|>\n<|im_start|>assistant\n{ha}<|im_end|>\n"
-    p += f"<|im_start|>user\n{u}<|im_end|>\n" + EMPTY_THINK
+    p += f"<|im_start|>user\n{u}<|im_end|>\n"
+    # open_think leaves the block unclosed so the model reasons before
+    # answering; everything up to </think> is the (unspoken) trace
+    p += ("<|im_start|>assistant\n<think>\n" if open_think else EMPTY_THINK)
     return p
 
 
@@ -530,7 +535,11 @@ class Session:
                 # becomes a VLM query, without one the honesty directive
                 # keeps the answer honest (never asks twice)
                 frame_b64 = await self.request_frame()
-                if not frame_b64:
+                if frame_b64:
+                    # the captured frame is part of the turn's record —
+                    # the UI shows it in conversation history
+                    await self.send({"type": "vision_frame", "b64": frame_b64})
+                else:
                     spec = dict(spec, directive=spec.get(
                         "fallback_directive", spec.get("directive")))
             if spec.get("filler"):
@@ -553,10 +562,13 @@ class Session:
                 spec = dict(spec, action="llm", max_tokens=96,
                             directive=TOOL_FALLBACK_DIRECTIVE)
         if reply is None:
+            open_think = bool(spec.get("think"))
+            trace_sent = ans_sent = 0
             try:
                 with requests.post(f"{LLAMA}/v1/completions", json={
                         "prompt": build_prompt(self.history, utterance,
-                                               spec.get("directive")),
+                                               spec.get("directive"),
+                                               open_think=open_think),
                         "max_tokens": spec.get("max_tokens", 96),
                         "temperature": 0, "cache_prompt": True,
                         "id_slot": SLOT, "stream": True}, stream=True,
@@ -572,14 +584,40 @@ class Session:
                         delta = j["choices"][0].get("text", "")
                         if j.get("timings"):
                             timings = j["timings"]  # llama.cpp reports on chunks
-                        if delta and first is None:
+                        if not delta:
+                            continue
+                        chunks.append(delta)
+                        if not open_think:
+                            if first is None:
+                                first = (time.perf_counter() - t0) * 1000
+                                await self.send({"type": "response_start",
+                                                 "ttft_ms": round(first, 1)})
+                            await self.send({"type": "response_delta",
+                                             "text": delta})
+                            continue
+                        # open think: everything before </think> is the
+                        # trace (streamed to the UI, never spoken); deltas
+                        # can straddle the tag, so re-split the full text
+                        # and hold back a tag-length suffix of the trace
+                        full = "".join(chunks)
+                        if "</think>" in full:
+                            trace, ans = full.split("</think>", 1)
+                            show = len(trace)
+                        else:
+                            trace, ans = full, ""
+                            show = max(0, len(trace) - 8)
+                        if show > trace_sent:
+                            await self.send({"type": "think_delta",
+                                             "text": trace[trace_sent:show]})
+                            trace_sent = show
+                        if ans and first is None:
                             first = (time.perf_counter() - t0) * 1000
                             await self.send({"type": "response_start",
                                              "ttft_ms": round(first, 1)})
-                        if delta:
-                            chunks.append(delta)
+                        if len(ans) > ans_sent:
                             await self.send({"type": "response_delta",
-                                             "text": delta})
+                                             "text": ans[ans_sent:]})
+                            ans_sent = len(ans)
             except Exception as e:
                 await self.send({"type": "error", "message": f"llm: {e}"})
                 self.speaking = False
@@ -588,6 +626,35 @@ class Session:
                 self.schedule_gate_release(GATE_TAIL)
                 return
             reply = "".join(chunks).strip()
+            if open_think:
+                if "</think>" in reply:
+                    reply = reply.split("</think>", 1)[1].strip()
+                else:
+                    # budget ran out mid-reasoning: force the close and read
+                    # the answer off the slot cache — same prompt prefix, so
+                    # the second call only prefills the ~4 closing tokens
+                    forced = None
+                    try:
+                        loop = asyncio.get_event_loop()
+                        r = await loop.run_in_executor(None, lambda rr=reply:
+                            requests.post(f"{LLAMA}/v1/completions", json={
+                                "prompt": build_prompt(
+                                    self.history, utterance,
+                                    spec.get("directive"), open_think=True)
+                                    + rr + "\n\n</think>\n\n",
+                                "max_tokens": 64, "temperature": 0,
+                                "cache_prompt": True, "id_slot": SLOT},
+                                timeout=60))
+                        r.raise_for_status()
+                        forced = r.json()["choices"][0]["text"].strip()
+                    except Exception:
+                        forced = None
+                    reply = forced or THINK_NOCLOSE_REPLY
+                if first is None and reply:
+                    first = (time.perf_counter() - t0) * 1000
+                    await self.send({"type": "response_start",
+                                     "ttft_ms": round(first, 1)})
+                    await self.send({"type": "response_delta", "text": reply})
         # fp4-fault signature: output is essentially all '?' (see
         # docs/INCIDENT-2026-10-04-GPU.md) — surfaced to the UI, never fatal
         corrupt = len(reply) >= 8 and reply.count("?") >= 0.9 * len(reply)
@@ -721,6 +788,9 @@ class Session:
         except (ValueError, TypeError):
             return None
         result = await self.run_tool(plan["tool"], args)
+        # the call itself is part of the turn's record (args + result)
+        await self.send({"type": "tool_call", "tool": plan["tool"],
+                         "args": args, "result": result})
         confirm_d = (f"Tool result: {result}. Confirm to the user in one "
                      "short sentence.")
         try:
@@ -931,7 +1001,9 @@ async def handler(ws):
 
 
 async def http_page(connection, request):
-    # websockets process_request hook: serve the single page, else upgrade
+    # websockets process_request hook: serve the page + mic worklet, else
+    # upgrade. The worklet is a same-origin file (blob: module URLs are
+    # blocked in some webviews).
     from websockets.datastructures import Headers
     from websockets.http11 import Response
     if request.path == "/":
@@ -939,6 +1011,11 @@ async def http_page(connection, request):
         hdrs = Headers([("Content-Type", "text/html; charset=utf-8"),
                         ("Content-Length", str(len(html)))])
         return Response(200, "OK", hdrs, html)
+    if request.path == "/capture-worklet.js":
+        js = open("capture-worklet.js", "rb").read()
+        hdrs = Headers([("Content-Type", "text/javascript; charset=utf-8"),
+                        ("Content-Length", str(len(js)))])
+        return Response(200, "OK", hdrs, js)
     return None
 
 

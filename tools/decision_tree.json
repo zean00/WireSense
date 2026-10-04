@@ -1,192 +1,215 @@
 {
-  "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py — re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating — cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
-  "version": 2,
-  "nodes": {
-    "root": {
-      "classes": {
-        "direct": {"action": "llm", "max_tokens": 96},
-        "think": {"action": "subtree", "node": "think", "filler": true},
-        "decide": {"action": "llm", "max_tokens": 160,
-                   "directive": "Weigh the trade-offs briefly, then commit to a clear recommendation.",
-                   "filler": true},
-        "social": {"action": "llm", "max_tokens": 96,
-                   "directive": "Respond warmly and briefly, like a friend."},
-        "vision": {"action": "vision", "max_tokens": 96,
-                   "directive": "You can see the attached camera frame. Answer the user's question about what you see, briefly.",
-                   "fallback_directive": "You currently have no camera access. If asked about something visual, say honestly that you cannot see it yet."}
-      },
-      "pools": {
-        "direct": [
-          "What's the capital of France?",
-          "What time is it?",
-          "How many days are in a week?",
-          "Say hello.",
-          "What's your name?",
-          "Who wrote Hamlet?",
-          "How do you spell restaurant?",
-          "What's the freezing point of water?",
-          "What year is it?",
-          "What color is the sky on a clear day?",
-          "Tell me a joke.",
-          "Repeat that.",
-          "How many continents are there?",
-          "What does 'gregarious' mean?",
-          "Is mercury a metal?",
-          "How many hearts does an octopus have?",
-          "How hot is the sun's surface?",
-          "What's nine times eight?",
-          "How long is the Nile river?",
-          "What do bees eat?"
-        ],
-        "think": [
-          "What's 17 percent of 243?",
-          "If I leave at 5pm and the drive takes 3 hours, when will I arrive?",
-          "Plan a three-day trip to Tokyo.",
-          "Set a timer for 10 minutes.",
-          "How many seconds are there in a leap year?",
-          "Write a short story about a dragon.",
-          "Walk me through why the experiment failed.",
-          "Explain the difference between HTTP and HTTPS.",
-          "What's the square root of 1764?",
-          "Set an alarm for six tomorrow morning.",
-          "Summarize this article for me.",
-          "If a train travels 60 kilometers per hour for 90 minutes, how far does it go?",
-          "Search for flights to Denver next week.",
-          "Draft an email to my landlord about the leak.",
-          "How much paint do I need for a 12 by 15 foot room?",
-          "Is it going to rain tomorrow?",
-          "Will it rain this afternoon?",
-          "What's the weather in Jakarta?",
-          "How's the weather in Bali?",
-          "Make a note that my gate is B22.",
-          "Note down that the meeting moved to three.",
-          "Remember that I parked on level two.",
-          "Turn this paragraph into bullet points.",
-          "Convert the measurements in this recipe to grams."
-        ],
-        "decide": [
-          "Should I take the bus or walk?",
-          "Which is better, Python or JavaScript?",
-          "What should I have for dinner tonight?",
-          "Do you think I should take this job offer?",
-          "Which restaurant should we choose for dinner?",
-          "Is it worth buying the extended warranty?",
-          "Tea or coffee?",
-          "What should I get my dad for his birthday?",
-          "Should I text her back?",
-          "Which color should I paint the bedroom?",
-          "Would you rather invest or save?",
-          "What's the best option here?",
-          "Is it smarter to fix the car or sell it?",
-          "Where should we go for vacation?",
-          "Do you recommend the blue one or the black one?"
-        ],
-        "social": [
-          "I had such a long day at work.",
-          "I'm feeling a bit down today.",
-          "I finally told my friend how I felt.",
-          "I miss my grandmother a lot.",
-          "Thanks for listening to me vent.",
-          "Guess what happened to me today!",
-          "I'm just so tired lately.",
-          "I'm nervous about my presentation tomorrow.",
-          "We won the match last night!",
-          "Honestly, I don't know why I'm so upset about this.",
-          "I can't believe it's already Friday.",
-          "I just needed to tell someone about this.",
-          "The holidays are hard for me.",
-          "I finally finished my thesis!",
-          "I'm so proud of my little brother."
-        ],
-        "vision": [
-          "What do you think about my new glasses?",
-          "Does the color of my clothes match my skin tone?",
-          "Can you see what's on my screen?",
-          "How does my hair look today?",
-          "What is this thing I'm holding?",
-          "Can you check if my collar is straight?",
-          "What does this chart on my monitor say?",
-          "Take a look at this sketch I drew.",
-          "Can you read the text on this page I'm showing?",
-          "Is my plant looking healthy?",
-          "What's behind me right now?",
-          "Do I have something on my face?",
-          "How is my posture in this video call?",
-          "Can you identify this bird outside my window?",
-          "Is there anything stuck between my teeth?"
-        ]
-      }
+ "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py — re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating — cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
+ "version": 3,
+ "nodes": {
+  "root": {
+   "classes": {
+    "direct": {
+     "action": "llm",
+     "max_tokens": 96
     },
     "think": {
-      "classes": {
-        "long_think": {"action": "llm", "max_tokens": 220,
-                       "directive": "Reason step by step, then give a clear, concise answer."},
-        "tool": {"action": "tool", "feedback": "tool"}
-      },
-      "pools": {
-        "long_think": [
-          "Plan a three-day trip to Tokyo.",
-          "Write a short story about a dragon.",
-          "Walk me through why the experiment failed.",
-          "Explain the difference between HTTP and HTTPS.",
-          "Work out the monthly payment on a 20 thousand dollar loan.",
-          "Draft an email to my landlord about the leak.",
-          "Summarize this article for me.",
-          "How much paint do I need for a 12 by 15 foot room?",
-          "Compare renting versus buying a house.",
-          "Count the vowels in the word extraordinary.",
-          "If I leave at six and the flight takes two hours, when do I land?",
-          "If I leave at five pm and the drive takes three hours, when will I arrive?",
-          "What day of the week will it be in 30 days?"
-        ],
-        "tool": [
-          "Set a timer for 10 minutes.",
-          "Set an alarm for six tomorrow morning.",
-          "Add a calendar event for lunch tomorrow at noon.",
-          "Search for flights to Denver next week.",
-          "Remind me to take my pills at 9.",
-          "Turn on the living room lights.",
-          "What's the weather in Jakarta?",
-          "Play some jazz music.",
-          "Text my brother that I'm running late.",
-          "Order more coffee beans.",
-          "Make a note that my gate is B22.",
-          "Write down that the meeting is at three.",
-          "Keep a note that I lent Mark twenty bucks."
-        ]
-      }
+     "action": "subtree",
+     "node": "think",
+     "filler": true
+    },
+    "decide": {
+     "action": "llm",
+     "max_tokens": 160,
+     "directive": "Weigh the trade-offs briefly, then commit to a clear recommendation.",
+     "filler": true
+    },
+    "social": {
+     "action": "llm",
+     "max_tokens": 96,
+     "directive": "Respond warmly and briefly, like a friend."
+    },
+    "vision": {
+     "action": "vision",
+     "max_tokens": 96,
+     "directive": "You can see the attached camera frame. Answer the user's question about what you see, briefly.",
+     "fallback_directive": "You currently have no camera access. If asked about something visual, say honestly that you cannot see it yet."
     }
-  },
-  "feedback": {
+   },
+   "pools": {
+    "direct": [
+     "What's the capital of France?",
+     "What time is it?",
+     "How many days are in a week?",
+     "Say hello.",
+     "What's your name?",
+     "Who wrote Hamlet?",
+     "How do you spell restaurant?",
+     "What's the freezing point of water?",
+     "What year is it?",
+     "What color is the sky on a clear day?",
+     "Tell me a joke.",
+     "Repeat that.",
+     "How many continents are there?",
+     "What does 'gregarious' mean?",
+     "Is mercury a metal?",
+     "How many hearts does an octopus have?",
+     "How hot is the sun's surface?",
+     "What's nine times eight?",
+     "How long is the Nile river?",
+     "What do bees eat?"
+    ],
     "think": [
-      "Let me think about that for a second.",
-      "Hmm, give me a moment to work that out.",
-      "One second, let me figure that out.",
-      "Let me see."
+     "What's 17 percent of 243?",
+     "If I leave at 5pm and the drive takes 3 hours, when will I arrive?",
+     "Plan a three-day trip to Tokyo.",
+     "Set a timer for 10 minutes.",
+     "How many seconds are there in a leap year?",
+     "Write a short story about a dragon.",
+     "Walk me through why the experiment failed.",
+     "Explain the difference between HTTP and HTTPS.",
+     "What's the square root of 1764?",
+     "Set an alarm for six tomorrow morning.",
+     "Summarize this article for me.",
+     "If a train travels 60 kilometers per hour for 90 minutes, how far does it go?",
+     "Search for flights to Denver next week.",
+     "Draft an email to my landlord about the leak.",
+     "How much paint do I need for a 12 by 15 foot room?",
+     "Is it going to rain tomorrow?",
+     "Will it rain this afternoon?",
+     "What's the weather in Jakarta?",
+     "How's the weather in Bali?",
+     "Make a note that my gate is B22.",
+     "Note down that the meeting moved to three.",
+     "Remember that I parked on level two.",
+     "Turn this paragraph into bullet points.",
+     "Convert the measurements in this recipe to grams."
     ],
     "decide": [
-      "Hmm, that's a real trade-off, let me weigh it.",
-      "Good question. Let me think it through.",
-      "Let me consider the options for a moment."
+     "Should I take the bus or walk?",
+     "Which is better, Python or JavaScript?",
+     "What should I have for dinner tonight?",
+     "Do you think I should take this job offer?",
+     "Which restaurant should we choose for dinner?",
+     "Is it worth buying the extended warranty?",
+     "Tea or coffee?",
+     "What should I get my dad for his birthday?",
+     "Should I text her back?",
+     "Which color should I paint the bedroom?",
+     "Would you rather invest or save?",
+     "What's the best option here?",
+     "Is it smarter to fix the car or sell it?",
+     "Where should we go for vacation?",
+     "Do you recommend the blue one or the black one?"
+    ],
+    "social": [
+     "I had such a long day at work.",
+     "I'm feeling a bit down today.",
+     "I finally told my friend how I felt.",
+     "I miss my grandmother a lot.",
+     "Thanks for listening to me vent.",
+     "Guess what happened to me today!",
+     "I'm just so tired lately.",
+     "I'm nervous about my presentation tomorrow.",
+     "We won the match last night!",
+     "Honestly, I don't know why I'm so upset about this.",
+     "I can't believe it's already Friday.",
+     "I just needed to tell someone about this.",
+     "The holidays are hard for me.",
+     "I finally finished my thesis!",
+     "I'm so proud of my little brother."
+    ],
+    "vision": [
+     "What do you think about my new glasses?",
+     "Does the color of my clothes match my skin tone?",
+     "Can you see what's on my screen?",
+     "How does my hair look today?",
+     "What is this thing I'm holding?",
+     "Can you check if my collar is straight?",
+     "What does this chart on my monitor say?",
+     "Take a look at this sketch I drew.",
+     "Can you read the text on this page I'm showing?",
+     "Is my plant looking healthy?",
+     "What's behind me right now?",
+     "Do I have something on my face?",
+     "How is my posture in this video call?",
+     "Can you identify this bird outside my window?",
+     "Is there anything stuck between my teeth?"
+    ]
+   }
+  },
+  "think": {
+   "classes": {
+    "long_think": {
+     "action": "llm",
+     "max_tokens": 640,
+     "directive": "Reason step by step, then give a clear, concise answer.",
+     "think": true
+    },
+    "tool": {
+     "action": "tool",
+     "feedback": "tool"
+    }
+   },
+   "pools": {
+    "long_think": [
+     "Plan a three-day trip to Tokyo.",
+     "Write a short story about a dragon.",
+     "Walk me through why the experiment failed.",
+     "Explain the difference between HTTP and HTTPS.",
+     "Work out the monthly payment on a 20 thousand dollar loan.",
+     "Draft an email to my landlord about the leak.",
+     "Summarize this article for me.",
+     "How much paint do I need for a 12 by 15 foot room?",
+     "Compare renting versus buying a house.",
+     "Count the vowels in the word extraordinary.",
+     "If I leave at six and the flight takes two hours, when do I land?",
+     "If I leave at five pm and the drive takes three hours, when will I arrive?",
+     "What day of the week will it be in 30 days?"
     ],
     "tool": [
-      "Let me do that for you.",
-      "On it, give me a second.",
-      "Working on that now.",
-      "One moment, I'll take care of that."
+     "Set a timer for 10 minutes.",
+     "Set an alarm for six tomorrow morning.",
+     "Add a calendar event for lunch tomorrow at noon.",
+     "Search for flights to Denver next week.",
+     "Remind me to take my pills at 9.",
+     "Turn on the living room lights.",
+     "What's the weather in Jakarta?",
+     "Play some jazz music.",
+     "Text my brother that I'm running late.",
+     "Order more coffee beans.",
+     "Make a note that my gate is B22.",
+     "Write down that the meeting is at three.",
+     "Keep a note that I lent Mark twenty bucks."
     ]
-  },
-  "backchannel": [
-    "Mm-hmm.",
-    "Got it.",
-    "Understood.",
-    "Right.",
-    "I see.",
-    "Keep going.",
-    "Uh-huh.",
-    "Interesting.",
-    "Makes sense so far.",
-    "And then?",
-    "Take your time."
+   }
+  }
+ },
+ "feedback": {
+  "think": [
+   "Let me think about that for a second.",
+   "Hmm, give me a moment to work that out.",
+   "One second, let me figure that out.",
+   "Let me see."
+  ],
+  "decide": [
+   "Hmm, that's a real trade-off, let me weigh it.",
+   "Good question. Let me think it through.",
+   "Let me consider the options for a moment."
+  ],
+  "tool": [
+   "Let me do that for you.",
+   "On it, give me a second.",
+   "Working on that now.",
+   "One moment, I'll take care of that."
   ]
+ },
+ "backchannel": [
+  "Mm-hmm.",
+  "Got it.",
+  "Understood.",
+  "Right.",
+  "I see.",
+  "Keep going.",
+  "Uh-huh.",
+  "Interesting.",
+  "Makes sense so far.",
+  "And then?",
+  "Take your time."
+ ]
 }

@@ -178,11 +178,16 @@ async def run() -> int:
                 elif t == "error":
                     print(f"  {at} ERROR: {e['message']}")
                     failures.append(f"{want}: server error {e['message'][:80]}")
+            saw_tool_call = any(e.get("type") == "tool_call" for e in events)
+            saw_vision_frame = any(e.get("type") == "vision_frame" for e in events)
+            saw_think = any(e.get("type") == "think_delta" for e in events)
             if route != want:
                 failures.append(f"{want}: routed to {route}")
             if not reply:
                 failures.append(f"{want}: empty reply (endpointing or LLM failure)")
                 continue
+            if "<think>" in reply or "</think>" in reply:
+                failures.append(f"{want}: think tags leaked into the spoken reply")
             if checks.get("honest") and not any(m in reply.lower()
                                                 for m in HONEST_MARKERS):
                 print("  WARN: reply not recognizably honest (guard may be off)")
@@ -194,6 +199,15 @@ async def run() -> int:
                 if "cannot see" in low or "can't see" in low:
                     failures.append(f"{want}: frame attached but reply claims "
                                     "blindness — frame did not reach the VLM")
+                if not saw_vision_frame:
+                    failures.append(f"{want}: no vision_frame event")
+            if want == "think.long_think" and not saw_think:
+                failures.append(f"{want}: no think trace (open-think generation off?)")
+            if ("timer" in checks or "reminder" in checks or "note" in checks) \
+                    and not saw_tool_call:
+                failures.append(f"{want}: no tool_call event")
+            if want == "think.tool" and checks.get("honest") and saw_tool_call:
+                failures.append(f"{want}: tool_call fired, honest fallback expected")
             if "timer" in checks:
                 fired = [e for e in events if e.get("type") == "tool_event"
                          and e.get("tool") == "timer"

@@ -6,97 +6,173 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body { font-family: system-ui, sans-serif; background: #0b0e14; color: #dbe2ee;
-         max-width: 760px; margin: 0 auto; padding: 16px; }
-  h1 { font-size: 20px; margin: 0 0 4px; }
+         margin: 0; overflow: hidden; }
+  h1 { font-size: 17px; margin: 0; }
   h1 span { color: #5eead4; }
-  .row { display: flex; gap: 10px; align-items: center; margin: 12px 0; }
-  button { font-size: 16px; padding: 10px 18px; border-radius: 10px; border: 1px solid #334;
+  #app { display: grid; grid-template-columns: 300px minmax(340px, 1fr) 390px;
+         grid-template-rows: 54px 1fr; height: 100vh; }
+  header { grid-column: 1 / 4; display: flex; align-items: center; gap: 14px;
+           padding: 0 16px; border-bottom: 1px solid #1d2939; background: #0d1119; }
+  #stats { font-size: 12px; color: #7d8aa0; flex: 1; white-space: nowrap;
+           overflow: hidden; text-overflow: ellipsis; }
+  button { font-size: 14px; padding: 8px 14px; border-radius: 9px; border: 1px solid #334;
            background: #16202f; color: #dbe2ee; cursor: pointer; }
   button.on { background: #134e4a; border-color: #14b8a6; }
-  #level { flex: 1; height: 8px; background: #16202f; border-radius: 4px; overflow: hidden; }
-  #levelbar { height: 100%; width: 0%; background: #14b8a6; }
+  #left, #center, #right { overflow-y: auto; min-height: 0; }
+  #left  { border-right: 1px solid #1d2939; padding: 10px; }
+  #right { border-left: 1px solid #1d2939; padding: 10px; }
+  #center { display: flex; flex-direction: column; padding: 14px 26px; }
   .card { background: #101725; border: 1px solid #1d2939; border-radius: 10px;
           padding: 10px 12px; margin: 8px 0; }
   .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #7d8aa0; }
-  #partial { min-height: 20px; color: #9fb3c8; font-style: italic; }
-  #reply { min-height: 20px; font-size: 17px; }
-  #decide { font-size: 13px; color: #5eead4; }
-  #stats { font-size: 12px; color: #7d8aa0; }
-  .turn { border-left: 3px solid #14b8a6; padding-left: 10px; margin: 10px 0; }
-  .turn b { color: #9fb3c8; font-weight: 600; }
   .badge { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 11px;
-           text-transform: none; letter-spacing: 0; margin-left: 6px; }
+           letter-spacing: 0; margin-left: 6px; }
   .badge.ok   { background: #134e4a; color: #5eead4; }
   .badge.warn { background: #4d3a10; color: #fbbf24; }
   .badge.bad  { background: #4c1d1d; color: #f87171; }
   .badge.idle { background: #1d2939; color: #7d8aa0; }
   .hgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 14px;
-           font-size: 12.5px; margin-top: 6px; }
+           font-size: 12px; margin-top: 6px; }
   .hgrid .k { color: #7d8aa0; }
   .hgrid .v { text-align: right; font-variant-numeric: tabular-nums; }
-  #h_reasons { font-size: 12px; margin-top: 6px; color: #fbbf24; }
+  #h_reasons { font-size: 11.5px; margin-top: 6px; color: #fbbf24; }
   .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 18px;
-           font-size: 12.5px; margin-top: 6px; }
+           font-size: 12px; margin-top: 6px; }
   .mgrid .k { color: #7d8aa0; }
   .mgrid .v { text-align: right; font-variant-numeric: tabular-nums; }
-  .sec { font-size: 11px; color: #5eead4; margin-top: 6px; text-transform: uppercase;
+  .sec { font-size: 10.5px; color: #5eead4; margin-top: 6px; text-transform: uppercase;
          letter-spacing: .06em; }
-  .mm { font-size: 11.5px; color: #7d8aa0; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  #camview { width: 100%; border-radius: 8px; margin-top: 6px; display: none; }
+  #camcanvas { display: none; }
+  #evtlog { font-family: ui-monospace, monospace; font-size: 10.5px; color: #64748b;
+            line-height: 1.5; margin-top: 6px; word-break: break-all; }
+  #evtlog .t { color: #475569; }
+
+  /* --- center stage --- */
+  #modebadge { align-self: center; font-size: 12.5px; letter-spacing: .04em; }
+  #modebadge span { padding: 3px 12px; border-radius: 99px; background: #1d2939; color: #7d8aa0; }
+  #modebadge.direct span    { background: #134e4a; color: #5eead4; }
+  #modebadge.think span     { background: #2e1065; color: #c4b5fd; }
+  #modebadge.think\.tool span { background: #4d3a10; color: #fbbf24; }
+  #modebadge.decide span    { background: #431407; color: #fdba74; }
+  #modebadge.social span    { background: #500724; color: #f9a8d4; }
+  #modebadge.vision span    { background: #0c4a6e; color: #7dd3fc; }
+  .stagewrap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 120px; }
+  #wave { width: 100%; height: 170px; }
+  #partial { min-height: 22px; color: #9fb3c8; font-style: italic; text-align: center; }
+  #reply { min-height: 24px; font-size: 18px; text-align: center; padding-bottom: 8px; }
+
+  /* --- conversation history --- */
+  #feed { display: flex; flex-direction: column; gap: 2px; }
+  .turn { margin: 4px 0 14px; }
+  .cue { font-size: 11.5px; color: #64748b; font-style: italic; }
+  .userrow { display: flex; justify-content: flex-end; margin: 6px 0; }
+  .userb { background: #123c3a; border: 1px solid #14b8a655; border-radius: 14px 14px 3px 14px;
+           padding: 7px 12px; max-width: 88%; font-size: 14px; }
+  .filler { font-size: 12px; color: #7d8aa0; font-style: italic; margin: 3px 0 3px 4px; }
+  .replyb { border-left: 2px solid #14b8a6; padding: 2px 0 2px 10px; margin: 6px 0;
+            font-size: 14.5px; white-space: pre-wrap; }
+  .vframe { margin: 6px 0; }
+  .vframe img { width: 210px; border-radius: 8px; border: 1px solid #1d2939; display: block; }
+  .vframe .cap { font-size: 10.5px; color: #7d8aa0; margin-top: 2px; }
+  details.think { margin: 6px 0; border: 1px solid #2e1065; border-radius: 8px;
+                  background: #150e2a; }
+  details.think summary { cursor: pointer; font-size: 12px; color: #c4b5fd;
+                          padding: 5px 10px; user-select: none; }
+  details.think pre { margin: 0; padding: 4px 12px 10px; font-family: ui-monospace, monospace;
+                      font-size: 11.5px; color: #a78bfa; white-space: pre-wrap;
+                      word-break: break-word; }
+  .toolrow { font-family: ui-monospace, monospace; font-size: 11.5px; color: #fbbf24;
+             background: #1a1508; border: 1px solid #4d3a10; border-radius: 8px;
+             padding: 6px 9px; margin: 6px 0; word-break: break-word; }
+  .toolrow .res { color: #94a3b8; }
+  .sysrow { text-align: center; font-size: 12px; color: #fbbf24; margin: 4px 0; }
+  .errrow { text-align: center; font-size: 12px; color: #f87171; margin: 4px 0; }
+  .mm { font-size: 10.5px; color: #64748b; margin-top: 5px; font-variant-numeric: tabular-nums; }
   .toast { position: fixed; right: 18px; bottom: 18px; z-index: 50;
            background: #1e293b; color: #e2e8f0; border: 1px solid #334155;
            border-radius: 8px; padding: 10px 14px; font-size: 13px;
            box-shadow: 0 6px 24px rgba(0,0,0,.35); max-width: 320px; }
+  @media (max-width: 1180px) {
+    #app { grid-template-columns: 260px minmax(300px, 1fr) 330px; }
+  }
 </style>
 </head>
 <body>
-<h1><span>wiresense</span> live loop</h1>
-<div id="stats">not connected</div>
-<div class="row">
+<div id="app">
+<header>
+  <h1><span>wiresense</span></h1>
+  <div id="stats">not connected</div>
   <button id="mic">Start mic</button>
-  <button id="cam">📷 Start camera</button>
+  <button id="cam">📷 Camera</button>
   <button id="reset">Reset</button>
-  <div id="level"><div id="levelbar"></div></div>
-</div>
-<video id="camview" playsinline muted
-       style="display:none; width:160px; border-radius:8px; margin-top:6px"></video>
-<canvas id="camcanvas" style="display:none"></canvas>
-<div class="card">
-  <div class="label">mic health<span id="micverdict" class="badge idle">mic off</span></div>
-  <div class="hgrid">
-    <span class="k">level (rms)</span><span class="v" id="h_rms">–</span><span class="k" id="h_rms_note"></span>
-    <span class="k">peak</span><span class="v" id="h_peak">–</span><span class="k" id="h_peak_note"></span>
-    <span class="k">dc offset</span><span class="v" id="h_dc">–</span><span class="k" id="h_dc_note"></span>
-    <span class="k">clipped</span><span class="v" id="h_clip">–</span><span class="k" id="h_clip_note"></span>
-    <span class="k">hf energy (3k+)</span><span class="v" id="h_hf">–</span><span class="k" id="h_hf_note"></span>
-    <span class="k">vad p(speech)</span><span class="v" id="h_vad">–</span><span class="k" id="h_vad_note"></span>
-    <span class="k">capture rate</span><span class="v" id="h_rate">–</span><span class="k"></span>
+</header>
+
+<div id="left">
+  <div class="card">
+    <div class="label">mic health<span id="micverdict" class="badge idle">mic off</span></div>
+    <div class="hgrid">
+      <span class="k">level (rms)</span><span class="v" id="h_rms">–</span><span class="k" id="h_rms_note"></span>
+      <span class="k">peak</span><span class="v" id="h_peak">–</span><span class="k" id="h_peak_note"></span>
+      <span class="k">dc offset</span><span class="v" id="h_dc">–</span><span class="k" id="h_dc_note"></span>
+      <span class="k">clipped</span><span class="v" id="h_clip">–</span><span class="k" id="h_clip_note"></span>
+      <span class="k">hf energy (3k+)</span><span class="v" id="h_hf">–</span><span class="k" id="h_hf_note"></span>
+      <span class="k">vad p(speech)</span><span class="v" id="h_vad">–</span><span class="k" id="h_vad_note"></span>
+      <span class="k">capture rate</span><span class="v" id="h_rate">–</span><span class="k"></span>
+    </div>
+    <div id="h_reasons"></div>
   </div>
-  <div id="h_reasons"></div>
+  <div class="card">
+    <div class="label">router</div>
+    <div class="hgrid">
+      <span class="k">last route</span><span class="v" id="r_mode">–</span>
+      <span class="k">confidence</span><span class="v" id="r_conf">–</span>
+      <span class="k">readouts</span><span class="v" id="r_n">–</span>
+      <span class="k">last readout</span><span class="v" id="r_ms">–</span>
+      <span class="k">ttft</span><span class="v" id="r_ttft">–</span>
+      <span class="k">decode</span><span class="v" id="r_tps">–</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="label">last turn — pipeline metrics</div>
+    <div class="mgrid" id="metrics"><span class="k">no turn yet</span></div>
+  </div>
+  <div class="card">
+    <div class="label">camera<span id="camstate" class="badge idle">off</span></div>
+    <video id="camview" playsinline muted></video>
+  </div>
+  <canvas id="camcanvas"></canvas>
+  <div class="card">
+    <div class="label">event log</div>
+    <div id="evtlog"></div>
+  </div>
 </div>
-<div class="card">
-  <div class="label">last turn — pipeline metrics</div>
-  <div class="mgrid" id="metrics"><span class="k">no turn yet</span></div>
-</div>
-<div class="card"><div class="label">hearing (live partial)</div>
+
+<div id="center">
+  <div id="modebadge"><span>idle</span></div>
+  <div class="stagewrap"><canvas id="wave"></canvas></div>
   <div id="partial">—</div>
-  <div id="decide"></div></div>
-<div class="card"><div class="label">reply</div><div id="reply">—</div></div>
-<div id="log"></div>
+  <div id="reply">—</div>
+</div>
+
+<div id="right">
+  <div class="label" style="margin: 2px 4px 8px">conversation</div>
+  <div id="feed"></div>
+</div>
+</div>
 
 <script>
 const wsURL = `ws://${location.host}/ws`;
 let ws, ctx, workletNode, analyser, stream, listening = false;
 let audioQueue = [], playing = false;
 
-function log(turn) {
-  const d = document.createElement("div");
-  d.className = "turn"; d.innerHTML = turn;
-  document.getElementById("log").prepend(d);
-  return d;
-}
 function setStats(s) { document.getElementById("stats").textContent = s; }
 const el = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 async function connect() {
   ws = new WebSocket(wsURL);
@@ -106,20 +182,105 @@ async function connect() {
   ws.onclose = () => { setStats("disconnected"); if (listening) stopMic(); };
 }
 
-let lastTurnEl = null;
+// --- event log (debug feed, newest first) ---
+const evtRing = [];
+function logEvent(m) {
+  evtRing.unshift(new Date().toLocaleTimeString() + " " + m.type + " " +
+    JSON.stringify(m, (k, v) => k === "audio" || k === "b64" ? `<${v.length} b64>` : v));
+  if (evtRing.length > 60) evtRing.pop();
+  el("evtlog").innerHTML = evtRing.map(
+    s => `<div><span class="t">${esc(s.slice(0, 8))}</span> ${esc(s.slice(9, 150))}</div>`).join("");
+}
+
+// --- conversation history feed ---
+const feed = el("feed");
+let curTurn = null;          // current turn container
+let pendingCues = [];        // backchannels heard before the final
+let nearBottom = true;
+feed.onscroll = () => {
+  nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 60;
+};
+function scrollFeed() { if (nearBottom) feed.scrollTop = feed.scrollHeight; }
+function newTurn() {
+  const d = document.createElement("div");
+  d.className = "turn";
+  for (const c of pendingCues) {
+    const cue = document.createElement("div");
+    cue.className = "cue"; cue.textContent = `[${c}]`;
+    d.appendChild(cue);
+  }
+  pendingCues = [];
+  feed.appendChild(d);
+  curTurn = d;
+  scrollFeed();
+  return d;
+}
+function turnPart(cls) {
+  if (!curTurn) newTurn();
+  const d = document.createElement("div");
+  d.className = cls;
+  curTurn.appendChild(d);
+  scrollFeed();
+  return d;
+}
+function sysLine(text, cls = "sysrow") {
+  const d = document.createElement("div");
+  d.className = cls; d.textContent = text;
+  feed.appendChild(d); scrollFeed();
+}
+
+let lastUserEl = null;
+function setModeBadge(mode) {
+  const b = el("modebadge");
+  b.className = mode || "";
+  b.innerHTML = `<span>${esc(mode || "idle")}</span>`;
+}
+
 function onMessage(ev) {
   const m = JSON.parse(ev.data);
+  logEvent(m);
   if (m.type === "partial") {
     el("partial").textContent = m.text;
   } else if (m.type === "decide") {
-    el("decide").textContent =
-      `action: ${m.top1} (${m.score}) · readout ${m.head_ms + m.emb_ms} ms (head ${m.head_ms} + emb ${m.emb_ms})`;
+    el("r_n").textContent = m.top1 != null ? "running…" : "–";
+    el("r_ms").textContent = (m.head_ms + m.emb_ms) + " ms";
   } else if (m.type === "route") {
-    el("decide").textContent = `route: ${m.mode} (${m.conf})`;
+    el("r_mode").textContent = m.mode;
+    el("r_conf").textContent = m.conf;
+    setModeBadge(m.mode);
+    // the route belongs to the turn opened by `final`
+    if (!curTurn) newTurn();
+    curTurn.dataset.mode = m.mode;
   } else if (m.type === "feedback") {
+    const f = turnPart("filler");
+    f.textContent = `— ${m.text}`;
     el("reply").textContent = `(${m.text})`;
   } else if (m.type === "backchannel") {
+    pendingCues.push(m.text);
     el("partial").textContent = `[${m.text}]`;
+  } else if (m.type === "vision_frame") {
+    const v = turnPart("vframe");
+    v.innerHTML = `<img alt="camera frame"><div class="cap">📷 frame captured for this turn</div>`;
+    v.querySelector("img").src = "data:image/jpeg;base64," + m.b64;
+    scrollFeed();
+  } else if (m.type === "think_delta") {
+    let box = curTurn && curTurn.querySelector("details.think");
+    if (!box) {
+      box = document.createElement("details");
+      box.className = "think";
+      box.innerHTML = `<summary>💭 thinking…</summary><pre></pre>`;
+      (curTurn || newTurn()).insertBefore(
+        box, curTurn.querySelector(".replyb"));
+      scrollFeed();
+    }
+    box.querySelector("pre").textContent += m.text;
+    box.open = true;
+    box.querySelector("summary").textContent = "💭 thinking…";
+    scrollFeed();
+  } else if (m.type === "tool_call") {
+    const t = turnPart("toolrow");
+    t.innerHTML = `🔧 <b>${esc(m.tool)}</b> ${esc(JSON.stringify(m.args))}` +
+      `<br><span class="res">→ ${esc(m.result)}</span>`;
   } else if (m.type === "cancel_tts") {
     audioQueue = []; if (playing) { stopPlayback(); }
   } else if (m.type === "tool_event") {
@@ -129,16 +290,29 @@ function onMessage(ev) {
     if (b64) ws.send(JSON.stringify({type: "camera_frame", b64}));
   } else if (m.type === "response_start") {
     tStats.ttft = m.ttft_ms; renderStats();
+    el("r_ttft").textContent = m.ttft_ms + " ms";
   } else if (m.type === "response_delta") {
+    let r = curTurn && curTurn.querySelector(".replyb");
+    if (!r) { r = turnPart("replyb"); }
+    r.textContent += m.text;
     el("reply").textContent += m.text;
+    scrollFeed();
   } else if (m.type === "response_done") {
+    let r = curTurn && curTurn.querySelector(".replyb");
+    if (!r) r = turnPart("replyb");
+    r.textContent = m.text;
     el("reply").textContent = m.text;
-    lastTurnEl = log(`<b>you:</b> ${window.lastUser || "?"}<br><b>wiresense:</b> ${m.text}`);
-    window.lastReply = m.text;
     el("partial").textContent = "—";
+    const th = curTurn && curTurn.querySelector("details.think");
+    if (th) th.querySelector("summary").textContent = "💭 thinking";
+    scrollFeed();
   } else if (m.type === "final") {
-    window.lastUser = m.text;
-    firstChunkOfTurn = true; playLatMs = null;
+    newTurn();
+    const row = document.createElement("div");
+    row.className = "userrow";
+    row.innerHTML = `<div class="userb">${esc(m.text)}</div>`;
+    curTurn.appendChild(row);
+    scrollFeed();
   } else if (m.type === "tts_chunk") {
     chunkRx = performance.now();
     tStats.tts = m.ms; renderStats();
@@ -155,6 +329,7 @@ function onMessage(ev) {
     renderMetrics(m);
   } else if (m.type === "error") {
     setStats("error: " + m.message);
+    sysLine("⚠ " + m.message, "errrow");
   } else if (m.type === "mic_state") {
     micPaused = !m.listening;
     renderStats();
@@ -194,9 +369,10 @@ function handleToolEvent(m) {
       beep(3);
       toast(`⏱ time's up${m.label ? " — " + m.label : ""}`, 15000);
     }, m.seconds * 1000);
-  } else if (m.tool === "reminder_due") {
+  } else if (m.type === "tool_event" && m.tool === "reminder_due") {
     beep(2);
     toast(`🔔 reminder: ${m.text}`, 15000);
+    sysLine(`🔔 reminder: ${m.text}`);
   }
 }
 
@@ -206,8 +382,11 @@ async function toggleCamera() {
   if (cameraStream) {
     cameraStream.getTracks().forEach(t => t.stop());
     cameraStream = null;
-    el("cam").textContent = "📷 Start camera";
+    el("cam").textContent = "📷 Camera";
+    el("cam").classList.remove("on");
     el("camview").style.display = "none";
+    el("camstate").textContent = "off";
+    el("camstate").className = "badge idle";
     ws.send(JSON.stringify({type: "camera_state", on: false}));
     return;
   }
@@ -217,7 +396,10 @@ async function toggleCamera() {
     el("camview").srcObject = cameraStream;
     await el("camview").play();
     el("camview").style.display = "block";
-    el("cam").textContent = "📷 Stop camera";
+    el("cam").textContent = "📷 Camera ✓";
+    el("cam").classList.add("on");
+    el("camstate").textContent = "live";
+    el("camstate").className = "badge ok";
     ws.send(JSON.stringify({type: "camera_state", on: true}));
   } catch (e) {
     setStats("camera unavailable: " + e.message);
@@ -239,7 +421,7 @@ let micPaused = false;
 const tStats = {};
 function renderStats() {
   let s = Object.entries(tStats).map(([k, v]) => `${k} ${v} ms`).join(" · ");
-  if (micPaused) s = "🔊 speaking — mic paused" + (s ? " · " + s : "");
+  if (micPaused) s = "🔊 speaking — mic gated" + (s ? " · " + s : "");
   setStats(s || "…");
 }
 
@@ -260,6 +442,7 @@ function renderMetrics(m) {
   row("ttft", m.llm.ttft_ms != null ? m.llm.ttft_ms + " ms" : null);
   row("prefill", m.llm.prefill_tps ? `${m.llm.prompt_n} tok in ${m.llm.prompt_ms} ms — ${m.llm.prefill_tps} tok/s` : null);
   row("decode", m.llm.decode_tps ? `${m.llm.predicted_n} tok in ${m.llm.predicted_ms} ms — ${m.llm.decode_tps} tok/s` : null);
+  el("r_tps").textContent = m.llm.decode_tps ? m.llm.decode_tps + " tok/s" : "–";
   if (m.llm.corrupt)
     g.insertAdjacentHTML("beforeend",
       `<span class="badge bad" style="grid-column:1/3">⚠ LLM output corrupt — GPU fp4 fault (make canary)</span>`);
@@ -270,7 +453,7 @@ function renderMetrics(m) {
   const v2v = (m.tts.first_ms != null && playLatMs != null)
     ? `≈ ${Math.round(m.tts.first_ms + playLatMs)} ms` : null;
   row("voice → voice", v2v);
-  if (lastTurnEl) {
+  if (curTurn) {
     const bits = [];
     if (m.llm.corrupt) bits.push("⚠ LLM corrupt");
     if (m.asr.wake_to_final_ms != null) bits.push(`asr ${Math.round(m.asr.wake_to_final_ms)}ms`);
@@ -279,22 +462,35 @@ function renderMetrics(m) {
     if (m.tts.first_ms != null) bits.push(`tts ${Math.round(m.tts.first_ms)}ms`);
     if (bits.length) {
       // renderMetrics runs twice per turn (on metrics, then again once
-      // playback latency resolves) — update the turn's chip, don't append
-      if (turnChip && turnChip.turn === lastTurnEl && turnChip.el.isConnected)
-        turnChip.el.textContent = bits.join(" · ");
-      else {
+      // playback latency resolves) — the chip is always the turn's last
+      // child, so update it in place instead of appending a second one
+      const last = curTurn.lastElementChild;
+      if (last && last.classList.contains("mm")) {
+        last.textContent = bits.join(" · ");
+      } else {
         const d = document.createElement("div");
         d.className = "mm"; d.textContent = bits.join(" · ");
-        lastTurnEl.appendChild(d);
-        turnChip = {turn: lastTurnEl, el: d};
+        curTurn.appendChild(d);
       }
     }
   }
 }
-let lastMetrics = null, playLatMs = null, firstChunkOfTurn = true, chunkRx = 0, turnChip = null;
+let lastMetrics = null, playLatMs = null, firstChunkOfTurn = true, chunkRx = 0;
 
-// --- sequential playback ---
+// --- sequential playback (routed through an analyser for the waveform) ---
 let audioEl = null, playbackSent = false;
+let pctx = null, playAnalyser = null;
+function ensurePlayGraph() {
+  if (!pctx) {
+    try {
+      pctx = new (window.AudioContext || window.webkitAudioContext)();
+      playAnalyser = pctx.createAnalyser();
+      playAnalyser.fftSize = 1024;
+      playAnalyser.connect(pctx.destination);
+    } catch (e) { pctx = null; }
+  }
+  if (pctx && pctx.state === "suspended") pctx.resume();
+}
 function setPlayback(p) {
   if (p !== playbackSent && ws && ws.readyState === 1) {
     playbackSent = p;
@@ -312,7 +508,14 @@ function playNext() {
   setPlayback(true);
   const rx = chunkRx, isFirst = firstChunkOfTurn;
   firstChunkOfTurn = false;
+  ensurePlayGraph();
   audioEl = new Audio(audioQueue.shift());
+  if (pctx && !audioEl.dataset.sourced) {
+    try {
+      pctx.createMediaElementSource(audioEl).connect(playAnalyser);
+      audioEl.dataset.sourced = "1";
+    } catch (e) { /* waveform falls back to synthetic */ }
+  }
   audioEl.onplaying = () => {
     if (isFirst && playLatMs == null) {
       playLatMs = performance.now() - rx;
@@ -327,19 +530,80 @@ function playNext() {
   audioEl.play();
 }
 
+// --- waveform: mic live (teal) / assistant speaking (violet) / idle ---
+const waveC = el("wave"), waveG = waveC.getContext("2d");
+const BARS = 96;
+let synthBars = new Array(BARS).fill(0), synthT = new Array(BARS).fill(0);
+const micData = new Uint8Array(2048), playData = new Uint8Array(1024);
+function drawWave(ts) {
+  requestAnimationFrame(drawWave);
+  const dpr = window.devicePixelRatio || 1;
+  const w = waveC.clientWidth, h = waveC.clientHeight;
+  if (!w || !h) return;
+  if (waveC.width !== Math.round(w * dpr)) {
+    waveC.width = Math.round(w * dpr); waveC.height = Math.round(h * dpr);
+  }
+  waveG.setTransform(dpr, 0, 0, dpr, 0, 0);
+  waveG.clearRect(0, 0, w, h);
+  let vals = synthBars, color = "#33415580";
+  if (playing && pctx && pctx.state === "running" && audioEl && audioEl.dataset.sourced) {
+    color = "#a78bfa";
+    playAnalyser.getByteTimeDomainData(playData);
+    vals = bucketize(playData, 128);
+  } else if (playing) {
+    color = "#a78bfa";
+    for (let i = 0; i < BARS; i++) {
+      synthT[i] += (Math.random() - 0.5) * 0.35;
+      synthBars[i] += (0.25 + 0.2 * Math.sin(ts / 300 + i / 5) - synthBars[i]) * 0.2
+        + synthT[i] * 0.05;
+      synthBars[i] = Math.max(0.05, Math.min(1, synthBars[i]));
+      synthT[i] *= 0.9;
+    }
+  } else if (listening && analyser) {
+    color = "#14b8a6";
+    analyser.getByteTimeDomainData(micData);
+    vals = bucketize(micData, 128);
+  } else {
+    // idle: faint breathing line
+    const a = 1.5 + Math.sin(ts / 700) * 0.8;
+    waveG.fillStyle = "#33415580";
+    waveG.fillRect(w / 2 - 40, h / 2 - a / 2, 80, a);
+    return;
+  }
+  waveG.fillStyle = color;
+  const bw = w / BARS;
+  for (let i = 0; i < BARS; i++) {
+    const v = Math.pow(Math.min(1, vals[i]), 0.75);
+    const bh = Math.max(2, v * h * 0.46);
+    waveG.fillRect(i * bw + bw * 0.18, h / 2 - bh / 2, bw * 0.64, bh);
+  }
+}
+function bucketize(data, mid) {
+  const out = new Array(BARS).fill(0);
+  const per = Math.floor(data.length / BARS);
+  for (let i = 0; i < BARS; i++) {
+    let m = 0;
+    for (let j = 0; j < per; j++) {
+      const d = Math.abs(data[i * per + j] - mid) / mid;
+      if (d > m) m = d;
+    }
+    // ~8x gain so quiet speech is clearly visible; loud speech clamps
+    out[i] = Math.min(1, m * 8);
+  }
+  return out;
+}
+requestAnimationFrame(drawWave);
+
 // --- mic health: stats per 100 ms frame, analyser band ratios, verdict ---
 const micRing = [];              // last ~3 s of frame stats
 let lastHf = null;
 function pushFrameStats(pcm) {
-  let sum = 0, sumsq = 0, peak = 0, sat = 0, zc = 0;
-  let prevPos = pcm[0] > 0;
+  let sum = 0, sumsq = 0, peak = 0, sat = 0;
   for (let j = 0; j < pcm.length; j++) {
     const v = pcm[j], a = v < 0 ? -v : v;
     sum += v; sumsq += v * v;
     if (a > peak) peak = a;
     if (a >= 32200) sat++;               // ≥0.983 FS
-    if ((v > 0) !== prevPos) zc++;
-    prevPos = v > 0;
   }
   const n = pcm.length;
   micRing.push({ rms: Math.sqrt(sumsq / n) / 32768, peak: peak / 32768,
@@ -403,54 +667,30 @@ setInterval(refreshHealth, 500);
 
 // --- mic capture: resample to 16 kHz s16le, 100 ms frames ---
 async function startMic() {
-  stream = await navigator.mediaDevices.getUserMedia({ audio: {
-    echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: {
+      echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+  } catch (e) {
+    setStats("mic unavailable: " + e.message);
+    return;
+  }
   ctx = new AudioContext({ sampleRate: 16000 });  // browser resamples the graph
   const src = ctx.createMediaStreamSource(stream);
   analyser = ctx.createAnalyser();
   analyser.fftSize = 2048;
   src.connect(analyser);      // analysis tap only
-  await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([`
-    class Capture extends AudioWorkletProcessor {
-      constructor() { super();
-        this.step = sampleRate / 16000;   // 1 when the graph runs at 16 kHz
-        this.pos = 0; this.buf = [];
-      }
-      process(inputs) {
-        const ch = inputs[0][0];
-        if (!ch) return true;
-        if (this.step === 1) {
-          for (let i = 0; i < ch.length; i++) this.buf.push(ch[i]);
-        } else {
-          // linear resample toward 16 kHz (browsers ignoring the rate hint)
-          let pos = this.pos;
-          while (pos < ch.length) {
-            const i = pos | 0, f = pos - i;
-            const a = ch[i], b = ch[Math.min(i + 1, ch.length - 1)];
-            this.buf.push(a + (b - a) * f);
-            pos += this.step;
-          }
-          this.pos = pos - ch.length;
-        }
-        while (this.buf.length >= 1600) {
-          const frame = this.buf.splice(0, 1600);
-          const pcm = new Int16Array(1600);
-          for (let j = 0; j < 1600; j++) {
-            pcm[j] = Math.max(-32768, Math.min(32767, frame[j] * 32767));
-          }
-          this.port.postMessage(pcm.buffer, [pcm.buffer]);
-        }
-        return true;
-      }
-    }
-    registerProcessor("capture", Capture);`])));
+  try {
+    await ctx.audioWorklet.addModule("/capture-worklet.js");
+  } catch (e) {
+    setStats("mic worklet failed to load: " + e.message);
+    stream.getTracks().forEach(t => t.stop());
+    return;
+  }
   workletNode = new AudioWorkletNode(ctx, "capture");
   workletNode.port.onmessage = (e) => {
     if (ws && ws.readyState === 1) ws.send(e.data);
     const pcm = new Int16Array(e.data);
     pushFrameStats(pcm);
-    let peak = 0; for (let j = 0; j < pcm.length; j += 8) peak = Math.max(peak, Math.abs(pcm[j]));
-    el("levelbar").style.width = Math.min(100, peak / 327) + "%";
   };
   src.connect(workletNode);
   if (ws && ws.readyState === 1)
@@ -476,8 +716,12 @@ function stopMic() {
 el("mic").onclick = () => listening ? stopMic() : startMic();
 el("reset").onclick = () => {
   ws.send(JSON.stringify({type: "reset"}));
-  el("log").innerHTML = "";
-  window.lastReply = null;
+  feed.innerHTML = "";
+  curTurn = null;
+  pendingCues = [];
+  el("reply").textContent = "—";
+  el("partial").textContent = "—";
+  setModeBadge("");
 };
 connect();
 </script>

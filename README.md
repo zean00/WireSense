@@ -39,6 +39,18 @@ and TTS choices above are English-only — revisit then).
    (the refleqwen house style); components get validation harnesses under
    `tools/`.
 
+## Web UI (2026-10-04)
+
+Three panels: **left** — debug (mic health, router readouts, per-turn pipeline
+metrics, camera preview, raw event log); **center** — stage (route badge,
+ChatGPT-style live waveform — teal from the mic analyser, violet from the
+assistant's playback through a WebAudio `MediaElementSource` graph — live
+partial and reply); **right** — conversation history: user/filler bubbles,
+the captured frame for vision turns, the streamed thinking trace, tool calls
+with args and results, reminder fires, and a per-turn latency chip. The mic
+worklet is served same-origin (`/capture-worklet.js`) — blob: module URLs
+fail in some webviews.
+
 ## Agentic routing (2026-10-04)
 
 The loop routes every turn through a **decision tree** (`tools/decision_tree.json`,
@@ -61,7 +73,12 @@ cosine conf is miscalibrated as an error signal.
 
 - **direct** — answer immediately.
 - **think.long_think** — context-selected filler ("One second, let me figure
-  that out."), then generate with a reasoning directive and larger `max_tokens`.
+  that out."), then **open-think generation**: the prompt ends at an unclosed
+  `<think>` block, the reasoning streams to the UI as `think_delta` (never
+  spoken), and only the post-`</think>` answer enters TTS and history. Budget
+  640 tokens; if the block hasn't closed by then, the server force-closes it
+  (`</think>` appended to the trace) and reads the answer off the warm slot
+  cache — a ~4-token prefill.
 - **think.tool** — tool filler ("Let me do that for you."), then the tool
   flow: the LLM picks from a V1 manifest (timer / reminder / note) as
   manifest-JSON, args are validated and executed (timer → client `tool_event`
