@@ -178,6 +178,9 @@ canary:
 record-router:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/record_router.py
 
+eval-router:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/eval_router.py
+
 logs:
 	@tail -n 25 -F $(LOG_LLAMA) $(LOG_PHONON) $(LOG_WEB)
 

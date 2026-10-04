@@ -51,11 +51,18 @@ SLOT = 5  # dedicated llama slot for the web assistant (0-4 free for other work)
 BC_FIRST_S = 6.0   # min user speech before the first backchannel
 BC_GAP_S = 5.0     # min spacing between backchannels
 BC_MAX = 2         # backchannels per turn
-MODE_MAX_TOKENS = {"direct": 96, "think": 220, "decide": 160}
+MODE_MAX_TOKENS = {"direct": 96, "think": 220, "decide": 160,
+                   "social": 96, "vision": 96}
 MODE_SUFFIX = {
     "think": " Reason step by step, then give a clear, concise answer.",
     "decide": " Weigh the trade-offs briefly, then commit to a clear recommendation.",
+    "social": " Respond warmly and briefly, like a friend.",
+    # interim honesty guard until the camera pipeline (mmproj capture)
+    # lands — vision-routed turns must never bluff about what they see
+    "vision": " You currently have no camera access. If asked about "
+              "something visual, say honestly that you cannot see it yet.",
 }
+FILLER_MODES = ("think", "decide")  # social/vision: no filler (see below)
 
 KOKORO = None
 READOUT = None
@@ -390,7 +397,12 @@ class Session:
                                                 norm_router_text(utterance))
             mode, conf = ROUTER.route(emb)
             await self.send({"type": "route", "mode": mode, "conf": conf})
-            if mode != "direct":
+            if mode == "vision":
+                # capture hook for the VLM phase: grab a camera frame here,
+                # attach it, and take the think path. Until that lands the
+                # honesty suffix above keeps vision turns honest.
+                pass
+            if mode in FILLER_MODES:
                 fb = ROUTER.feedback(emb, mode)
                 await self.send({"type": "feedback", "text": fb})
                 await self.tts(fb, guard_turn=my_turn)

@@ -16,7 +16,12 @@
       "Repeat that.",
       "How many continents are there?",
       "What does 'gregarious' mean?",
-      "Is mercury a metal?"
+      "Is mercury a metal?",
+      "How many hearts does an octopus have?",
+      "How hot is the sun's surface?",
+      "What's nine times eight?",
+      "How long is the Nile river?",
+      "What do bees eat?"
     ],
     "think": [
       "What's 17 percent of 243?",
@@ -28,7 +33,7 @@
       "Walk me through why the experiment failed.",
       "Explain the difference between HTTP and HTTPS.",
       "What's the square root of 1764?",
-      "Remind me to call mom when I get home.",
+      "Set an alarm for six tomorrow morning.",
       "Summarize this article for me.",
       "If a train travels 60 kilometers per hour for 90 minutes, how far does it go?",
       "Search for flights to Denver next week.",
@@ -51,6 +56,40 @@
       "Is it smarter to fix the car or sell it?",
       "Where should we go for vacation?",
       "Do you recommend the blue one or the black one?"
+    ],
+    "social": [
+      "I had such a long day at work.",
+      "I'm feeling a bit down today.",
+      "I finally told my friend how I felt.",
+      "I miss my grandmother a lot.",
+      "Thanks for listening to me vent.",
+      "Guess what happened to me today!",
+      "I'm just so tired lately.",
+      "I'm nervous about my presentation tomorrow.",
+      "We won the match last night!",
+      "Honestly, I don't know why I'm so upset about this.",
+      "I can't believe it's already Friday.",
+      "I just needed to tell someone about this.",
+      "The holidays are hard for me.",
+      "I finally finished my thesis!",
+      "I'm so proud of my little brother."
+    ],
+    "vision": [
+      "What do you think about my new glasses?",
+      "Does the color of my clothes match my skin tone?",
+      "Can you see what's on my screen?",
+      "How does my hair look today?",
+      "What is this thing I'm holding?",
+      "Can you check if my collar is straight?",
+      "What does this chart on my monitor say?",
+      "Take a look at this sketch I drew.",
+      "Can you read the text on this page I'm showing?",
+      "Is my plant looking healthy?",
+      "What's behind me right now?",
+      "Do I have something on my face?",
+      "How is my posture in this video call?",
+      "Can you identify this bird outside my window?",
+      "Is there anything stuck between my teeth?"
     ]
   },
   "feedback": {

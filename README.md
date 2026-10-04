@@ -41,19 +41,28 @@ and TTS choices above are English-only — revisit then).
 
 ## Agentic routing (2026-10-04)
 
-The loop routes every turn into **direct / think / decide** (tool use is a
-think sub-path) using the same arm-C head that powers the decide layer:
-head-projected class centroids over the slot-6 embedding of the raw
-utterance. Both refs (`tools/router_pools.json` + `models/router_embeddings.npz`,
-recorded by `make record-router`) and live text pass through `norm_router_text`
-— refs must match ASR text style (lowercase, punctuation-free) or the class
-margins collapse. Measured: 35/36 held-out eval; live e2e 3/4 with the miss
-on a social monologue (out of taxonomy, benign).
+The loop routes every turn into **direct / think / decide / social / vision**
+(tool use is a think sub-path; vision capture wraps the think path) using the
+same arm-C head that powers the decide layer: head-projected class centroids
+over the slot-6 embedding of the raw utterance. Both refs
+(`tools/router_pools.json` + `models/router_embeddings.npz`, recorded by
+`make record-router`) and live text pass through `norm_router_text` — refs
+must match ASR text style (lowercase, punctuation-free) or the class margins
+collapse. Held-out eval (`make eval-router`, 56 pre-registered utterances):
+50/56 = 89%; social and vision separate cleanly (20/20); the residual is the
+direct<->think soft edge, whose behavioral cost is only a filler line on a
+factual question.
 
 - **direct** — answer immediately (as before).
 - **think / decide** — speak a context-selected filler first ("One second,
   let me figure that out."), then generate with a mode-conditioned system
   suffix and larger `max_tokens`.
+- **social** — warm, brief tone; no filler.
+- **vision** — camera request ("What do you think about my new glasses?").
+  Interim behavior is an honesty suffix (the assistant says it cannot see
+  yet); the capture hook in `respond()` grabs a frame, attaches it, and
+  takes the think path once the VLM (mmproj) lands. Budget: ~1.6 GiB VRAM
+  free at the 64K footprint — quantized mmproj only, else CPU captioner.
 - **Backchannels** — during long user speech (>6 s, max 2/turn), a listening
   cue ("Uh-huh.", "And then?") is selected 1-NN from the partial's embedding
   and spoken while the user is still talking; the browser mic runs echo
