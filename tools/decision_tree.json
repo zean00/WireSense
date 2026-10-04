@@ -1,13 +1,11 @@
 {
-  "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py — re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating — cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, tool = tool flow, vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
-  "version": 1,
+  "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py — re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating — cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
+  "version": 2,
   "nodes": {
     "root": {
       "classes": {
         "direct": {"action": "llm", "max_tokens": 96},
-        "think": {"action": "llm", "max_tokens": 220,
-                  "directive": "Reason step by step, then give a clear, concise answer.",
-                  "filler": true},
+        "think": {"action": "subtree", "node": "think", "filler": true},
         "decide": {"action": "llm", "max_tokens": 160,
                    "directive": "Weigh the trade-offs briefly, then commit to a clear recommendation.",
                    "filler": true},
@@ -54,7 +52,16 @@
           "If a train travels 60 kilometers per hour for 90 minutes, how far does it go?",
           "Search for flights to Denver next week.",
           "Draft an email to my landlord about the leak.",
-          "How much paint do I need for a 12 by 15 foot room?"
+          "How much paint do I need for a 12 by 15 foot room?",
+          "Is it going to rain tomorrow?",
+          "Will it rain this afternoon?",
+          "What's the weather in Jakarta?",
+          "How's the weather in Bali?",
+          "Make a note that my gate is B22.",
+          "Note down that the meeting moved to three.",
+          "Remember that I parked on level two.",
+          "Turn this paragraph into bullet points.",
+          "Convert the measurements in this recipe to grams."
         ],
         "decide": [
           "Should I take the bus or walk?",
@@ -108,6 +115,45 @@
           "Is there anything stuck between my teeth?"
         ]
       }
+    },
+    "think": {
+      "classes": {
+        "long_think": {"action": "llm", "max_tokens": 220,
+                       "directive": "Reason step by step, then give a clear, concise answer."},
+        "tool": {"action": "tool", "feedback": "tool"}
+      },
+      "pools": {
+        "long_think": [
+          "Plan a three-day trip to Tokyo.",
+          "Write a short story about a dragon.",
+          "Walk me through why the experiment failed.",
+          "Explain the difference between HTTP and HTTPS.",
+          "Work out the monthly payment on a 20 thousand dollar loan.",
+          "Draft an email to my landlord about the leak.",
+          "Summarize this article for me.",
+          "How much paint do I need for a 12 by 15 foot room?",
+          "Compare renting versus buying a house.",
+          "Count the vowels in the word extraordinary.",
+          "If I leave at six and the flight takes two hours, when do I land?",
+          "If I leave at five pm and the drive takes three hours, when will I arrive?",
+          "What day of the week will it be in 30 days?"
+        ],
+        "tool": [
+          "Set a timer for 10 minutes.",
+          "Set an alarm for six tomorrow morning.",
+          "Add a calendar event for lunch tomorrow at noon.",
+          "Search for flights to Denver next week.",
+          "Remind me to take my pills at 9.",
+          "Turn on the living room lights.",
+          "What's the weather in Jakarta?",
+          "Play some jazz music.",
+          "Text my brother that I'm running late.",
+          "Order more coffee beans.",
+          "Make a note that my gate is B22.",
+          "Write down that the meeting is at three.",
+          "Keep a note that I lent Mark twenty bucks."
+        ]
+      }
     }
   },
   "feedback": {
@@ -121,6 +167,12 @@
       "Hmm, that's a real trade-off, let me weigh it.",
       "Good question. Let me think it through.",
       "Let me consider the options for a moment."
+    ],
+    "tool": [
+      "Let me do that for you.",
+      "On it, give me a second.",
+      "Working on that now.",
+      "One moment, I'll take care of that."
     ]
   },
   "backchannel": [

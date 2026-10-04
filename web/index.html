@@ -43,6 +43,10 @@
   .sec { font-size: 11px; color: #5eead4; margin-top: 6px; text-transform: uppercase;
          letter-spacing: .06em; }
   .mm { font-size: 11.5px; color: #7d8aa0; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .toast { position: fixed; right: 18px; bottom: 18px; z-index: 50;
+           background: #1e293b; color: #e2e8f0; border: 1px solid #334155;
+           border-radius: 8px; padding: 10px 14px; font-size: 13px;
+           box-shadow: 0 6px 24px rgba(0,0,0,.35); max-width: 320px; }
 </style>
 </head>
 <body>
@@ -114,6 +118,8 @@ function onMessage(ev) {
     el("partial").textContent = `[${m.text}]`;
   } else if (m.type === "cancel_tts") {
     audioQueue = []; if (playing) { stopPlayback(); }
+  } else if (m.type === "tool_event") {
+    handleToolEvent(m);
   } else if (m.type === "response_start") {
     tStats.ttft = m.ttft_ms; renderStats();
   } else if (m.type === "response_delta") {
@@ -145,6 +151,45 @@ function onMessage(ev) {
   } else if (m.type === "mic_state") {
     micPaused = !m.listening;
     renderStats();
+  }
+}
+
+// --- tool events (server-delegated execution) ---
+let toolCtx = null;
+function beep(times = 2) {
+  try {
+    toolCtx = toolCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (toolCtx.state === "suspended") toolCtx.resume();
+    const t0 = toolCtx.currentTime + 0.05;
+    for (let i = 0; i < times; i++) {
+      const o = toolCtx.createOscillator(), g = toolCtx.createGain();
+      o.type = "sine"; o.frequency.value = 880;
+      const t = t0 + i * 0.45;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+      o.connect(g); g.connect(toolCtx.destination);
+      o.start(t); o.stop(t + 0.4);
+    }
+  } catch (e) { /* audio unavailable — the toast still shows */ }
+}
+function toast(text, ms = 8000) {
+  const d = document.createElement("div");
+  d.className = "toast";
+  d.textContent = text;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), ms);
+}
+function handleToolEvent(m) {
+  if (m.tool === "timer") {
+    toast(`⏱ timer started${m.label ? ": " + m.label : ""} (${m.seconds} s)`);
+    setTimeout(() => {
+      beep(3);
+      toast(`⏱ time's up${m.label ? " — " + m.label : ""}`, 15000);
+    }, m.seconds * 1000);
+  } else if (m.tool === "reminder_due") {
+    beep(2);
+    toast(`🔔 reminder: ${m.text}`, 15000);
   }
 }
 

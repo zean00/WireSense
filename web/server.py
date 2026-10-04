@@ -55,6 +55,100 @@ BC_FIRST_S = 6.0   # min user speech before the first backchannel
 BC_GAP_S = 5.0     # min spacing between backchannels
 BC_MAX = 2         # backchannels per turn
 
+# --- V1 tool registry (data, not code paths): the LLM picks from this
+# manifest; execution is server-side (reminder/note -> memory.json,
+# relative-time reminders fire via asyncio) or delegated to the client
+# (timer beeps locally via tool_event). ---
+TOOL_MANIFEST = {
+    "timer": "start a countdown; args: seconds (int 1-86400), label (optional short string)",
+    "reminder": "save a reminder; args: when (short phrase, e.g. 'in 10 minutes' or 'Friday 9am'), text (what to remind)",
+    "note": "save a note for later; args: text (the note)",
+}
+MEMORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "memory.json")
+REL_TIME = re.compile(r"\bin (\d+) (second|minute|hour)s?\b", re.I)
+
+TOOL_FALLBACK_DIRECTIVE = ("No available tool fits this request. Answer briefly; "
+                           "if you lack the ability (for example live data or "
+                           "device control), say so honestly.")
+TOOL_RETRY_DIRECTIVE = ('Your last reply was not valid tool JSON. Reply with '
+                        'ONLY a JSON object: {"tool": "<name>", "args": {...}} '
+                        'or {"tool": null}. No other text.')
+
+
+def tool_manifest_directive() -> str:
+    lines = "\n".join(f"- {name}: {desc}" for name, desc in TOOL_MANIFEST.items())
+    return ("Choose a tool for this request. Available tools:\n" + lines +
+            '\nReply with ONLY a JSON object: {"tool": "<name>", "args": {...}} '
+            'or {"tool": null} if no tool fits. No other text.')
+
+
+def parse_tool_json(text):
+    """Extract a tool plan from generation text; None if unparseable."""
+    m = re.search(r"\{.*\}", text, re.S)
+    if not m:
+        return None
+    try:
+        j = json.loads(m.group(0))
+    except ValueError:
+        return None
+    if not isinstance(j, dict) or "tool" not in j:
+        return None
+    tool, args = j["tool"], j.get("args")
+    if tool is None:
+        return {"tool": None, "args": {}}
+    if not isinstance(tool, str) or not isinstance(args, dict):
+        return None
+    return {"tool": tool, "args": args}
+
+
+def validate_tool(name, args) -> dict:
+    """Normalize + bound-check args; raises ValueError on any bad arg."""
+    if name == "timer":
+        secs = int(args.get("seconds"))
+        if not 1 <= secs <= 86400:
+            raise ValueError("seconds out of range")
+        return {"seconds": secs, "label": str(args.get("label") or "")[:80]}
+    if name == "reminder":
+        when = str(args.get("when") or "").strip()
+        text = str(args.get("text") or "").strip()
+        if not when or not text:
+            raise ValueError("reminder needs when + text")
+        return {"when": when[:120], "text": text[:200]}
+    if name == "note":
+        text = str(args.get("text") or "").strip()
+        if not text:
+            raise ValueError("note needs text")
+        return {"text": text[:500]}
+    raise ValueError(f"unknown tool {name}")
+
+
+def parse_relative_seconds(when: str):
+    m = REL_TIME.search(when)
+    if not m:
+        return None
+    return int(m.group(1)) * {"second": 1, "minute": 60, "hour": 3600}[m.group(2)]
+
+
+def append_memory(item):
+    items = load_memory()
+    items.append(item)
+    with open(MEMORY_PATH, "w") as f:
+        json.dump(items, f, indent=1)
+
+
+def load_memory() -> list:
+    try:
+        with open(MEMORY_PATH) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return []
+
+
+def _now(offset_s=0) -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(time.time()
+                                                             + offset_s))
+
 KOKORO = None
 READOUT = None
 WALKER = None
@@ -275,6 +369,8 @@ class Session:
         self.turn_id = 0
         self.bc_count = 0
         self.bc_last_t = 0.0
+        self._pending = set()  # background tasks (reminder fires) — kept
+                               # referenced or the loop may GC them mid-sleep
 
     def gate_active(self) -> bool:
         return (self.speaking or self.playback
@@ -401,14 +497,24 @@ class Session:
             emb, _ = await loop.run_in_executor(None, READOUT.embed,
                                                 norm_router_text(utterance))
             cls, spec, conf = WALKER.route(emb)
-            await self.send({"type": "route", "mode": cls, "conf": conf})
+            if spec.get("action") == "subtree":
+                # the same embedding walks the child node (numpy only);
+                # the child's action params win, its feedback key refines
+                # the filler (tool work sounds different from thinking)
+                sub_cls, sub_spec, sub_conf = WALKER.route(emb, spec["node"])
+                await self.send({"type": "route", "mode": f"{cls}.{sub_cls}",
+                                 "conf": sub_conf})
+                spec = {**spec, **sub_spec}
+                cls = f"{cls}.{sub_cls}"
+            else:
+                await self.send({"type": "route", "mode": cls, "conf": conf})
             if spec["action"] == "vision_generic":
                 # capture hook for the VLM phase: request a frame from the
                 # client here, attach it, and take the think path. Until
                 # that lands the honesty directive keeps vision turns honest.
                 pass
             if spec.get("filler"):
-                fb = WALKER.feedback(emb, cls)
+                fb = WALKER.feedback(emb, spec.get("feedback") or cls)
                 await self.send({"type": "feedback", "text": fb})
                 await self.tts(fb, guard_turn=my_turn)
         except Exception:
@@ -416,39 +522,50 @@ class Session:
         self.route_mode = cls
         t0 = time.perf_counter()
         first, chunks, timings = None, [], None
-        try:
-            with requests.post(f"{LLAMA}/v1/completions", json={
-                    "prompt": build_prompt(self.history, utterance,
-                                           spec.get("directive")),
-                    "max_tokens": spec.get("max_tokens", 96),
-                    "temperature": 0, "cache_prompt": True,
-                    "id_slot": SLOT, "stream": True}, stream=True, timeout=120) as r:
-                r.raise_for_status()
-                for line in r.iter_lines():
-                    if not line or not line.startswith(b"data: "):
-                        continue
-                    payload = line[len(b"data: "):]
-                    if payload == b"[DONE]":
-                        break
-                    j = json.loads(payload)
-                    delta = j["choices"][0].get("text", "")
-                    if j.get("timings"):
-                        timings = j["timings"]  # llama.cpp reports on chunks
-                    if delta and first is None:
-                        first = (time.perf_counter() - t0) * 1000
-                        await self.send({"type": "response_start",
-                                         "ttft_ms": round(first, 1)})
-                    if delta:
-                        chunks.append(delta)
-                        await self.send({"type": "response_delta", "text": delta})
-        except Exception as e:
-            await self.send({"type": "error", "message": f"llm: {e}"})
-            self.speaking = False
-            self.gate_until = time.monotonic() + GATE_TAIL
-            await self.update_gate()
-            self.schedule_gate_release(GATE_TAIL)
-            return
-        reply = "".join(chunks).strip()
+        reply = None
+        if spec.get("action") == "tool":
+            reply = await self.tool_flow(utterance)
+            if reply is None:
+                # nothing fit the manifest (or JSON failed twice): honest
+                # brief answer instead of pretending
+                spec = dict(spec, action="llm", max_tokens=96,
+                            directive=TOOL_FALLBACK_DIRECTIVE)
+        if reply is None:
+            try:
+                with requests.post(f"{LLAMA}/v1/completions", json={
+                        "prompt": build_prompt(self.history, utterance,
+                                               spec.get("directive")),
+                        "max_tokens": spec.get("max_tokens", 96),
+                        "temperature": 0, "cache_prompt": True,
+                        "id_slot": SLOT, "stream": True}, stream=True,
+                        timeout=120) as r:
+                    r.raise_for_status()
+                    for line in r.iter_lines():
+                        if not line or not line.startswith(b"data: "):
+                            continue
+                        payload = line[len(b"data: "):]
+                        if payload == b"[DONE]":
+                            break
+                        j = json.loads(payload)
+                        delta = j["choices"][0].get("text", "")
+                        if j.get("timings"):
+                            timings = j["timings"]  # llama.cpp reports on chunks
+                        if delta and first is None:
+                            first = (time.perf_counter() - t0) * 1000
+                            await self.send({"type": "response_start",
+                                             "ttft_ms": round(first, 1)})
+                        if delta:
+                            chunks.append(delta)
+                            await self.send({"type": "response_delta",
+                                             "text": delta})
+            except Exception as e:
+                await self.send({"type": "error", "message": f"llm: {e}"})
+                self.speaking = False
+                self.gate_until = time.monotonic() + GATE_TAIL
+                await self.update_gate()
+                self.schedule_gate_release(GATE_TAIL)
+                return
+            reply = "".join(chunks).strip()
         # fp4-fault signature: output is essentially all '?' (see
         # docs/INCIDENT-2026-10-04-GPU.md) — surfaced to the UI, never fatal
         corrupt = len(reply) >= 8 and reply.count("?") >= 0.9 * len(reply)
@@ -463,6 +580,80 @@ class Session:
         self.gate_until = max(self.gate_until, time.monotonic() + 1.0)
         await self.update_gate()
         self.schedule_gate_release(1.0)
+
+    async def tool_flow(self, utterance):
+        """Manifest-JSON generation -> validate -> execute -> confirm.
+        One retry on invalid JSON. Returns the confirmation reply, or
+        None when nothing fit (caller falls back to an honest answer).
+        The plan/confirm generations are internal: only the confirmation
+        enters history and TTS."""
+        plan = None
+        for directive in (tool_manifest_directive(), TOOL_RETRY_DIRECTIVE):
+            try:
+                loop = asyncio.get_event_loop()
+                r = await loop.run_in_executor(None, lambda d=directive:
+                    requests.post(f"{LLAMA}/v1/completions", json={
+                        "prompt": build_prompt(self.history, utterance, d),
+                        "max_tokens": 80, "temperature": 0,
+                        "cache_prompt": True, "id_slot": SLOT}, timeout=60))
+                r.raise_for_status()
+                plan = parse_tool_json(r.json()["choices"][0]["text"])
+            except Exception:
+                return None
+            if plan is not None:
+                break
+        if plan is None or plan["tool"] is None:
+            return None
+        try:
+            args = validate_tool(plan["tool"], plan["args"])
+        except (ValueError, TypeError):
+            return None
+        result = await self.run_tool(plan["tool"], args)
+        confirm_d = (f"Tool result: {result}. Confirm to the user in one "
+                     "short sentence.")
+        try:
+            loop = asyncio.get_event_loop()
+            r = await loop.run_in_executor(None, lambda: requests.post(
+                f"{LLAMA}/v1/completions", json={
+                    "prompt": build_prompt(self.history, utterance, confirm_d),
+                    "max_tokens": 48, "temperature": 0, "cache_prompt": True,
+                    "id_slot": SLOT}, timeout=60))
+            r.raise_for_status()
+            reply = r.json()["choices"][0]["text"].strip()
+        except Exception:
+            reply = result  # the tool DID run; speak the plain result
+        return reply or result
+
+    async def run_tool(self, name, args):
+        """Execute a validated tool; returns a short result note for the
+        confirmation turn. Timer execution is delegated to the client
+        (tool_event); reminder/note land in memory.json, relative-time
+        reminders fire back through tool_event."""
+        if name == "timer":
+            await self.send({"type": "tool_event", "tool": "timer", **args})
+            label = f", label '{args['label']}'" if args["label"] else ""
+            return f"timer started for {args['seconds']} seconds{label}"
+        if name == "reminder":
+            secs = parse_relative_seconds(args["when"])
+            item = {"type": "reminder", "when": args["when"],
+                    "text": args["text"], "created": _now(),
+                    "due": _now(secs) if secs else None}
+            append_memory(item)
+            if secs:
+                async def fire():
+                    await asyncio.sleep(secs)
+                    await self.send({"type": "tool_event",
+                                     "tool": "reminder_due",
+                                     "text": args["text"]})
+                t = asyncio.create_task(fire())
+                self._pending.add(t)
+                t.add_done_callback(self._pending.discard)
+            return f"reminder saved: {args['text']} ({args['when']})"
+        if name == "note":
+            append_memory({"type": "note", "text": args["text"],
+                           "created": _now()})
+            return f"note saved: {args['text']}"
+        raise ValueError(name)  # validate_tool guards every caller
 
     async def tts(self, text, guard_turn=None):
         sents = [s for s in SENT_SPLIT.split(text) if s.strip()] or [text]
@@ -526,8 +717,10 @@ class Session:
                     "sentences": self.tts_n},
             "e2e_ms": self.tts_first_ms,  # final → first audio out of server
         })
-        # reset per-turn accumulators
+        # reset per-turn accumulators (t_final too: a pre-final TTS chunk
+        # like a backchannel must not measure against the previous turn)
         self.t_wake = None
+        self.t_final = None
         self.n_frames = 0
         self.first_partial_t = None
         self.partial_count = 0

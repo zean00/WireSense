@@ -41,25 +41,39 @@ and TTS choices above are English-only — revisit then).
 
 ## Agentic routing (2026-10-04)
 
-The loop routes every turn into **direct / think / decide / social / vision**
-(tool use is a think sub-path; vision capture wraps the think path) using the
-same arm-C head that powers the decide layer: head-projected class centroids
-over the slot-6 embedding of the raw utterance. Both refs
-(`tools/router_pools.json` + `models/router_embeddings.npz`, recorded by
-`make record-router`) and live text pass through `norm_router_text` — refs
-must match ASR text style (lowercase, punctuation-free) or the class margins
-collapse. Held-out eval (`make eval-router`, 56 pre-registered utterances):
-50/56 = 89%; social and vision separate cleanly (20/20); the residual is the
-direct<->think soft edge, whose behavioral cost is only a filler line on a
-factual question.
+The loop routes every turn through a **decision tree** (`tools/decision_tree.json`,
+walked by `TreeWalker` in `web/server.py`): the root picks **direct / think /
+decide / social / vision**, and the think subtree splits **long_think vs tool**.
+Every node is the same arm-C head that powers the decide layer — head-projected
+class centroids over the slot-6 embedding of the raw utterance; subtree walks
+reuse the root's embedding (numpy only, no second embed). Both refs
+(`models/router_embeddings.npz`, keyed `<node>.<class>`, recorded by
+`make record-router` from the tree config) and live text pass through
+`norm_router_text` — refs must match ASR text style (lowercase,
+punctuation-free) or the class margins collapse. Mode directives ride the
+current user turn (never the system block), so the KV prefix stays warm
+across mode switches.
 
-- **direct** — answer immediately (as before).
-- **think / decide** — speak a context-selected filler first ("One second,
-  let me figure that out."), then generate with a mode-conditioned system
-  suffix and larger `max_tokens`.
+Held-out eval (`make eval-router`): root **52/56 = 93%**, think subtree
+**20/20**; end-to-end component accuracy tree **47/56 vs flat 35/56**
+(`make tree-probe`). Per the tree-probe experiment: no confidence gating —
+cosine conf is miscalibrated as an error signal.
+
+- **direct** — answer immediately.
+- **think.long_think** — context-selected filler ("One second, let me figure
+  that out."), then generate with a reasoning directive and larger `max_tokens`.
+- **think.tool** — tool filler ("Let me do that for you."), then the tool
+  flow: the LLM picks from a V1 manifest (timer / reminder / note) as
+  manifest-JSON, args are validated and executed (timer → client `tool_event`
+  beep + toast; reminder/note → `web/memory.json`, relative-time reminders
+  fire back through `tool_event`), and a confirmation sentence is generated.
+  A null plan or two invalid JSONs falls back to an honest brief answer
+  (weather → "I don't have access to live weather data"), so tool-request
+  misroutes degrade gracefully. E2E: `make test-voice` (10 cases, 10/10).
+- **decide** — trade-off directive, commits to a recommendation.
 - **social** — warm, brief tone; no filler.
 - **vision** — camera request ("What do you think about my new glasses?").
-  Interim behavior is an honesty suffix (the assistant says it cannot see
+  Interim behavior is an honesty directive (the assistant says it cannot see
   yet); the capture hook in `respond()` grabs a frame, attaches it, and
   takes the think path once the VLM (mmproj) lands. Budget: ~1.6 GiB VRAM
   free at the 64K footprint — quantized mmproj only, else CPU captioner.

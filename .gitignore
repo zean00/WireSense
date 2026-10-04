@@ -4,3 +4,4 @@ audio/
 __pycache__/
 *.pyc
 nohup.out
+web/memory.json

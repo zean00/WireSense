@@ -1,16 +1,18 @@
-"""Held-out eval for the root node of the agentic decision tree
-(tools/decision_tree.json).
+"""Held-out eval for the agentic decision tree (tools/decision_tree.json).
 
-Protocol: 56 utterances disjoint from the signature pools, embedded via
+Protocol: utterances disjoint from the signature pools, embedded via
 the production path (norm_router_text -> slot 6 -> head -> centroids),
 scored top-1 per class with a confusion matrix. Run against the live
 serving model:
 
     make eval-router
 
-Re-run after any pool edit or re-record. The eval set is pre-registered:
-do not add utterances that already appear in the pools, and treat any
-change to the eval list itself as a protocol change (note it in git).
+Sections: ROOT_EVAL (56 items, root node) and THINK_EVAL (20 items,
+think subtree — long_think vs tool; the tool set itself is adjudicated
+in the e2e harness). Re-run after any pool edit or re-record. The eval
+sets are pre-registered: do not add utterances that already appear in
+the pools, and treat any change to the eval lists themselves as a
+protocol change (note it in git).
 """
 import json
 import sys
@@ -88,6 +90,30 @@ EVAL = [
     ("What does the error on my screen say?", "vision"),
 ]
 
+# think subtree (long_think vs tool) — disjoint from all pools
+THINK_EVAL = [
+        ("How long would it take to read a 400 page book?", "long_think"),
+        ("Turn this recipe into a shopping list.", "long_think"),
+        ("Write a haiku about autumn.", "long_think"),
+        ("If today is Tuesday, what day is it in 100 days?", "long_think"),
+        ("Work out the tip on an 84 dollar bill.", "long_think"),
+        ("Explain how a bill becomes law, step by step.", "long_think"),
+        ("How much would a 30 kilogram suitcase weigh on Mars?", "long_think"),
+        ("Plan my week around three meetings.", "long_think"),
+        ("Count the vowels in onomatopoeia.", "long_think"),
+        ("Draft a cover letter for a barista job.", "long_think"),
+        ("Set a timer for 20 minutes.", "tool"),
+        ("Wake me up at 7 am.", "tool"),
+        ("Add milk to my shopping list.", "tool"),
+        ("What's the weather tomorrow?", "tool"),
+        ("Turn off the lights.", "tool"),
+        ("Play the Beatles.", "tool"),
+        ("Send a message to Sarah.", "tool"),
+        ("Remind me about the dentist on Friday.", "tool"),
+        ("Order a taxi to the airport.", "tool"),
+        ("Start a 5 minute plank timer.", "tool"),
+    ]
+
 
 def norm_router_text(t):
     """Must match web/server.py and tools/record_router.py."""
@@ -125,35 +151,43 @@ def main():
         return x / np.linalg.norm(x, axis=-1, keepdims=True)
 
     root = tree["nodes"]["root"]
-    classes = list(root["classes"])
-    cents = norm(np.stack([norm(project(z[f"root.{c}"])).mean(0) for c in classes]))
 
-    # protocol guard: no eval utterance may appear in a pool
-    pool_texts = {norm_router_text(t)
-                  for node in tree["nodes"].values()
-                  for ts in node["pools"].values() for t in ts}
-    clash = [t for t, _ in EVAL if norm_router_text(t) in pool_texts]
-    if clash:
-        print(f"PROTOCOL VIOLATION — eval utterances also in pools: {clash}")
-        return 1
+    # protocol guard: an eval utterance must not appear in the pool of the
+    # node it is scored on (cross-node overlap does not contaminate either
+    # eval — nodes score against their own centroids only)
+    for node_id, evs in (("root", EVAL), ("think", THINK_EVAL)):
+        node_texts = {norm_router_text(t)
+                      for ts in tree["nodes"][node_id]["pools"].values()
+                      for t in ts}
+        clash = [t for t, _ in evs if norm_router_text(t) in node_texts]
+        if clash:
+            print(f"PROTOCOL VIOLATION — {node_id} eval utterances also in "
+                  f"{node_id} pools: {clash}")
+            return 1
 
-    idx = {c: i for i, c in enumerate(classes)}
-    cm = np.zeros((len(classes), len(classes)), int)
-    misses = []
-    for text, gold in EVAL:
-        v = norm(project(emb(text)[None, :]))[0]
-        pred = classes[int(np.argmax(cents @ v))]
-        cm[idx[gold], idx[pred]] += 1
-        if pred != gold:
-            misses.append((gold, pred, text))
+    def eval_node(node_id, evs):
+        classes = list(tree["nodes"][node_id]["classes"])
+        cents = norm(np.stack([norm(project(z[f"{node_id}.{c}"])).mean(0)
+                               for c in classes]))
+        idx = {c: i for i, c in enumerate(classes)}
+        cm = np.zeros((len(classes), len(classes)), int)
+        misses = []
+        for text, gold in evs:
+            v = norm(project(emb(text)[None, :]))[0]
+            pred = classes[int(np.argmax(cents @ v))]
+            cm[idx[gold], idx[pred]] += 1
+            if pred != gold:
+                misses.append((gold, pred, text))
+        acc = cm.diagonal().sum() / cm.sum()
+        print(f"\n{node_id} node eval: {int(cm.diagonal().sum())}/{len(evs)} = {acc:.0%}")
+        print("gold\\pred  " + "  ".join(f"{c:>8}" for c in classes))
+        for c, row in zip(classes, cm):
+            print(f"{c:>9}  " + "  ".join(f"{n:>8}" for n in row))
+        for gold, pred, text in misses:
+            print(f"  miss [{gold}]->{pred}: {text}")
 
-    acc = cm.diagonal().sum() / cm.sum()
-    print(f"router eval: {int(cm.diagonal().sum())}/{len(EVAL)} = {acc:.0%}")
-    print("gold\\pred  " + "  ".join(f"{c:>8}" for c in classes))
-    for c, row in zip(classes, cm):
-        print(f"{c:>9}  " + "  ".join(f"{n:>8}" for n in row))
-    for gold, pred, text in misses:
-        print(f"  miss [{gold}]->{pred}: {text}")
+    eval_node("root", EVAL)
+    eval_node("think", THINK_EVAL)
     return 0
 
 
