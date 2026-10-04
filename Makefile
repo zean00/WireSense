@@ -175,6 +175,9 @@ status:
 canary:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/canary.py $(PORT_LLAMA)
 
+record-router:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/record_router.py
+
 logs:
 	@tail -n 25 -F $(LOG_LLAMA) $(LOG_PHONON) $(LOG_WEB)
 

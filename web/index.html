@@ -106,6 +106,12 @@ function onMessage(ev) {
   } else if (m.type === "decide") {
     el("decide").textContent =
       `action: ${m.top1} (${m.score}) · readout ${m.head_ms + m.emb_ms} ms (head ${m.head_ms} + emb ${m.emb_ms})`;
+  } else if (m.type === "route") {
+    el("decide").textContent = `route: ${m.mode} (${m.conf})`;
+  } else if (m.type === "feedback") {
+    el("reply").textContent = `(${m.text})`;
+  } else if (m.type === "backchannel") {
+    el("partial").textContent = `[${m.text}]`;
   } else if (m.type === "cancel_tts") {
     audioQueue = []; if (playing) { stopPlayback(); }
   } else if (m.type === "response_start") {

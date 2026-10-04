@@ -31,6 +31,7 @@ from kokoro_onnx import Kokoro
 LLAMA = "http://127.0.0.1:8998"
 PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
 MODELS = "../models"
+TOOLS = "../tools"
 PORT = 8996
 MIC_CAPTURE = os.environ.get("WIRESENSE_MIC_CAPTURE", "")  # debug: save mic feed
 SR = 16000
@@ -42,15 +43,44 @@ SYS = "You are wiresense, a concise voice assistant. Answer in one or two short 
 EMPTY_THINK = "<|im_start|>assistant\n<think>\n\n</think>\n\n"
 SLOT = 5  # dedicated llama slot for the web assistant (0-4 free for other work)
 
+# Agentic routing (tools/router_pools.json): 3-way router at final —
+# direct / think / decide, tool use folded into think. Non-direct turns
+# speak a pre-answer filler first; long user speech gets listening cues.
+# Mid-speech TTS is safe because the browser mic runs echo cancellation
+# (index.html getUserMedia) and a final cancels playback client-side.
+BC_FIRST_S = 6.0   # min user speech before the first backchannel
+BC_GAP_S = 5.0     # min spacing between backchannels
+BC_MAX = 2         # backchannels per turn
+MODE_MAX_TOKENS = {"direct": 96, "think": 220, "decide": 160}
+MODE_SUFFIX = {
+    "think": " Reason step by step, then give a clear, concise answer.",
+    "decide": " Weigh the trade-offs briefly, then commit to a clear recommendation.",
+}
+
 KOKORO = None
+READOUT = None
+ROUTER = None
 
 
-def system_block() -> str:
-    return f"<|im_start|>system\n{SYS}<|im_end|>\n"
+def norm_rows(x):
+    return x / np.linalg.norm(x, axis=-1, keepdims=True)
 
 
-def build_prompt(history, utterance) -> str:
-    p = system_block()
+def norm_router_text(t: str) -> str:
+    """ASR text style for the router: lowercase, punctuation-free. Both
+    refs (tools/record_router.py) and live utterances pass through this —
+    punctuation asymmetry between ASR transcripts and written pools
+    collapsed the class margins in the first live trial."""
+    t = re.sub(r"[^a-z0-9\s]", " ", t.lower())
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def system_block(mode="direct") -> str:
+    return f"<|im_start|>system\n{SYS}{MODE_SUFFIX.get(mode, '')}<|im_end|>\n"
+
+
+def build_prompt(history, utterance, mode="direct") -> str:
+    p = system_block(mode)
     for u, a in history:
         p += f"<|im_start|>user\n{u}<|im_end|>\n<|im_start|>assistant\n{a}<|im_end|>\n"
     p += f"<|im_start|>user\n{utterance}<|im_end|>\n" + EMPTY_THINK
@@ -77,19 +107,71 @@ class DecideReadout:
         h = ln * self.ln_w + self.ln_b + h
         return h @ self.fc2_w.T + self.fc2_b
 
-    def score(self, prompt_text):
+    def embed(self, prompt_text):
         t0 = time.perf_counter()
         r = requests.post(f"{LLAMA}/v1/embeddings",
                           json={"input": prompt_text, "id_slot": 6}, timeout=30)
         emb = np.asarray(r.json()["data"][0]["embedding"], dtype=np.float32)
-        t1 = time.perf_counter()
-        v = self._project(emb[None, :])[0]
-        v = v / np.linalg.norm(v)
+        return emb, (time.perf_counter() - t0) * 1000
+
+    def readout(self, emb):
+        t0 = time.perf_counter()
+        v = norm_rows(self._project(emb[None, :]))[0]
         sims = self.sigs @ v
         top = int(np.argmax(sims))
         return {"top1": self.sig_names[top], "score": round(float(sims[top]), 3),
-                "head_ms": round((time.perf_counter() - t1) * 1000, 1),
-                "emb_ms": round((t1 - t0) * 1000, 1)}
+                "head_ms": round((time.perf_counter() - t0) * 1000, 1)}
+
+    def score(self, prompt_text):
+        emb, emb_ms = self.embed(prompt_text)
+        ro = self.readout(emb)
+        ro["emb_ms"] = round(emb_ms, 1)
+        return ro, emb
+
+
+class Router:
+    """3-way voice-loop router + feedback/backchannel selection.
+
+    Head-projected class centroids over slot-6 embeddings of RAW text
+    (refs recorded by tools/record_router.py; re-record on any
+    serving-numerics change, same rule as decide sigs). Live turns embed
+    the bare utterance — prompt/history-shaped vectors were measured and
+    dropped (domain shift cost two route misses in the first live trial).
+    Feasibility on a 36-utterance held-out eval: 35/36 with head-projected
+    centroids (decide separates clean; residual confusion sits on the
+    genuinely fuzzy direct<->think boundary).
+    """
+
+    def __init__(self, project):
+        self._project = project
+        pools = json.load(open(f"{TOOLS}/router_pools.json"))
+        z = np.load(f"{MODELS}/router_embeddings.npz")
+        self.classes = list(pools["router"])
+        cents = [norm_rows(self._project(z[f"router.{c}"])).mean(0)
+                 for c in self.classes]
+        self.cents = norm_rows(np.stack(cents))
+        self.fb = {}
+        for mode, texts in pools["feedback"].items():
+            self.fb[mode] = (texts, norm_rows(self._project(z[f"feedback.{mode}"])))
+        self.bc_texts = pools["backchannel"]
+        self.bc_vecs = norm_rows(self._project(z["backchannel"]))
+
+    def route(self, emb):
+        v = norm_rows(self._project(emb[None, :]))[0]
+        sims = self.cents @ v
+        i = int(np.argmax(sims))
+        return self.classes[i], round(float(sims[i]), 3)
+
+    def feedback(self, emb, mode):
+        if mode not in self.fb:
+            mode = "think"
+        texts, vecs = self.fb[mode]
+        v = norm_rows(self._project(emb[None, :]))[0]
+        return texts[int(np.argmax(vecs @ v))]
+
+    def backchannel(self, emb):
+        v = norm_rows(self._project(emb[None, :]))[0]
+        return self.bc_texts[int(np.argmax(self.bc_vecs @ v))]
 
 
 def wav_bytes(samples, sr=24000) -> bytes:
@@ -176,6 +258,11 @@ class Session:
         self.tts_total_ms = 0.0
         self.tts_n = 0
         self.last_status = 0.0
+        # agentic routing state (per turn)
+        self.route_mode = "direct"
+        self.turn_id = 0
+        self.bc_count = 0
+        self.bc_last_t = 0.0
 
     def gate_active(self) -> bool:
         return (self.speaking or self.playback
@@ -248,24 +335,75 @@ class Session:
     async def decide(self, partial):
         try:
             loop = asyncio.get_event_loop()
-            ro = await loop.run_in_executor(None, READOUT.score,
-                                            build_prompt(self.history, partial))
+            ro = await loop.run_in_executor(
+                None, lambda: READOUT.score(build_prompt(self.history, partial))[0])
             self.decide_stats.append(ro)
             await self.send({"type": "decide", **ro})
+            await self.maybe_backchannel(partial)
         except Exception as e:  # readout must never break the voice loop
             await self.send({"type": "decide_error", "message": str(e)[:120]})
+
+    async def maybe_backchannel(self, partial):
+        # long user speech: mimic human listening cues. Mid-speech TTS is
+        # safe (browser AEC); a final arriving mid-clip cancels playback.
+        if self.t_wake is None:
+            return
+        elapsed = time.perf_counter() - self.t_wake
+        if (self.bc_count >= BC_MAX or elapsed < BC_FIRST_S
+                or elapsed - self.bc_last_t < BC_GAP_S):
+            return
+        self.bc_count += 1
+        self.bc_last_t = elapsed
+        try:
+            loop = asyncio.get_event_loop()
+            emb, _ = await loop.run_in_executor(None, READOUT.embed,
+                                                norm_router_text(partial))
+            text = ROUTER.backchannel(emb)
+        except Exception:
+            return
+        await self.send({"type": "backchannel", "text": text})
+        asyncio.create_task(self.speak_fillers([text]))
+
+    async def speak_fillers(self, lines):
+        """TTS a short filler; abandoned the moment a new turn starts."""
+        my_turn = self.turn_id
+        for line in lines:
+            if self.turn_id != my_turn:
+                return
+            await self.tts(line, guard_turn=my_turn)
 
     async def respond(self, utterance):
         self.speaking = True
         self.t_final = time.perf_counter()
+        self.turn_id += 1
+        my_turn = self.turn_id
         await self.update_gate()
         await self.send({"type": "cancel_tts"})
+        # route on a fresh raw-utterance embedding (~55 ms on slot 6;
+        # refs are raw texts — prompt/history-shaped vectors measured
+        # markedly worse). Non-direct turns speak a filler first so the
+        # LLM work happens behind speech instead of dead air.
+        mode = "direct"
+        try:
+            loop = asyncio.get_event_loop()
+            emb, _ = await loop.run_in_executor(None, READOUT.embed,
+                                                norm_router_text(utterance))
+            mode, conf = ROUTER.route(emb)
+            await self.send({"type": "route", "mode": mode, "conf": conf})
+            if mode != "direct":
+                fb = ROUTER.feedback(emb, mode)
+                await self.send({"type": "feedback", "text": fb})
+                await self.tts(fb, guard_turn=my_turn)
+        except Exception:
+            mode = "direct"
+        self.route_mode = mode
         t0 = time.perf_counter()
         first, chunks, timings = None, [], None
         try:
             with requests.post(f"{LLAMA}/v1/completions", json={
-                    "prompt": build_prompt(self.history, utterance),
-                    "max_tokens": 96, "temperature": 0, "cache_prompt": True,
+                    "prompt": build_prompt(self.history, utterance, mode),
+                    "max_tokens": MODE_MAX_TOKENS.get(mode, 96),
+                    "temperature": 0, "cache_prompt": True,
                     "id_slot": SLOT, "stream": True}, stream=True, timeout=120) as r:
                 r.raise_for_status()
                 for line in r.iter_lines():
@@ -308,10 +446,12 @@ class Session:
         await self.update_gate()
         self.schedule_gate_release(1.0)
 
-    async def tts(self, text):
+    async def tts(self, text, guard_turn=None):
         sents = [s for s in SENT_SPLIT.split(text) if s.strip()] or [text]
         seq = 0
         for sent in sents:
+            if guard_turn is not None and self.turn_id != guard_turn:
+                return  # a new turn started; this filler is stale
             t0 = time.perf_counter()
             try:
                 loop = asyncio.get_event_loop()
@@ -323,7 +463,7 @@ class Session:
                 await self.send({"type": "error", "message": f"tts: {e}"})
                 break
             ms = (time.perf_counter() - t0) * 1000
-            if self.tts_first_ms is None:
+            if self.tts_first_ms is None and self.t_final is not None:
                 self.tts_first_ms = round((time.perf_counter() - self.t_final)
                                           * 1000, 1)
             self.tts_total_ms += ms
@@ -377,6 +517,9 @@ class Session:
         self.tts_first_ms = None
         self.tts_total_ms = 0.0
         self.tts_n = 0
+        self.route_mode = "direct"
+        self.bc_count = 0
+        self.bc_last_t = 0.0
 
 
 async def handler(ws):
@@ -473,11 +616,13 @@ async def http_page(connection, request):
 
 
 async def main():
-    global KOKORO, READOUT
+    global KOKORO, READOUT, ROUTER
     t0 = time.perf_counter()
     KOKORO = Kokoro(f"{MODELS}/kokoro-v1.0.onnx", f"{MODELS}/voices.npz")
     READOUT = DecideReadout()
-    print(f"kokoro + readout loaded in {time.perf_counter() - t0:.1f}s", flush=True)
+    ROUTER = Router(READOUT._project)
+    print(f"kokoro + readout + router loaded in {time.perf_counter() - t0:.1f}s",
+          flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=http_page,
                      max_size=2 ** 20, ping_interval=20):
         print(f"wiresense web on 0.0.0.0:{PORT}", flush=True)

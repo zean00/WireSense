@@ -1,0 +1,82 @@
+{
+  "_comment": "Agentic voice-loop pools. Router: 3-way (direct/think/decide) with tool use folded into think. Feedback: pre-answer filler spoken when route != direct. Backchannel: mid-speech listening cues. Texts are git-tracked; embeddings are recorded from the serving model by tools/record_router.py into models/router_embeddings.npz (re-record on any serving-numerics change, same rule as decide sigs).",
+  "router": {
+    "direct": [
+      "What's the capital of France?",
+      "What time is it?",
+      "How many days are in a week?",
+      "Say hello.",
+      "What's your name?",
+      "Who wrote Hamlet?",
+      "How do you spell restaurant?",
+      "What's the freezing point of water?",
+      "What year is it?",
+      "What color is the sky on a clear day?",
+      "Tell me a joke.",
+      "Repeat that.",
+      "How many continents are there?",
+      "What does 'gregarious' mean?",
+      "Is mercury a metal?"
+    ],
+    "think": [
+      "What's 17 percent of 243?",
+      "If I leave at 5pm and the drive takes 3 hours, when will I arrive?",
+      "Plan a three-day trip to Tokyo.",
+      "Set a timer for 10 minutes.",
+      "How many seconds are there in a leap year?",
+      "Write a short story about a dragon.",
+      "Walk me through why the experiment failed.",
+      "Explain the difference between HTTP and HTTPS.",
+      "What's the square root of 1764?",
+      "Remind me to call mom when I get home.",
+      "Summarize this article for me.",
+      "If a train travels 60 kilometers per hour for 90 minutes, how far does it go?",
+      "Search for flights to Denver next week.",
+      "Draft an email to my landlord about the leak.",
+      "How much paint do I need for a 12 by 15 foot room?"
+    ],
+    "decide": [
+      "Should I take the bus or walk?",
+      "Which is better, Python or JavaScript?",
+      "What should I have for dinner tonight?",
+      "Do you think I should take this job offer?",
+      "Which restaurant should we choose for dinner?",
+      "Is it worth buying the extended warranty?",
+      "Tea or coffee?",
+      "What should I get my dad for his birthday?",
+      "Should I text her back?",
+      "Which color should I paint the bedroom?",
+      "Would you rather invest or save?",
+      "What's the best option here?",
+      "Is it smarter to fix the car or sell it?",
+      "Where should we go for vacation?",
+      "Do you recommend the blue one or the black one?"
+    ]
+  },
+  "feedback": {
+    "think": [
+      "Let me think about that for a second.",
+      "Hmm, give me a moment to work that out.",
+      "One second, let me figure that out.",
+      "Let me see."
+    ],
+    "decide": [
+      "Hmm, that's a real trade-off, let me weigh it.",
+      "Good question. Let me think it through.",
+      "Let me consider the options for a moment."
+    ]
+  },
+  "backchannel": [
+    "Mm-hmm.",
+    "Got it.",
+    "Understood.",
+    "Right.",
+    "I see.",
+    "Keep going.",
+    "Uh-huh.",
+    "Interesting.",
+    "Makes sense so far.",
+    "And then?",
+    "Take your time."
+  ]
+}
