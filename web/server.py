@@ -204,6 +204,67 @@ def build_prompt(history, utterance, directive=None, open_think=False) -> str:
     return p
 
 
+# Context-dependent fragments ("what about on tuesday?") embed far from the
+# standalone action sentences the router refs were recorded as; the exploratory
+# probe measured 1/6 correct on raw fragments vs 4/6 on self-contained
+# rewrites. needs_context gates the ~0.3 s rewrite tax to the cases that need
+# it; tools/eval_followup.py is the frozen bar for both trigger and rewrite.
+FOLLOWUP_LEAD = re.compile(
+    r"^(and|so|also|then|but|or|plus|now|well|ok|okay|actually|instead|"
+    r"again|what about|how about|why not)\b", re.I)
+FOLLOWUP_HINT = re.compile(
+    r"\b(instead|make it|change it|same (?:for|with|thing)|what about|"
+    r"how about|that one|this one|the other)\b", re.I)
+
+
+def needs_context(utterance: str, has_history: bool) -> bool:
+    # length-gated: a long connective-led utterance ("So yesterday I was
+    # walking to the store…") is self-contained and routes fine raw — the
+    # e2e caught its rewrite dragging social -> think.long_think. Only
+    # short utterances are context-starved enough to pay the rewrite tax.
+    if not has_history:
+        return False
+    u = utterance.strip()
+    n = len(u.split())
+    if n <= 4:
+        return True
+    if n > 9:
+        return False
+    return bool(FOLLOWUP_LEAD.match(u) or FOLLOWUP_HINT.search(u))
+
+
+REWRITE_INSTRUCTION = (
+    "Rewrite this as one self-contained sentence stating the full request, "
+    "using the specifics from the conversation it refers to. If it maps to a "
+    "tool command (a timer, a reminder, or a note), phrase it exactly as that "
+    "command. Reply with the rewritten sentence only.")
+# bare instruction prefill measurably echoes the instruction itself on vague
+# fragments ("How about the color?" -> "Please rewrite the user's question…");
+# forcing the answer's opening words makes the format structural
+REWRITE_LEAD = "Rewritten sentence:"
+
+
+def rewrite_context(history, utterance, timeout_s=1.5):
+    """Self-contained rewrite of a fragment, for routing (and fillers).
+    Same prompt family and slot as the main completion (warm prefix),
+    tiny budget, hard timeout; any failure or timeout returns None and
+    the caller routes on the raw utterance exactly as before."""
+    p = build_prompt(history, utterance,
+                     directive=REWRITE_INSTRUCTION) + REWRITE_LEAD
+    try:
+        r = requests.post(f"{LLAMA}/v1/completions", json={
+            "prompt": p, "max_tokens": 48, "temperature": 0,
+            "cache_prompt": True, "id_slot": SLOT, "stop": ["\n"]},
+            timeout=timeout_s)
+        lines = r.json()["choices"][0]["text"].strip().splitlines()
+        line = lines[0].strip().strip('"') if lines else ""
+        if line.startswith(REWRITE_LEAD):
+            line = line[len(REWRITE_LEAD):].strip()
+        return line[:240] or None
+    except Exception:
+        return None
+
+
 class DecideReadout:
     """arm-C state head, numpy-only (weights exported to models/arm_C_heads.npz)."""
 
@@ -516,10 +577,26 @@ class Session:
         # markedly worse). Non-direct turns speak a filler first so the
         # LLM work happens behind speech instead of dead air.
         cls, spec = "direct", {"action": "llm", "max_tokens": 96}
+        rewrite, rewrite_ms = None, None
         try:
             loop = asyncio.get_event_loop()
             emb, _ = await loop.run_in_executor(None, READOUT.embed,
                                                 norm_router_text(utterance))
+            # short or connective-led fragment with history behind it:
+            # rewrite it into a self-contained sentence and route on that
+            # (and pick fillers from it); any rewrite failure keeps the
+            # raw-utterance embedding — exact previous behavior
+            if needs_context(utterance, bool(self.history)):
+                t_rw = time.perf_counter()
+                rewrite = await loop.run_in_executor(
+                    None, lambda u=utterance: rewrite_context(self.history, u))
+                rewrite_ms = round((time.perf_counter() - t_rw) * 1000)
+                if rewrite:
+                    try:
+                        emb, _ = await loop.run_in_executor(
+                            None, READOUT.embed, norm_router_text(rewrite))
+                    except Exception:
+                        rewrite = None
             cls, spec, conf = WALKER.route(emb)
             if spec.get("action") == "subtree":
                 # the same embedding walks the child node (numpy only);
@@ -527,11 +604,13 @@ class Session:
                 # the filler (tool work sounds different from thinking)
                 sub_cls, sub_spec, sub_conf = WALKER.route(emb, spec["node"])
                 await self.send({"type": "route", "mode": f"{cls}.{sub_cls}",
-                                 "conf": sub_conf})
+                                 "conf": sub_conf, "rewrite": rewrite,
+                                 "rewrite_ms": rewrite_ms})
                 spec = {**spec, **sub_spec}
                 cls = f"{cls}.{sub_cls}"
             else:
-                await self.send({"type": "route", "mode": cls, "conf": conf})
+                await self.send({"type": "route", "mode": cls, "conf": conf,
+                                 "rewrite": rewrite, "rewrite_ms": rewrite_ms})
             if spec.get("action") == "vision":
                 # act-then-decide: grab a frame first; with one, the turn
                 # becomes a VLM query, without one the honesty directive

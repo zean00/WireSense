@@ -71,6 +71,22 @@ Held-out eval (`make eval-router`): root **52/56 = 93%**, think subtree
 (`make tree-probe`). Per the tree-probe experiment: no confidence gating —
 cosine conf is miscalibrated as an error signal.
 
+**Context rewrites for fragments**: the router embeds the raw utterance, so a
+context-dependent fragment ("What about on Tuesday?") misroutes — raw
+fragments scored 3/8 against mechanical golds. When history is non-empty and
+the utterance is short (≤4 words) or connective/hint-marked (≤9 words; the
+e2e caught a long "So…"-led narrative misfiring a bare lead match, so the
+trigger is length-gated), `rewrite_context` first rewrites it into one
+self-contained sentence — same slot, warm prefix, 48-token cap, 1.5 s hard
+timeout, raw-utterance fallback on any failure — and routes on the rewrite
+embedding; fillers pick from it too, and the rewrite shows in the router
+card. Frozen eval `make eval-followup`: rewrite **6/8 vs raw 3/8**, trigger
+recall 8/8 / precision 5/5, rewrites < 400 ms. Golds are mechanical — the
+route of the frozen standalone equivalent — so tree-config gaps stay out of
+scope; the two residual misses are such pool-coverage gaps (e.g. "Remind me
+to call the dentist on friday morning" standalone routes social), not
+rewrite failures.
+
 - **direct** — answer immediately.
 - **think.long_think** — context-selected filler ("One second, let me figure
   that out."), then **open-think generation**: the prompt ends at an unclosed
@@ -88,7 +104,7 @@ cosine conf is miscalibrated as an error signal.
   re-arms unfired future ones from `memory.json` on hello (past-due dropped).
   A null plan or two invalid JSONs falls back to an honest brief answer
   (weather → "I don't have access to live weather data"), so tool-request
-  misroutes degrade gracefully. E2E: `make test-voice` (10 cases, 10/10).
+  misroutes degrade gracefully. E2E: `make test-voice` (11 cases, 11/11).
 - **decide** — trade-off directive, commits to a recommendation.
 - **social** — warm, brief tone; no filler.
 - **vision** — camera request ("What do you think about my new glasses?").

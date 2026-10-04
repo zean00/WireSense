@@ -38,6 +38,8 @@
            font-size: 12px; margin-top: 6px; }
   .hgrid .k { color: #7d8aa0; }
   .hgrid .v { text-align: right; font-variant-numeric: tabular-nums; }
+  .rwrow { margin-top: 5px; font-size: 11px; color: #93c5fd;
+           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #h_reasons { font-size: 11.5px; margin-top: 6px; color: #fbbf24; }
   /* decision tree visualization */
   #dtree { margin-top: 6px; font-size: 12px; }
@@ -158,6 +160,7 @@
       <span class="k">ttft</span><span class="v" id="r_ttft">–</span>
       <span class="k">decode</span><span class="v" id="r_tps">–</span>
     </div>
+    <div class="rwrow" id="r_rw" hidden></div>
   </div>
   <div class="card">
     <div class="label">last turn — pipeline metrics</div>
@@ -326,6 +329,12 @@ function onMessage(ev) {
   } else if (m.type === "route") {
     el("r_mode").textContent = m.mode;
     el("r_conf").textContent = m.conf;
+    const rw = el("r_rw");
+    rw.hidden = !m.rewrite;
+    if (m.rewrite) {
+      rw.textContent = `↻ routed via: ${m.rewrite}`;
+      rw.title = `context rewrite used for routing (${m.rewrite_ms} ms)`;
+    }
     setModeBadge(m.mode);
     fireTree(m.mode);
     // the route belongs to the turn opened by `final`

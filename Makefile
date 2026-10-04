@@ -117,7 +117,7 @@ kill_pids() { # name pids...
 }
 endef
 
-.PHONY: start stop restart status canary logs record-router eval-router tree-probe test-voice help
+.PHONY: start stop restart status canary logs record-router eval-router eval-followup tree-probe test-voice help
 
 start:
 	@$(HELPERS)
@@ -184,6 +184,9 @@ record-router:
 eval-router:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/eval_router.py
 
+eval-followup:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/eval_followup.py
+
 tree-probe:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/tree_probe.py
 
@@ -204,5 +207,6 @@ help:
 	@echo "voice loop evals:"
 	@echo "  make record-router  re-record router refs (any serving-numerics change)"
 	@echo "  make eval-router    56 held-out root-route evals"
+	@echo "  make eval-followup  fragment rewrite vs raw routing (frozen 8-case bar)"
 	@echo "  make tree-probe     subtree feasibility probe (think/vision nodes)"
 	@echo "  make test-voice     e2e: synthesized speech -> route/reply assertions"
