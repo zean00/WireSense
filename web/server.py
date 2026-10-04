@@ -16,6 +16,7 @@ import json
 import os
 import re
 import time
+import uuid
 import wave
 from collections import deque
 
@@ -133,6 +134,17 @@ def parse_relative_seconds(when: str):
 def append_memory(item):
     items = load_memory()
     items.append(item)
+    with open(MEMORY_PATH, "w") as f:
+        json.dump(items, f, indent=1)
+
+
+def mark_fired(rid):
+    if not rid:
+        return
+    items = load_memory()
+    for it in items:
+        if it.get("id") == rid:
+            it["fired"] = True
     with open(MEMORY_PATH, "w") as f:
         json.dump(items, f, indent=1)
 
@@ -591,6 +603,38 @@ class Session:
         await self.update_gate()
         self.schedule_gate_release(1.0)
 
+    def _schedule_reminder(self, rid, text, delay_s):
+        """Fire a reminder into this session after delay_s; delivered via
+        tool_event, then marked fired so a restart never re-fires it."""
+        async def fire():
+            await asyncio.sleep(delay_s)
+            await self.send({"type": "tool_event", "tool": "reminder_due",
+                             "text": text})
+            mark_fired(rid)
+        t = asyncio.create_task(fire())
+        self._pending.add(t)
+        t.add_done_callback(self._pending.discard)
+
+    def arm_persisted_reminders(self):
+        """Re-arm reminders that outlive a restart (memory.json holds the
+        due time). Past-due ones are dropped silently — V1 does not fire
+        stale reminders into a fresh session."""
+        now = time.time()
+        for item in load_memory():
+            if item.get("type") != "reminder" or item.get("fired"):
+                continue
+            due = item.get("due")
+            if not due:
+                continue
+            try:
+                ts = time.mktime(time.strptime(due, "%Y-%m-%dT%H:%M:%S"))
+            except ValueError:
+                continue
+            delay = ts - now
+            if delay <= 0:
+                continue
+            self._schedule_reminder(item.get("id"), item["text"], delay)
+
     async def request_frame(self, timeout=3.0):
         """Ask the client for a camera frame; returns b64 JPEG or None
         (no camera, denied, or timeout — the honesty fallback covers all
@@ -703,19 +747,13 @@ class Session:
             return f"timer started for {args['seconds']} seconds{label}"
         if name == "reminder":
             secs = parse_relative_seconds(args["when"])
-            item = {"type": "reminder", "when": args["when"],
+            rid = uuid.uuid4().hex[:8]
+            item = {"type": "reminder", "id": rid, "when": args["when"],
                     "text": args["text"], "created": _now(),
                     "due": _now(secs) if secs else None}
             append_memory(item)
             if secs:
-                async def fire():
-                    await asyncio.sleep(secs)
-                    await self.send({"type": "tool_event",
-                                     "tool": "reminder_due",
-                                     "text": args["text"]})
-                t = asyncio.create_task(fire())
-                self._pending.add(t)
-                t.add_done_callback(self._pending.discard)
+                self._schedule_reminder(rid, item["text"], secs)
             return f"reminder saved: {args['text']} ({args['when']})"
         if name == "note":
             append_memory({"type": "note", "text": args["text"],
@@ -861,6 +899,7 @@ async def handler(ws):
                 m = json.loads(msg)
                 if m.get("type") == "hello":
                     session.ctx_rate = int(m.get("ctx_rate") or 0)
+                    session.arm_persisted_reminders()
                     print(f"[{peer}] browser ctx {session.ctx_rate} Hz "
                           "(16000 = no resample path)", flush=True)
                 elif m.get("type") == "camera_state":

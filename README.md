@@ -67,6 +67,8 @@ cosine conf is miscalibrated as an error signal.
   manifest-JSON, args are validated and executed (timer → client `tool_event`
   beep + toast; reminder/note → `web/memory.json`, relative-time reminders
   fire back through `tool_event`), and a confirmation sentence is generated.
+  Reminders persist: each gets a uuid and `fired` mark, and a fresh session
+  re-arms unfired future ones from `memory.json` on hello (past-due dropped).
   A null plan or two invalid JSONs falls back to an honest brief answer
   (weather → "I don't have access to live weather data"), so tool-request
   misroutes degrade gracefully. E2E: `make test-voice` (10 cases, 10/10).

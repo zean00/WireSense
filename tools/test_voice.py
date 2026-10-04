@@ -43,7 +43,8 @@ UTTERANCES = [
                "out of nowhere and starts telling me his whole life story and honestly "
                "I could not get away, it was something else.", {}),
     ("think.tool", "Set a timer for 10 minutes.", {"timer": 600}),
-    ("think.tool", "Remind me to call mom in 1 hour.", {"reminder": "call mom"}),
+    ("think.tool", "Remind me to call mom in 15 seconds.",
+     {"reminder": "call mom", "fires": True}),
     ("think.tool", "Make a note that the wifi password is falcon nimbus.",
      {"note": "falcon nimbus"}),
     ("think.tool", "What's the weather in Jakarta?", {"honest": True}),
@@ -108,6 +109,7 @@ async def feed(ws, pcm):
 
 async def run() -> int:
     events = []
+    all_events = []  # never cleared: catches async fires (reminder_due)
     failures = []
     T0 = time.monotonic()
     want_frame = [False]
@@ -126,6 +128,7 @@ async def run() -> int:
                         continue
                     m["_arr"] = round((time.monotonic() - T0) * 1000)
                     events.append(m)
+                    all_events.append(m)
             except websockets.ConnectionClosed:
                 pass
 
@@ -206,6 +209,24 @@ async def run() -> int:
                     failures.append(f"{want}: reminder missing from memory.json")
                 elif not hits[-1].get("due"):
                     failures.append(f"{want}: reminder has no due time")
+                elif checks.get("fires"):
+                    # give the reminder its 15 s (+ slack) to fire
+                    fired = False
+                    for _ in range(220):
+                        await asyncio.sleep(0.1)
+                        fired = any(
+                            e.get("type") == "tool_event"
+                            and e.get("tool") == "reminder_due"
+                            and checks["reminder"].lower()
+                            in e.get("text", "").lower()
+                            for e in all_events)
+                        if fired:
+                            break
+                    if not fired:
+                        failures.append(f"{want}: reminder never fired "
+                                        "tool_event reminder_due")
+                    else:
+                        print("  reminder fired ✓")
             if "note" in checks:
                 if not any(i.get("type") == "note"
                            and checks["note"].lower() in i.get("text", "").lower()
