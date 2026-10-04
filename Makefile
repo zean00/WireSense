@@ -181,6 +181,9 @@ record-router:
 eval-router:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/eval_router.py
 
+tree-probe:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/tree_probe.py
+
 logs:
 	@tail -n 25 -F $(LOG_LLAMA) $(LOG_PHONON) $(LOG_WEB)
 
