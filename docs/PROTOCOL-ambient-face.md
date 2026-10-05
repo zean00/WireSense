@@ -147,3 +147,64 @@ powered run:
   no probe, no frame even requested; (c) the mid-conversation forget case
   runs after a reset, so it exercises the Rev 1 vision-branch gate (routes
   vision 0.795, forget fires) rather than the manifest path.
+
+## Results (2026-10-05, adjudicated)
+
+All gates. Runtime state after adjudication: face block removed from
+`web/config.json`, `faces.json` deleted, server restarted — boot line
+"face recognition: disabled", capabilities `{face:false, ambient:false}`.
+
+- **G1 offline units**: `make test-face` 472 checks ALL PASS (464 from the
+  face protocol + 8 ambient: config clamp combinations ×3, default-off,
+  camera_line single/multi-name format with placeholder).
+- **G2 default-off contract**: default run (no face config, new
+  ambient-capable server) **12/12**; capabilities `{face:false,
+  ambient:false}` verified on the wire; enabled server advertises
+  `{face:true, ambient:true}`.
+- **G3 enabled run** (`face.enabled`+`face.ambient`, `WIRESENSE_TEST_FACE=1`,
+  19 cases; the 12 pre-existing plus 7 ambient):
+  - *identity*: "Who am I, do you know?" routes **direct** (0.88), reply
+    "You are Albert, the camera operator. I don't know anything about you
+    personally.", metrics `face {n:1, names:["Albert"], ms:14.9,
+    ambient:true}` — on a **reset** history, so the answer came from the
+    store probe, not conversation memory. This is the feature working
+    end-to-end.
+  - *toggle-off control* (camera on, frames available): no face metrics,
+    reply honest ("I don't know who you are…").
+  - *camera-off control* (toggle on): no face metrics (`request_frame`
+    short-circuits; empty-store guard also verified), reply honest.
+  - *vision with ambient on*: fresh recognition on the vision frame
+    (42.5 ms, no ambient flag in metrics — no injection into the vision
+    path), reply correct.
+  - *timer with ambient on*: tool fired normally, ambient ms 13.8 —
+    injection does not break tool selection.
+  - *forget after reset*: routes vision (0.795) and the Rev 1 gate runs
+    the forget; store emptied; the following vision turn reports **no**
+    face metrics (store guard).
+- **G4** — v1 (single pair) **FAILED as specified**: off 746.1 ms vs on
+  971.5 ms (+30%). Diagnosis, from the same run: ttft identical (70.2 vs
+  69.8 ms), e2e is TTS-first-audio noise spanning 550–1115 ms in both
+  arms. Rev 1 amendment pre-registered before the rerun. **G4(v2) PASS**:
+  6 interleaved pairs, medians e2e 737.6 → 787.4 ms (+6.8%), ttft
+  59.3 → 64.25 ms (+8.3%), both ≤ +15%; all 12 turns routed direct, all
+  ambient-on turns flagged. Round-1 on-turn e2e outlier 1426.8 ms
+  recorded, not excluded. (`tools/probe_ambient_latency.py`.)
+- **G5 ms budget**: ambient `face.ms` observed 13.8 / 14.9 / 15.7 / 20.2 —
+  all < 50 ms.
+- **G6 router evals unchanged**: root **56/62**, think **24/26**,
+  followup **6/8** strictly > raw 4/8 (PASS) — identical to the
+  face-protocol G7 numbers; no routing code touched, no drift.
+- **G7 history invariant (soft)**: after the ambient identity turn, "What
+  did I just ask you?" → "You asked what you just asked me. I am not
+  sure what you meant." — no "(Camera:" quoted; the raw-utterance history
+  invariant holds (the model paraphrases instead of quoting, which is
+  fine — the line is what must not leak, and it doesn't).
+
+**Verdict**: ambient face context delivers the identity-query fix with the
+probe fully hidden behind speech, all consent gates intact, and zero
+routing surface touched. Shipped **config-off** by default (`face.ambient`
+absent = never runs, even when face recognition itself is enabled);
+per-session toggle is the user's hand on the switch. Known limits,
+registered: one frame per utterance at VAD wake (nothing mid-stream),
+face-only (no object lists), toggle resets per session (localStorage
+restore is convenience).

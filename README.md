@@ -190,12 +190,35 @@ enrollment); context rides the volatile suffix as one line —
 plainly: liveness/anti-spoofing (a photo of an enrolled person will be
 recognized), background processing, emotion/attribute inference.
 
-Gates (all passed, protocol Results): offline `make test-face` 464
-checks; default-run test-voice 12/12 (face denied = honest fallback);
-enabled run 7/7 (gate → enroll → recognize (`face.ms` 25-49 ms) →
-overwrite → forget → no trace); all frozen router bars identical to the
-v4 adjudication (root 56/62, think 24/26, followup 6/8, self-consistency
-135/135).
+Gates (all passed, protocol Results): offline `make test-face` (now 472
+checks including the ambient units); default-run test-voice 12/12 (face
+denied = honest fallback); enabled run exercises gate → enroll →
+recognize (`face.ms` 25-49 ms) → overwrite → forget → no trace; all
+frozen router bars identical to the v4 adjudication (root 56/62, think
+24/26, followup 6/8, self-consistency 135/135).
+
+### Ambient face context (2026-10-05)
+
+`docs/PROTOCOL-ambient-face.md`, committed before any ambient gate data.
+The identity-query problem ("Who am I?" routes **direct**, so no frame is
+ever grabbed) solved by removing the routing dependence entirely: one
+frame is requested the moment speech is detected (Silero VAD wake), the
+25-50 ms recognition hides behind the 2-5 s utterance, and the
+`(Camera: ...)` line rides **every** non-vision turn as volatile-suffix
+context. History stores the raw utterance — the line is never persisted.
+The LLM never triggers the lookup; the server runs it unconditionally
+when the store is non-empty (empty store = not even a frame requested).
+
+**Triple opt-in**: `face.enabled` AND `face.ambient` in config (both
+default false), plus a per-session UI toggle (👁 Ambient, shown only when
+the server advertises it via the new `capabilities` event, state clamped
+server-side). Measured (protocol Results): identity query answered on
+the direct route with the toggle on and honest without it; paired
+latency medians e2e 737.6 → 787.4 ms (+6.8%), ttft 59.3 → 64.3 ms
+(+8.3%) — the probe is invisible; ambient `face.ms` 13.8-20.2 ms; all
+frozen router bars unchanged. G4's first version failed honestly
+(single-pair e2e is TTS-noise-dominated; Rev 1 records the diagnosis and
+the powered 6-pair amendment before the rerun).
 
 ## Deep think (2026-10-05)
 
