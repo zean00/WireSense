@@ -789,3 +789,66 @@ gates, Results and revision log above are frozen history.
   included** (its tool cases are the grown-manifest regression bar).
 - **VERDICT:** PASS iff DA6 all, DA7 both, DA3 all bars; any fail is
   adjudicated here — including honest failure.
+
+## Gate run 1 (recorded, 2026-10-06) + Rev G
+
+Freeze `177b26a` (pre-data), cwd amendment `f7a66ac` (pre-data, no
+checks touched), clause-matcher amendment `3a3b71b` (post-run-1: the
+DA2 variance clause had never fired — it matched case-name prefix
+"DA2a" while deep_case's check names carry bare "A-"/"B-"; D's twin
+clause matches "D-" and fired in every run. Matcher fix only; the full
+rerun under the corrected runner is final).
+
+**Run 1 result: FAIL (3), all DA2 case A** — route think.deep (not
+deep), 0 legs, reply was the PREVIOUS case's math answer ("17 times 23
+equals 391."). Everything else green: DA1/DA4/DA6 unit+machinery, DA7
+G+H; DA5 C green, D hit the documented malformed-marker bimodality
+(same unquoted `"task": read the file"` signature) and passed its
+registered rerun. Read as serving-variance, same family as the
+stage-2 DA5d modes (the deep prompt is unchanged by stage 3; routing
+never sees the manifest).
+
+**DA3 battery run 1: test_voice FAILED 10/14 — the bar caught a real
+stage-3 regression.** Case "What's the weather in Jakarta?" (routes
+think.tool 0.801, no manifest tool used to fit → honest fallback) now
+FIRED a tool_call: the planner delegated it to ir_research, the IR
+track's web leg honestly errored in the gate env, and the turn spoke
+filler + error instead of the one honest fallback line.
+
+Measured root cause (reproduced offline, serving path, temp 0): the
+tool plan prompt carries history, and with the session history
+test_voice builds, "What's the weather in Jakarta?" -> ir_research
+1/1; history-free it returns {"tool": null} 3/3. The four-tool
+manifest had immunized the fallback region by accident: a bled plan
+still had to fit timer/reminder/note/detect, none fit weather, the
+plan fell through to null. The grown manifest gave the bleed a new
+target. Decision 24's registration table probed only DELEGATION
+phrasings ("ZERO route tool") — utility frames route tool BY DESIGN
+(the honest-fallback cases) and were never probed against the grown
+manifest. The registered battery bar did its job.
+
+## Rev G (registered BEFORE any post-revision gate/battery data)
+
+29. **Delegate plans must stand on their own words (the plan-twice
+    rule).** When the history-carrying tool plan picks a DELEGATE
+    tool, tool_flow re-plans ONCE history-free and accepts the
+    delegation only if the history-free plan picks the same tool;
+    anything else falls to the honest fallback. Precedent:
+    browser_flow's plan call is history-free for exactly this bleed
+    (two measured cases in its docstring). The bounded job is fully
+    specified by its validated args (query+question / site+task) —
+    history is how the bleed enters, never needed by the job. The
+    four existing tools are untouched: one history-carrying plan, no
+    second call (decision 23 preserved byte-for-byte). No prompt text
+    changes (decision 28 preserved). Cost: one extra slot-5 plan call
+    on delegate picks only. The CREDS refusal runs after acceptance,
+    unchanged (decision 26).
+    - DA6 machinery extension (before data): D6-bleed-fallback — the
+      planted test_voice history + the weather utterance through the
+      in-process tool_flow must end in the fallback contract: no
+      spawn, no tool_call event. D6 CASE_E/CASE_F (empty history)
+      already prove the delegate path survives the second plan.
+    - Gate + test_voice re-run after implementation; the unaffected
+      battery suites stand from battery run 1 (Rev G touches only
+      tool_flow's delegate branch — no IR, browser, judge, or ASR
+      code path), and the re-run list names them.
