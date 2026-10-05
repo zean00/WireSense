@@ -34,6 +34,7 @@ from kokoro_onnx import Kokoro
 import deep_think
 import faces
 import browser_use
+import ir_use
 
 LLAMA = "http://127.0.0.1:8998"
 PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
@@ -626,7 +627,13 @@ class Session:
         self.norm_fired = False  # normalizer fired on this turn's final
         self._stop_swallow_until = 0.0  # late-final absorber (D11 partial)
         self.browser_task = None  # active BrowserTask (PROTOCOL-browser-use)
+        self.ir_task = None       # active IRTask (PROTOCOL-ir.md)
         self._frame_evt = asyncio.Event()
+
+    def active_task(self):
+        """The one web task a session may run (either track); IR and
+        browser tasks are mutually exclusive by construction."""
+        return self.browser_task if self.browser_task else self.ir_task
 
     async def ambient_probe(self):
         """One frame at speech onset (decision 2): recognition (25-49 ms
@@ -708,7 +715,8 @@ class Session:
                     # phrase (>= 2 words, full pool match) cancels now;
                     # the late final is absorbed by the swallow window.
                     p = m["text"].strip()
-                    if self.browser_task and self.browser_task.active() \
+                    at = self.active_task()
+                    if at and at.active() \
                             and len(p.split()) >= 2 \
                             and browser_use.BARE_STOP_RE.match(p):
                         asyncio.create_task(self.partial_stop(p))
@@ -838,19 +846,23 @@ class Session:
                 # drop semantics; the turn proceeds normally)
                 pend["task"].abort()
                 self.browser_task = None
-        # mid-task voice control (protocol decision 11): while a browser
+        # mid-task voice control (protocol decision 11; IR shares the
+        # same stop contract — PROTOCOL-ir.md decision 12): while a web
         # task runs, the stop pool decides cancel vs hold; other finals
         # are NOT processed (slot-5 stays owned by the loop — registered
         # v1 UX cost). Canned replies: the M1 judge never sees these.
-        if reply is None and self.browser_task and \
-                self.browser_task.active():
+        at = self.active_task()
+        if reply is None and at and at.active():
             if await self.browser_stop_check(utterance):
-                await self.browser_task.cancel()
-                reply, route_mode = "Stopped.", "browser_ctrl"
+                await at.cancel()
+                reply = "Stopped."
+                route_mode = ("browser_ctrl"
+                              if at is self.browser_task else "ir_ctrl")
             else:
-                reply, route_mode = ("I'm still working on the page — "
-                                     "say stop to cancel.",
-                                     "browser_ctrl")
+                reply = ("I'm still working on the page — say stop to "
+                         "cancel.")
+                route_mode = ("browser_ctrl"
+                              if at is self.browser_task else "ir_ctrl")
         # M1 (protocol decisions 2-5): semantic judge on eligible finals —
         # short, not already repaired by the normalizer, not itself a
         # resolution. Fail-open: only a NO verdict with a usable repair
@@ -913,6 +925,17 @@ class Session:
                     WALKER.cfg["nodes"]["root"]["classes"]["browser"])
                 cls, spec["_class"] = "browser", "browser"
                 note = "local-page intercept"
+            elif spec.get("action") not in ("browser", "ir") and (
+                    ir_use.SEARCH_INTENT_RE.search(utterance)
+                    or ir_use.PAGE_QUESTION_RE.search(utterance)):
+                # PROTOCOL-ir.md revision log: the fact-lookup and
+                # page-question frames are not separable at the root
+                # (measured: a pool member scored nearest browser), so
+                # they ship as intercepts; the routed ir class covers
+                # only research frames
+                spec = dict(WALKER.cfg["nodes"]["root"]["classes"]["ir"])
+                cls, spec["_class"] = "ir", "ir"
+                note = "ir intercept"
             if spec.get("action") == "subtree":
                 # the same embedding walks the child node (numpy only);
                 # the child's action params win, its feedback key refines
@@ -981,6 +1004,8 @@ class Session:
             # intake turn: the filler was already spoken above, so the
             # turn ends with it (skip_tts) and the loop runs out-of-turn
             reply, skip_tts = await self.browser_flow(utterance, fb)
+        if reply is None and spec.get("action") == "ir":
+            reply, skip_tts = await self.ir_flow(utterance, fb)
         deep_meta = None
         if reply is None and spec.get("deep") and DEEP is not None:
             # explicit-depth turn: try the configured big model first;
@@ -1348,14 +1373,88 @@ class Session:
         """D11 barge-in on a bare stop partial (see phonon_reader): the
         cancel fires while the clip is still being spoken; the late
         final lands in the swallow window and says nothing (it was
-        already obeyed)."""
-        if not (self.browser_task and self.browser_task.active()):
+        already obeyed). Either track's task counts as active."""
+        at = self.active_task()
+        if not (at and at.active()):
             return  # task finished meanwhile: the final path handles it
-        await self.browser_task.cancel()
+        await at.cancel()
         self._stop_swallow_until = time.monotonic() + 5.0
-        await self.send({"type": "route", "mode": "browser_ctrl",
+        await self.send({"type": "route",
+                         "mode": "browser_ctrl"
+                         if at is self.browser_task else "ir_ctrl",
                          "conf": None, "rewrite": None})
         await self.finish_turn(partial_text, "Stopped.", None, None, None)
+
+    async def ir_flow(self, utterance, fb_text):
+        """IR intake (PROTOCOL-ir.md decision 12): same shape as
+        browser_flow — one history-free slot-5 JSON parse, credential
+        refusal at intake, then the read-only loop runs as a background
+        task. The .html ASR repairs are shared with browser_flow; the
+        fixture snap itself lives in the goto path (fixtures_ir)."""
+        if browser_use.BARE_STOP_RE.match(utterance.strip()):
+            return ("Nothing is running right now — nothing to stop.",
+                    False)
+        if self.active_task():
+            # one task at a time, shared with the browser track
+            return ("One thing at a time — say stop to cancel what I'm "
+                    "doing first.", False)
+        plan_text = re.sub(r"\b([\w-]+)\.?,?\s+html\b,?\s*", r"\1.html ",
+                           utterance, flags=re.I)
+        plan_text = re.sub(r"\bthe local file\b\s*", "", plan_text,
+                           flags=re.I)
+        u = f"{plan_text}\n({ir_use.IR_PLAN_DIRECTIVE})"
+        prompt0 = (f"<|im_start|>system\n{SYS}<|im_end|>\n"
+                   f"<|im_start|>user\n{u}<|im_end|>\n{EMPTY_THINK}")
+        plan = None
+        for prompt in (prompt0, prompt0
+                       + browser_use.BROWSER_PLAN_RETRY):
+            try:
+                loop = asyncio.get_event_loop()
+                r = await loop.run_in_executor(None, lambda p=prompt:
+                    requests.post(f"{LLAMA}/v1/completions", json={
+                        "prompt": p, "max_tokens": 110,
+                        "temperature": 0, "cache_prompt": True,
+                        "id_slot": SLOT}, timeout=60))
+                r.raise_for_status()
+                plan = ir_use._extract_json(
+                    r.json()["choices"][0]["text"])
+            except Exception:
+                plan = None
+            if isinstance(plan, dict) and \
+                    str(plan.get("question") or "").strip():
+                break
+            plan = None
+        if plan is None:
+            return ("I couldn't work out what to look up — tell me the "
+                    "page or the topic and the question.", False)
+        if browser_use.CREDS_TASK_RE.search(str(plan.get("question")
+                                                or "")) \
+                or browser_use.CREDS_TASK_RE.search(plan_text):
+            # decision 10, shared with the browser track: a task that
+            # requires a secret is refused before any page opens
+            return ("I can't enter passwords or sign in for you — that "
+                    "has to stay in your hands.", False)
+        task = ir_use.IRTask(self, plan, utterance)
+        self.ir_task = task
+        task._handle = asyncio.create_task(task.run())
+        return (fb_text or "On it.", True)
+
+    async def ir_done(self, task):
+        """Out-of-turn IR completion: the answer lands in the intake
+        turn's reply box via response_done, is spoken, and enters
+        history. ir_event mirrors browser_event for the UI."""
+        text = task.answer or ""
+        await self.send({"type": "ir_event", "id": task.id,
+                         "event": task.outcome, "depth": task.depth,
+                         "fetches": task.fetches,
+                         "queries": task.queries, "answer": text})
+        await self.send({"type": "response_done", "text": text})
+        await self.tts(text)
+        self.history.append((task.utterance, text))
+        self.ir_task = None
+        self.gate_until = max(self.gate_until, time.monotonic() + 1.0)
+        await self.update_gate()
+        self.schedule_gate_release(1.0)
 
     async def browser_stop_check(self, text):
         """Frozen stop pool 1-NN (decision 11); embeds its pools lazily

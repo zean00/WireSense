@@ -1,5 +1,5 @@
 {
- "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py \u2014 re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating \u2014 cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
+ "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py — re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating — cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
  "version": 7,
  "nodes": {
   "root": {
@@ -199,18 +199,13 @@
      "Open login.html and log me in."
     ],
     "ir": [
-     "Research espresso brewing ratios online and tell me the recommended one.",
-     "Research the history of the Great Library of Alexandria online, in depth.",
-     "Research sleep hygiene online and tell me what actually works.",
-     "Research online how blackout curtains actually work.",
      "Dig into how composting works online and give me a thorough answer.",
      "Dig into how batteries age online and give me the full explanation.",
      "Dig into hiking trails near Bali online and give me the best ones.",
-     "Dig deep into why the Roman republic fell and tell me the main theories, using online sources.",
-     "Search the web and read up on how coffee roasting works, then give me a real answer.",
-     "Search the web and read up on the population of Osaka, then tell me.",
-     "Search the web and read up on the latest changelog, then tell me what changed.",
-     "Read up online how penicillin was discovered and tell me the story."
+     "Dig deep into why the Roman republic fell, using online sources, and weigh the main theories.",
+     "Research sleep hygiene online, in depth, and weigh what actually works.",
+     "Research online how blackout curtains actually work.",
+     "Research espresso brewing ratios online, in depth, and compare the options."
     ]
    }
   },

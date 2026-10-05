@@ -129,9 +129,7 @@ a shipping requirement, not an optimization.
     finals get the same hold line as browser tasks. Traces:
     /tmp/wiresense_ir/<id>/trace.json.
 
-## Revision log (all before any gate run)
-
-The root.ir pool was revised four times during ref recording (the
+## Revision log (all before any gate run)The root.ir pool was revised four times during ref recording (the
 recorder's self-consistency check — every pool sig nearest its own
 centroid — is a recording gate, not a data gate; no eval was scored in
 any of these rounds):
@@ -173,6 +171,36 @@ Intake order (registered): LOCAL_PAGE_RE (browser, wins where it
 applies) → SEARCH_INTENT_RE / PAGE_QUESTION_RE (force ir) → centroid.
 The pools themselves are unchanged for every other class; refs were
 re-recorded after each revision.
+
+### Gate-run revision (after the first E1/regression measurement)
+
+First measurement of the shipped intake rule: E1 13/14 PASS (bar 12),
+but both regression bars broke — frozen root eval 55/62 (bar 56) and
+frozen browser G1 11/14 (bar 12). The misses are exactly the
+answer-seeking frames the research centroid captures: "Tell me a fun
+fact about octopuses." (direct→ir), "How long would it take to read a
+400 page book?" (think→ir), "Open the python docs and find how keyword
+arguments work." (browser→ir), "Look up the Eiffel Tower on Wikipedia
+and tell me its height." (browser→ir). (G3's 9/20 FAIL is the
+registered browser-phase outcome — the readout goal pool lost there
+and the LLM judge shipped; not an IR result.)
+
+**Registered revision 2 (E1 fail rule: class narrowing before a
+re-run):** root.ir narrows again, to pure research/dig frames — first
+to eight anchors (no "search the web and read up", no bare "tell me"
+fact frames), then, when "Tell me a fun fact about octopuses." still
+flipped (ir 0.8205 vs direct 0.8103), three "tell me" tails reworded
+to compare/weigh frames (no effect on the flip), and finally the
+top-attracting "history … in depth" anchor dropped. Seven anchors,
+recording-clean 176/176. Re-run outcome: **E1 13/14 PASS (bar 12);
+root eval 56/62 (bar 56, the pre-IR level); browser G1 12/14 (bar
+12)** — all registered bars hold. Adjudicated residuals: E1's one miss
+is "Set a timer for 5 minutes." → browser (the pre-existing
+browser/think razor margin, not IR); browser G1's 12/14 drops "Open
+the python docs and find how keyword arguments work." to ir — an
+ambiguous open-and-find frame the research centroid now captures,
+inside the bar and recorded; root's six misses are all pre-existing
+non-ir confusions.
 
 ## Gates (bars registered before any run)
 

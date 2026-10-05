@@ -138,6 +138,7 @@ def gate_route():
     / PAGE_QUESTION_RE), then the root centroid. The intercept regexes
     are imported from web/ir_use.py — the exact code that ships."""
     sys.path.insert(0, "web")
+    import browser_use
     import ir_use
     cfg = json.load(open(TREE))
     z = np.load(REFS)
@@ -149,13 +150,13 @@ def gate_route():
         [norm(project(z[f"root.{c}"])).mean(0) for c in classes]))
     ok, misses = 0, []
     for text, want in ROUTE_EVAL_IR:
-        if ir_use.LOCAL_PAGE_RE.search(text):
+        if browser_use.LOCAL_PAGE_RE.search(text):
             got = "browser"            # browser intercept wins first
         elif ir_use.SEARCH_INTENT_RE.search(text) \
                 or ir_use.PAGE_QUESTION_RE.search(text):
             got = "ir"                 # ir intercept
         else:
-            v = norm(project(emb(text)[None, :]))
+            v = norm(project(emb(text)[None, :]))[0]
             got = classes[int(np.argmax(cents @ v))]
         if got == want:
             ok += 1

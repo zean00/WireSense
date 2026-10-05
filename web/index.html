@@ -390,6 +390,14 @@ function onMessage(ev) {
     b.innerHTML = `\ud83c\udf10 ${esc(m.event)} \u2014 ${m.steps.length} step(s)` +
       (last && last.action ? `; last: ${esc(last.action)}` : "");
     scrollFeed();
+  } else if (m.type === "ir_event") {
+    // IR track (PROTOCOL-ir.md): fetch visibility; the answer arrives
+    // via response_done
+    const f = m.fetches && m.fetches.length ? m.fetches[m.fetches.length - 1] : null;
+    const b = turnPart("brow");
+    b.innerHTML = `\ud83d\udd0e ${esc(m.event)} \u2014 ${m.fetches ? m.fetches.length : 0} fetch(es)` +
+      (f && f.url ? `; last: ${esc(f.url.split("/").pop() || f.url)}` : "");
+    scrollFeed();
   } else if (m.type === "need_frame") {
     const b64 = grabFrame();
     if (b64) ws.send(JSON.stringify({type: "camera_frame", b64}));
