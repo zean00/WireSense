@@ -1,4 +1,4 @@
-# PROTOCOL: deep agents — tool legs inside deep think (stage 1)
+# PROTOCOL: deep agents — tool legs inside deep think (stages 1-2)
 
 Registered 2026-10-05, before any gate data. Amends PROTOCOL-deep-think.md
 and PROTOCOL-ir.md; does not amend PROTOCOL-browser-use.md in stage 1
@@ -306,3 +306,136 @@ Honest fail-notes:
 
 Stage 2 (browser legs + guard-yield) and stage 3 (manifest
 dual-exposure) remain registered, not implemented.
+
+---
+
+# Stage 2: browser legs + guard-yield (registered 2026-10-05)
+
+Registered by the same rules as stage 1: this section is committed
+BEFORE any stage-2 gate data; the stage-1 decisions, gates and Results
+above are frozen history; any stage-2 gate revision is registered here
+with measured evidence BEFORE its re-run. The user directed "proceed,
+just use local 4B for now" (the Mirai endpoint was still refusing,
+~69 ms), so every stage-2 number is measured on the local slot-5
+fallback.
+
+## Decisions (numbering continues stage 1)
+
+14. **Scope.** Deep turns may fire a second tool kind: a BROWSER leg.
+    Everything outside the deep loop is byte-identical: routing,
+    intake, intercepts, TOOL_MANIFEST (stage 3), the browser track's
+    own planner/step prompts, PROTOCOL-browser-use.md itself (this
+    stage amends only the detached use of its machinery, in this
+    file).
+
+15. **BROWSE_TOOL marker + args.** Same text protocol as IR_TOOL: a
+    round may end `BROWSE_TOOL {json}`. Args are the browser plan
+    schema: `{"site": ..., "query": ..., "task": ...}`. Invalid when
+    `task` is empty or both `site` and `query` are missing; invalid
+    calls are never retried (the continuation note says so). The
+    parser scans BOTH markers and the earliest JSON-backed marker
+    wins; `split_tool_marker` keeps its stage-1 signature (the frozen
+    DA1 unpacks a 2-tuple) and the loop re-derives the marker kind
+    from the text. The 16-char holdback already covers the longer
+    marker (11 chars).
+
+16. **Legs are detached BrowserTasks, planner skipped.** The think
+    loop IS the planner: its marker args (site/query/task) are
+    code-validated and go straight to `build_url` + a detached
+    `BrowserTask(session, plan, utterance, detached=True)` — the
+    browser track's slot-5 plan call does not run. Everything else is
+    the track's machinery unchanged: MAX_STEPS 10, MAX_SECONDS 90,
+    step directive, goal watch, submit gate, credential guards,
+    per-run traces, browser_event step events, progress fillers.
+    Detached differences (mirroring the IR-leg precedent, decision 5):
+    `finish()` writes the trace + screenshot, closes the page, and
+    returns — NO browser_done (no spoken answer, no history entry, no
+    terminal browser_event; the deep reply is the completion; step
+    events still stream to the UI).
+
+17. **Guard-yield (the stage's core).** A detached leg that reaches a
+    submit-class click parks with NOTHING clicked (the read-back
+    guard, browser decision 10b — unchanged), and detached it holds
+    silently: no speech, no pending, page kept open, trace written.
+    The deep loop sees outcome "parked" and YIELDS THE TURN: it stops
+    generating immediately (no continuation round, no further
+    rounds), and the turn's reply is the partial answer streamed
+    before the marker — or, when the model emitted no preamble, the
+    registered fallback line "I need your okay to continue on that
+    page." After finish_turn speaks that reply and clears speaking,
+    respond() hands the parked task to the session exactly like an
+    out-of-turn browser park: `browser_task = task`, then
+    `browser_done(task, text=park_text)` — the read-back is spoken,
+    `pending = {"kind": "browser", "task"}` is set, and the gate
+    opens for the resolution. YES -> confirm_resume; NO or dropped
+    pending -> abort; both are existing machinery, untouched. The
+    deep turn NEVER confirms a submit-class click itself — code owns
+    the guard; the yield is the mechanism that puts the spoken
+    read-back in front of the user with the mic open.
+
+18. **Intake refusals inherit.** The Rev-1 turn-level CREDS_TASK_RE
+    refusal is unchanged; additionally a BROWSE leg whose task
+    matches CREDS_TASK_RE is refused before any page opens
+    (decision 6's mirror), sharing the refused note verbatim.
+
+19. **Shared budgets.** Both leg kinds draw ONE budget per deep turn:
+    <= 3 legs, <= 180 s combined leg time, <= 6 rounds. The spent
+    note names both markers (verbatim below).
+
+20. **Verbatim strings (stage 2).** DEEP_TOOL_DIRECTIVE v2 (both
+    markers; the IR line byte-identical to stage 1 so the frozen
+    DA1 shape checks still hold), IR_TOOL_CONT_DIRECTIVE v2 (names
+    both markers), budget note v2, BROWSE invalid note, park fallback
+    line — all in the constants block. Registered requirements:
+    angle-bracket placeholders only, no quotable example values
+    (stage-1 echo lesson); the named-source clause kept; the
+    never-write-both clause kept. Findings note for browse legs:
+    `[Page findings for '<task or site>' (outcome: <outcome>):
+    <answer>]`.
+
+21. **Metrics.** deep.tool_calls entries gain `"tool": "ir"|"browse"`;
+    browse entries are `{"tool": "browse", "site", "task", "outcome",
+    "steps", "ms"}`; deep meta gains `"parked": true` on a yield. The
+    parked task object itself never enters metrics (respond() pops it
+    before finish_turn serializes).
+
+22. **Numerics parity.** Generation prompts change (directive v2, the
+    amended notes); generation prompts carry no recorded references —
+    no re-record. No tree edit, no router refs, no planner/step
+    prompt change, no manifest change, no new intercept.
+
+## Gates (stage 2; frozen into tools/test_deep_agents.py by EXTENSION
+## — stage-1 checks DA1/DA2 stay byte-identical and must keep passing)
+
+- **DA4 unit (offline):** dual-marker parser — BROWSE_TOOL cut;
+  earliest-of-both wins; BROWSE_TOOL without JSON -> no call; prose
+  mention stays in the answer; validate_browse_args (task required;
+  site-only; query-only; both-null invalid; clamps); holdback >=
+  len("BROWSE_TOOL"); directive v2 contains both markers and the
+  BROWSE args fields.
+- **DA5 spoken e2e (harness shared with test_ir/test_browser; frozen
+  browser fixtures over file://):**
+  - **Case C (read-only browse leg):** "Think hard about which
+    espresso grinder is the best value, and look at the local file
+    shop.html before answering." — must route deep, run exactly one
+    browse leg whose recorded outcome is "done", keep steps <= 10,
+    speak a final reply citing the price (frozen substring `39.95` —
+    read off the committed fixture shop2.html BEFORE any run), and
+    produce no confirm read-back (a read-only leg never parks).
+  - **Case D (guard-yield):** "Think hard about our feedback quality,
+    and use the local feedback form at form.html to send a note that
+    the app is great, before answering." — must route deep; the
+    browse leg must park (recorded outcome "parked", deep.parked
+    true); the turn must YIELD: the deep partial is spoken
+    (response_done) BEFORE the read-back; the read-back contains
+    "confirm" and the mic reopens; no click is confirmed before the
+    resolution; then the spoken resolution "Yes please" produces a
+    confirmed click step and a terminal done whose spoken answer
+    contains thanks/received.
+  - Spoken-variance clause, same as DA2: exactly one case failed ->
+    one bounded rerun, final.
+- **DA3 battery re-run (unchanged bars), test_browser explicitly
+  included** (BrowserTask is touched by the detached flag; its
+  non-detached paths must stay byte-identical).
+- **VERDICT:** PASS iff DA4 all, DA5 C and D, DA3 all bars; any fail
+  is adjudicated here — including honest failure.
