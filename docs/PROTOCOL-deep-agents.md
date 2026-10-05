@@ -696,3 +696,96 @@ legs fold their findings into the answer) and can act with a spoken
 guard (submit-class clicks park, the turn yields, YES executes). Stage
 3 (manifest dual-exposure) stays registered and unstarted.
 
+
+---
+
+# Stage 3: manifest dual-exposure (registered 2026-10-06)
+
+Committed BEFORE any stage-3 gate data, by the same rules as stages
+1-2. The user directed "Proceed to stage 3". Every measurement runs on
+the local slot-5 fallback (the Mirai 27B endpoint has been refusing all
+cycle; restart remains the user's call). The stage-1/2 decisions,
+gates, Results and revision log above are frozen history.
+
+## Decisions (numbering continues stage 2)
+
+23. **Scope.** TOOL_MANIFEST gains `ir_research` and `browse` — the
+    delegation contract of the agreed rule ("a node earns a tool form
+    when another agent could delegate a bounded job to it"). Everything
+    else byte-identical: tree, routing, intercepts, the deep loop, both
+    tracks' own flows, and the four existing tools' behavior.
+24. **Measured routing fact (the registration table).** Sixteen
+    candidate delegation phrasings probed offline through the real
+    DecideReadout + TreeWalker: ZERO land on the tool class. Research
+    frames pull deep ("Research espresso grind settings and get back
+    to me." 0.872; "Do a bit of research on solar panels for me."
+    0.911; "Do some research on the AeroPress Go for me." 0.904);
+    web/page frames pull browser ("Browse the web for solar panel
+    efficiency." 0.812; "Check the web for the news headlines." 0.887;
+    even the tool-NAMING frame "Use the research tool to check solar
+    panel efficiency." 0.830 and "Use the browse tool to check the
+    news headlines." 0.890); archive frames pull ir ("Research the
+    archive and tell me which grind setting to use." 0.872); "Find out
+    when backups run online." hits the SEARCH_INTENT intercept.
+    Utility frames ("Check solar panel efficiency for me." 0.890)
+    pull deep. Conclusion, registered: the voice router never sends a
+    research/browse job to the manifest, and that is the registered
+    intent — "intake intercepts stay authoritative over manifest
+    routing". The dual-exposure is agent-facing delegation plumbing;
+    its voice-side gate is REGRESSION (the grown manifest must not
+    disturb the tool class), not capture.
+25. **Args contract** (one validator each, reused from the legs):
+    `ir_research {query, question, depth}` -> validate_leg_args
+    verbatim (depth clamped 1-3, default 2; needs question and
+    query-or-url); `browse {site, task}` -> validate_browse_args plus
+    one tightening: a DELEGATED browse names its page — plan["site"]
+    None is invalid (query-only is ir_research's job). The args
+    descriptions ride TOOL_MANIFEST in the existing style; bounded by
+    the validators' caps.
+26. **Code-owned refusals inherit.** CREDS_TASK_RE on the question/
+    task AND on the raw utterance at tool intake (decision 10 parity
+    across all three surfaces): the tracks' refusal line, spoken, no
+    task. Mid-task finals never reach tool_flow (decision 11's
+    interception owns them).
+27. **Execution is the tracks' own intake spawns — no new executor.**
+    The delegation branch of tool_flow spawns exactly what ir_flow/
+    browser_flow spawn: IRTask(self, plan, utterance) or
+    BrowserTask(self, plan, utterance) as background tasks — budgets,
+    stuck watch, replay registry, traces, ir_event/browser_event and
+    the submit-class guard-yield (park -> read-back -> pending) all
+    inherited, not re-implemented. The intake turn ends with the
+    tracks' filler semantics: tool_flow returns (reply, skip_tts) —
+    unpacked at the single respond() call site; the four existing
+    tools return skip_tts=False (behavior identical); the delegation
+    tools return the same fb filler the tracks use (skip_tts=True) —
+    the result arrives out-of-turn through ir_done/browser_done. A
+    tool_call event fires at spawn with the plan args and result
+    "delegated", so the UI's manifest-tool record stays complete; the
+    tracks' completion events follow.
+28. **Numerics parity.** The manifest directive grows by two lines (a
+    generation-prompt change — no re-record per the parity rule); no
+    tree edit, no new intercept, no serving-numerics change. The
+    battery re-runs at unchanged bars (the tool-class cases in
+    test_voice and the evals are the regression proof).
+
+## Gates (stage 3; frozen into tools/test_deep_agents.py by EXTENSION
+## — DA1-DA5 stay byte-identical and must keep passing)
+
+- **DA6 unit (offline):** the directive names both tools with bounded
+  args; validate_tool returns leg-plan shapes (ir_research passthrough
+  with depth clamp; browse repairs + site-required tightening; missing
+  question/task invalid); CREDS refusal paths; the delegation branch
+  spawns the right task types (in-process Session with a stub socket,
+  real registry): ir_research -> ir_event + out-of-turn answer text;
+  browse -> browser_event; the four existing tools' replies
+  byte-identical.
+- **DA7 spoken (live server):** (a) intercept authority, spoken:
+  "Research the archive and tell me which grind setting to use." must
+  route ir (registered 0.872) and complete as an IR turn — never the
+  tool class; (b) tool-class regression, spoken: a timer utterance
+  must still route tool and park on the high-risk read-back exactly as
+  before the manifest grew.
+- **DA3 battery re-run (unchanged bars), test_voice explicitly
+  included** (its tool cases are the grown-manifest regression bar).
+- **VERDICT:** PASS iff DA6 all, DA7 both, DA3 all bars; any fail is
+  adjudicated here — including honest failure.
