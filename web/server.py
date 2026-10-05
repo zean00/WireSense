@@ -1092,14 +1092,25 @@ class Session:
             reply, skip_tts = await self.ir_flow(utterance, fb)
         deep_meta = None
         if reply is None and spec.get("deep"):
-            # deep-agents loop (PROTOCOL-deep-agents.md): provider first,
-            # local open-think fallback, bounded IR tool legs. Never falls
-            # through to the generic path below — deep_turn owns the
-            # fallback itself (a second generation would duplicate).
-            reply, deep_meta = await self.deep_turn(utterance, spec)
-            if reply is None:
-                # hard local failure: error event + gate already handled
-                return
+            # Rev 1 (PROTOCOL-deep-agents.md): deep turns can now act
+            # through legs, so the turn itself gets the tracks' code-
+            # owned credential refusal at intake — before any
+            # generation (measured: the model-only refusal ran past the
+            # spoken gate's 30 s window twice; both tracks refuse this
+            # class in code at intake)
+            if browser_use.CREDS_TASK_RE.search(utterance):
+                reply = ("I can't enter passwords or sign in for you — "
+                         "that has to stay in your hands.")
+            else:
+                # deep-agents loop (PROTOCOL-deep-agents.md): provider
+                # first, local open-think fallback, bounded IR tool legs.
+                # Never falls through to the generic path below —
+                # deep_turn owns the fallback itself (a second generation
+                # would duplicate).
+                reply, deep_meta = await self.deep_turn(utterance, spec)
+                if reply is None:
+                    # hard local failure: error event + gate already done
+                    return
         if reply is None:
             open_think = bool(spec.get("think"))
             out = {}

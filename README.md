@@ -375,6 +375,27 @@ Final adjudicated gates: intake 13/14, fetch 4/4, search 2/2, research
 self-heal → deeper link → "1:2 — 18 grams in, 36 grams out"), safety
 2/2 with zero structural violations, regressions unchanged.
 
+## Deep agents, stage 1 (2026-10-05)
+
+Deep think can now call the IR track as a tool
+(docs/PROTOCOL-deep-agents.md, pre-registered). A deep turn that needs
+facts — or names a source ("...research it in the local archive") —
+ends its round with a text marker (`IR_TOOL {json}`), the parsed args
+run as a detached IR leg (same budgets, replay registry, traces and
+`ir_event`s), and the findings ride a continuation note into the same
+answer. Code-owned: ≤ 3 legs, ≤ 180 s leg time per turn; endpoint-
+agnostic by construction (text protocol + stream holdback, no native
+function-calling — the Mirai 27B provider was unreachable the whole
+cycle and every gate ran on the local fallback). The tracks' code-
+owned credential refusal moved up to the deep turn itself (Rev 1,
+gate-caught): a password-flavored deep ask is refused in code before
+any generation, like browser and IR intake. Gates: unit 16/16, spoken
+e2e green twice (leg fires on the archive case, zero legs on the math
+control, every fetch fixture-snapped), full regression battery at its
+registered bars (root 56/62 unchanged). Stages 2 (browser legs with
+guard-yield) and 3 (manifest dual-exposure of `ir_research`/`browse`)
+are registered, not built.
+
 ## Status
 
 - [x] Architecture + component selection (this repo's docs)
