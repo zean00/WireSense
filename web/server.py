@@ -73,6 +73,11 @@ TOOL_MANIFEST = {
     "reminder": "save a reminder; args: when (short phrase, e.g. 'in 10 minutes' or 'Friday 9am'), text (what to remind)",
     "note": "save a note for later; args: text (the note)",
     "detect": "look through the camera and say which listed objects are visible; args: labels (array of 1-12 short object names, e.g. [\"person\", \"coffee mug\"])",
+    # stage 3 (PROTOCOL-deep-agents.md): the delegation contract — a
+    # bounded job another agent could hand over; both run the tracks'
+    # own leg machinery, out-of-turn completion, code-owned refusals
+    "ir_research": "research a question in the local archive or the web and report the answer; args: query (two to five content keywords), question (what to answer, one short clause), depth (1-3, optional)",
+    "browse": "open a page and work it step by step, then report; args: site (a local file name ending in .html, or a host — never a URL), task (what to find or do there, one short clause)",
 }
 MEMORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            "memory.json")
@@ -127,6 +132,9 @@ ASR_NORMALIZERS = [(re.compile(r"^\s*(two|to|too|2)\s+am\s+i\s*[?!.]*\s*$",
 # 115 ms mean on the 36-item corpus).
 JUDGE_SLOT = 4  # dedicated: the main decode owns SLOT, embeddings own 6
 HIGH_RISK_TOOLS = {"timer", "reminder"}
+# stage 3 (PROTOCOL-deep-agents.md): manifest tools that DELEGATE to a
+# track's own intake spawn — bounded jobs, out-of-turn completion
+DELEGATE_TOOLS = {"ir_research", "browse"}
 JUDGE_SYS = ("You judge transcripts from speech recognition. Grammatical "
              "sentences can still be recognition errors. Answer with only "
              "YES or NO.")
@@ -430,6 +438,21 @@ def validate_tool(name, args) -> dict:
         if not FACE_ENABLED:
             raise ValueError("face recognition is disabled")
         return {"name": str(args.get("name") or "").strip()[:40]}
+    if name == "ir_research":
+        # stage 3: the IR leg's own validator — same shape, same caps,
+        # depth clamped 1-3 (decision 25)
+        plan = validate_leg_args(args)
+        if plan is None:
+            raise ValueError("ir_research needs query + question")
+        return plan
+    if name == "browse":
+        # stage 3: the browse leg's validator plus one tightening — a
+        # delegated browse NAMES its page (query-only is ir_research's
+        # job, decision 25)
+        plan = validate_browse_args(args)
+        if plan is None or not plan.get("site"):
+            raise ValueError("browse needs site + task")
+        return plan
     raise ValueError(f"unknown tool {name}")
 
 
@@ -1183,7 +1206,8 @@ class Session:
         if reply is None and spec.get("action") == "vision" and frame_b64:
             reply = await self.vision_reply(utterance, frame_b64, spec)
         if reply is None and spec.get("action") == "tool":
-            reply = await self.tool_flow(utterance)
+            reply, tool_skip = await self.tool_flow(utterance, fb)
+            skip_tts = skip_tts or tool_skip
             if reply is None:
                 # nothing fit the manifest (or JSON failed twice): honest
                 # brief answer instead of pretending
@@ -1740,12 +1764,16 @@ class Session:
             await self.send({"type": "response_delta", "text": reply})
         return reply, meta
 
-    async def tool_flow(self, utterance):
+    async def tool_flow(self, utterance, fb=None):
         """Manifest-JSON generation -> validate -> execute -> confirm.
-        One retry on invalid JSON. Returns the confirmation reply, or
-        None when nothing fit (caller falls back to an honest answer).
-        The plan/confirm generations are internal: only the confirmation
-        enters history and TTS."""
+        One retry on invalid JSON. Returns (reply, skip_tts), or
+        (None, False) when nothing fit (caller falls back to an honest
+        answer). The plan/confirm generations are internal: only the
+        confirmation enters history and TTS. Stage 3
+        (PROTOCOL-deep-agents.md decisions 25-27): ir_research/browse
+        DELEGATE — the tracks' own intake spawns (background task,
+        out-of-turn completion through ir_done/browser_done, submit
+        guard inherited); the intake turn ends with the filler."""
         plan = None
         for directive in (tool_manifest_directive(), TOOL_RETRY_DIRECTIVE):
             try:
@@ -1758,24 +1786,45 @@ class Session:
                 r.raise_for_status()
                 plan = parse_tool_json(r.json()["choices"][0]["text"])
             except Exception:
-                return None
+                return None, False
             if plan is not None:
                 break
         if plan is None or plan["tool"] is None:
-            return None
+            return None, False
         try:
             args = validate_tool(plan["tool"], plan["args"])
         except (ValueError, TypeError):
-            return None
+            return None, False
         # M2 (protocol decisions 8-9): high-risk numeric tools never
         # execute on the first utterance — park for a spoken read-back;
         # the YES resolution runs the tool from respond()
         if plan["tool"] in HIGH_RISK_TOOLS:
             self.pending = {"kind": "tool", "tool": plan["tool"],
                             "args": args}
-            return readback_text(plan["tool"], args)
+            return readback_text(plan["tool"], args), False
+        if plan["tool"] in DELEGATE_TOOLS:
+            # decision 26: the code-owned credential refusal, same line
+            # as all three surfaces, before anything spawns
+            target = str(args.get("question") or args.get("task") or "")
+            if browser_use.CREDS_TASK_RE.search(target) or \
+                    browser_use.CREDS_TASK_RE.search(utterance):
+                return ("I can't enter passwords or sign in for you — "
+                        "that has to stay in your hands.", False)
+            await self.send({"type": "tool_call", "tool": plan["tool"],
+                             "args": args, "result": "delegated"})
+            if plan["tool"] == "ir_research":
+                task = ir_use.IRTask(self, args, utterance)
+                self.ir_task = task
+            else:
+                task = browser_use.BrowserTask(self, args, utterance)
+                self.browser_task = task
+            task._handle = asyncio.create_task(task.run())
+            # the already-spoken filler ends the intake turn (the
+            # tracks' shape); without one, say "On it." and let TTS
+            return ((fb or "On it."), bool(fb))
         result = await self.run_tool(plan["tool"], args)
-        return await self._confirm_tool(utterance, plan["tool"], args, result)
+        return (await self._confirm_tool(utterance, plan["tool"], args,
+                                         result), False)
 
     async def browser_flow(self, utterance, fb_text):
         """Browser intake (PROTOCOL-browser-use.md decision 3): one
