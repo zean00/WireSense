@@ -208,6 +208,29 @@ def run_gates():
                "How do I look?"):
         check(not rx.search(no), f"gate does not match {no!r}")
 
+    # ambient face context (docs/PROTOCOL-ambient-face.md): config clamp
+    # and the shared context-line format
+    check(server.FACE_AMBIENT is False, "ambient defaults to off")
+    check(not server.ambient_active(True),
+          "ambient clamp: face feature disabled refuses toggle")
+    check(server.camera_line(["albert"]) == "(Camera: albert)\n",
+          "camera_line single-name format")
+    check(server.camera_line(["albert", "an unrecognized person"])
+          == "(Camera: albert and an unrecognized person)\n",
+          "camera_line multi-name format with placeholder")
+    server.FACE_ENABLED = True
+    try:
+        check(not server.ambient_active(True),
+              "ambient clamp: face.enabled alone is not enough")
+        server.FACE_AMBIENT = True
+        check(not server.ambient_active(False),
+              "ambient clamp: session toggle off stays off")
+        check(server.ambient_active(True),
+              "ambient clamp: both keys + toggle runs")
+        server.FACE_AMBIENT = False
+    finally:
+        server.FACE_ENABLED = False
+
 
 if __name__ == "__main__":
     sys.exit(main())

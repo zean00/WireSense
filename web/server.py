@@ -90,6 +90,25 @@ FACE_TOOLS = {
 FACE_INTENT_RE = re.compile(
     r"\b(remember|learn|save)\b.{0,40}\bface\b"
     r"|\b(forget|delete|erase)\b.{0,40}\bface\b", re.I)
+# ambient face context (docs/PROTOCOL-ambient-face.md): one frame at speech
+# onset, recognized while the user is still talking, context line riding
+# every non-vision turn; needs BOTH config keys plus the per-session toggle
+FACE_AMBIENT = False
+
+
+def camera_line(names) -> str:
+    """The one volatile-suffix context line shared by the vision path and
+    ambient turns; names may include the 'an unrecognized person'
+    placeholders from faces.recognize."""
+    return "(Camera: " + " and ".join(names) + ")\n"
+
+
+def ambient_active(session_on) -> bool:
+    """Ambient runs only when the per-session toggle is on AND both config
+    opt-ins are present (server-side clamp, decision 1)."""
+    return bool(session_on and FACE_ENABLED and FACE_AMBIENT)
+
+
 REL_TIME = re.compile(r"\bin (\d+) (second|minute|hour)s?\b", re.I)
 
 TOOL_FALLBACK_DIRECTIVE = ("No available tool fits this request. Answer briefly; "
@@ -504,7 +523,27 @@ class Session:
         self.frame_b64 = None
         self.detect_last = None  # last detect tool result (labels/dets/ms)
         self.face_meta = None    # face metrics for the current vision turn
+        self.ambient = False     # per-session user toggle (ambient_state)
+        self.ambient_meta = None  # ambient probe result for the current turn
         self._frame_evt = asyncio.Event()
+
+    async def ambient_probe(self):
+        """One frame at speech onset (decision 2): recognition (25-49 ms
+        measured) hides behind the utterance; best-effort — any failure
+        means no context line, never a broken turn. Decision 4: nothing
+        to match against (empty store) means no probe at all — no frame
+        is even requested."""
+        try:
+            if not faces.load_store():
+                return
+            frame = await self.request_frame()
+            if frame is None:
+                return
+            meta = await asyncio.to_thread(faces.recognize, frame)
+            if meta.get("n"):
+                self.ambient_meta = meta
+        except Exception:
+            pass
 
     def gate_active(self) -> bool:
         return (self.speaking or self.playback
@@ -689,6 +728,14 @@ class Session:
         except Exception:
             cls, spec = "direct", {"action": "llm", "max_tokens": 96}
         self.route_mode = cls
+        # ambient face context (decision 5): one line riding the volatile
+        # suffix on non-vision actions; vision turns recognize fresh off
+        # their own frame instead. History keeps the RAW utterance — the
+        # line is per-turn context, never persisted into the conversation.
+        hist_utterance = utterance
+        if (self.ambient_meta and self.ambient_meta.get("names")
+                and spec.get("action") != "vision"):
+            utterance = camera_line(self.ambient_meta["names"]) + utterance
         t0 = time.perf_counter()
         first, chunks, timings = None, [], None
         reply = None
@@ -807,7 +854,7 @@ class Session:
         corrupt = len(reply) >= 8 and reply.count("?") >= 0.9 * len(reply)
         await self.send({"type": "response_done", "text": reply})
         await self.tts(reply)
-        self.history.append((utterance, reply))
+        self.history.append((hist_utterance, reply))
         self.speaking = False
         await self.send_metrics(timings, round(first, 1) if first else None,
                                 corrupt, deep=deep_meta)
@@ -878,9 +925,7 @@ class Session:
             self.face_meta = await asyncio.to_thread(
                 faces.recognize, frame_b64)
             if self.face_meta.get("names"):
-                face_line = ("(Camera: "
-                             + " and ".join(self.face_meta["names"])
-                             + ")\n")
+                face_line = camera_line(self.face_meta["names"])
         msgs = [{"role": "system", "content": SYS}]
         for hu, ha in self.history:
             msgs += [{"role": "user", "content": hu},
@@ -1170,6 +1215,8 @@ class Session:
             metrics["deep"] = deep  # provider turn (or its honest fallback)
         if self.face_meta is not None:
             metrics["face"] = self.face_meta  # enabled vision turns only
+        elif self.ambient_meta is not None:
+            metrics["face"] = {**self.ambient_meta, "ambient": True}
         await self.send(metrics)
         # reset per-turn accumulators (t_final too: a pre-final TTS chunk
         # like a backchannel must not measure against the previous turn)
@@ -1185,6 +1232,7 @@ class Session:
         self.route_mode = "direct"
         self.bc_count = 0
         self.face_meta = None
+        self.ambient_meta = None
         self.bc_last_t = 0.0
 
 
@@ -1223,6 +1271,10 @@ async def handler(ws):
                     if session.vad_streak < WAKE_FRAMES:
                         continue
                     session.vad_streak = 0
+                    # ambient face probe (decision 2): fire at speech onset
+                    # so detection hides behind the utterance
+                    if ambient_active(session.ambient):
+                        asyncio.create_task(session.ambient_probe())
                     await session.phonon_connect()
                     frames = list(session.preroll)
                     for f in frames:  # 1 s pre-roll, INCL. the current frame
@@ -1249,12 +1301,22 @@ async def handler(ws):
                 if m.get("type") == "hello":
                     session.ctx_rate = int(m.get("ctx_rate") or 0)
                     session.arm_persisted_reminders()
+                    # capability advertisement (decision 10): the UI shows
+                    # the ambient toggle only when the config allows it
+                    await session.send({"type": "capabilities",
+                                        "face": FACE_ENABLED,
+                                        "ambient": FACE_ENABLED and FACE_AMBIENT})
                     print(f"[{peer}] browser ctx {session.ctx_rate} Hz "
                           "(16000 = no resample path)", flush=True)
                 elif m.get("type") == "camera_state":
                     session.camera = bool(m.get("on"))
                     print(f"[{peer}] camera {'on' if session.camera else 'off'}",
                           flush=True)
+                elif m.get("type") == "ambient_state":
+                    # per-session toggle, clamped to the config opt-ins
+                    session.ambient = ambient_active(m.get("on"))
+                    print(f"[{peer}] ambient context "
+                          f"{'on' if session.ambient else 'off'}", flush=True)
                 elif m.get("type") == "camera_frame":
                     b = m.get("b64")
                     if b and len(b) < 2_000_000:  # ~1.5 MB JPEG ceiling
@@ -1305,7 +1367,7 @@ async def http_page(connection, request):
 
 
 async def main():
-    global KOKORO, READOUT, WALKER, DEEP, FACE_ENABLED
+    global KOKORO, READOUT, WALKER, DEEP, FACE_ENABLED, FACE_AMBIENT
     t0 = time.perf_counter()
     KOKORO = Kokoro(f"{MODELS}/kokoro-v1.0.onnx", f"{MODELS}/voices.npz")
     READOUT = DecideReadout()
@@ -1314,10 +1376,15 @@ async def main():
     if DEEP is not None:
         print(f"deep think: {DEEP.provider} {DEEP.model} @ {DEEP.base_url}",
               flush=True)
-    FACE_ENABLED = bool(
-        (deep_think.load_config().get("face") or {}).get("enabled", False))
-    print(f"face recognition: {'ENABLED' if FACE_ENABLED else 'disabled'} "
-          f"(opt-in, web/config.json 'face')", flush=True)
+    face_cfg = deep_think.load_config().get("face") or {}
+    FACE_ENABLED = bool(face_cfg.get("enabled", False))
+    FACE_AMBIENT = bool(face_cfg.get("ambient", False))
+    if FACE_ENABLED:
+        print(f"face recognition: ENABLED "
+              f"(ambient {'on' if FACE_AMBIENT else 'off'})", flush=True)
+    else:
+        print("face recognition: disabled (opt-in, web/config.json 'face')",
+              flush=True)
     print(f"kokoro + readout + decision tree loaded in "
           f"{time.perf_counter() - t0:.1f}s", flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=http_page,

@@ -74,7 +74,41 @@ FACE_UTTERANCES = [
      {"frame_face": True, "face_names": ["albert"]}),
     ("think.tool", "Learn my face as Albert.",
      {"face_enroll": True, "frame_face": True, "store_exact": ["albert"]}),
-    ("think.tool", "Forget my face.", {"face_forget": True}),
+    # --- ambient face context (docs/PROTOCOL-ambient-face.md G3) ---
+    # identity utterance note: "Who am I?" garbles in ASR ("Two am I?",
+    # measured) and the longer "who I am" phrasings route vision — this
+    # one transcribes cleanly and routes direct (0.88, measured)
+    # controls first: fresh history, store populated, toggle off
+    ("direct", "Who am I, do you know?",
+     {"reset": True, "ambient_off": True, "no_ambient": True,
+      "no_albert": True}),
+    # the point of the feature: identity on the direct route, answered
+    # from the store via the speech-onset probe, not from history
+    ("direct", "Who am I, do you know?",
+     {"reset": True, "ambient": True, "face_names": ["albert"],
+      "ambient_flag": True, "albert": True, "ms_budget": 50}),
+    # vision turn with ambient on: fresh recognition serves it (metrics
+    # must NOT carry the ambient flag — no injection into the vision path)
+    ("vision", "What do you see right now?",
+     {"ambient": True, "frame_face": True, "face_names": ["albert"],
+      "vision_face": True}),
+    # tool turn with ambient on: injection must not break tool selection
+    ("think.tool", "Set a timer for 10 minutes.",
+     {"ambient": True, "timer": 600}),
+    # toggle on but camera off: probe finds nothing, honest absence
+    ("direct", "Who am I, do you know?",
+     {"reset": True, "ambient": True, "camera_off": True,
+      "no_ambient": True, "no_albert": True}),
+    # paired latency (G4): identical direct utterance, ambient off then on
+    ("direct", "What is the capital of France?",
+     {"reset": True, "ambient_off": True, "lat": "off"}),
+    ("direct", "What is the capital of France?",
+     {"reset": True, "ambient": True, "lat": "on"}),
+    # mid-conversation forget — BUT the ambient cases above each reset
+    # history, so this runs on a near-empty history: it routes vision at
+    # the root (measured 0.795) and the Rev 1 vision-branch gate runs the
+    # forget (registered fallback path), not the manifest path
+    ("vision", "Forget my face.", {"face_forget": True}),
     ("vision", "What do you see right now?",
      {"frame_face": True, "no_face": True}),
 ]
@@ -164,6 +198,7 @@ async def run() -> int:
     events = []
     all_events = []  # never cleared: catches async fires (reminder_due)
     failures = []
+    lat_vals = {}    # G4 paired e2e: ambient off vs on, same run
     T0 = time.monotonic()
     want_frame = [False]
     frame_b64 = face_einstein_b64() if FACE_MODE else red_circle_b64()
@@ -193,9 +228,21 @@ async def run() -> int:
             t_start = time.monotonic()
             print(f"\n--- expect {want}: {text!r}")
             events.clear()
-            want_frame[0] = bool(checks.get("frame") or checks.get("frame_face"))
+            want_frame[0] = bool(checks.get("frame") or checks.get("frame_face")
+                                 or checks.get("ambient"))
             if want_frame[0]:
                 await ws.send(json.dumps({"type": "camera_state", "on": True}))
+            if checks.get("reset"):
+                await ws.send(json.dumps({"type": "reset"}))
+                await asyncio.sleep(0.3)
+            if (checks.get("ambient") or checks.get("ambient_off")
+                    or checks.get("camera_off")):
+                await ws.send(json.dumps({"type": "ambient_state",
+                                          "on": bool(checks.get("ambient"))}))
+            if checks.get("camera_off"):
+                # explicit off after the toggle: the probe must find nothing
+                await ws.send(json.dumps({"type": "camera_state", "on": False}))
+                want_frame[0] = False
             await feed(ws, synth(text))
             # keep the line silent but OPEN until Phonon endpoints the turn;
             # wait for metrics too or every reading attributes to the
@@ -356,8 +403,40 @@ async def run() -> int:
                            and checks["note"].lower() in i.get("text", "").lower()
                            for i in memory_items()):
                     failures.append(f"{want}: note missing from memory.json")
+            # --- ambient face context checks (G3/G4/G5) ---
+            if checks.get("no_ambient") and face_metrics:
+                failures.append(f"{want}: face metrics present on an "
+                                f"ambient-disabled turn: {face_metrics}")
+            if checks.get("no_albert") and "albert" in reply.lower():
+                failures.append(f"{want}: reply names Albert with no face "
+                                f"context: {reply[:80]!r}")
+            if checks.get("albert") and "albert" not in reply.lower():
+                failures.append(f"{want}: ambient context did not reach the "
+                                f"reply: {reply[:80]!r}")
+            if checks.get("ambient_flag") \
+                    and not any(fm.get("ambient") for fm in face_metrics):
+                failures.append(f"{want}: face metrics lack the ambient flag")
+            if checks.get("vision_face") \
+                    and any(fm.get("ambient") for fm in face_metrics):
+                failures.append(f"{want}: vision turn carried the ambient "
+                                "flag — ambient injected into the vision path?")
+            if "ms_budget" in checks:
+                for fm in face_metrics:
+                    if fm.get("ms") is None or fm["ms"] >= checks["ms_budget"]:
+                        failures.append(f"{want}: face.ms {fm.get('ms')} >= "
+                                        f"{checks['ms_budget']} budget")
+            if "lat" in checks:
+                m = next((e for e in events if e.get("type") == "metrics"), None)
+                lat_vals[checks["lat"]] = m.get("e2e_ms") if m else None
             await asyncio.sleep(1.5)
         rt.cancel()
+    if FACE_MODE and lat_vals.get("off") and lat_vals.get("on"):
+        off, on = lat_vals["off"], lat_vals["on"]
+        print(f"\nambient latency pair (G4): ambient-off e2e={off}ms "
+              f"ambient-on e2e={on}ms (bar: on <= off + 15%)")
+        if on > off * 1.15:
+            failures.append(f"G4: ambient-on e2e {on}ms > ambient-off "
+                            f"{off}ms + 15% — probe not hidden behind speech?")
     if failures:
         print("\nFAIL:")
         for f in failures:

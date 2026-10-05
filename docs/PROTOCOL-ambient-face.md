@@ -117,3 +117,33 @@ Continuous frames during speech; ambient object lists (OmDet); liveness /
 anti-spoofing (unchanged from the face protocol: a photo of an enrolled
 person is recognized); persisting the toggle across server restarts; any
 routing change (the whole point is that none is needed).
+
+## Revision 1 (pre-registered before the powered G4 run)
+
+The first enabled run delivered every functional gate but failed G4 as
+specified: ambient-off e2e 746.1 ms vs ambient-on 971.5 ms (+30%). Diagnosis
+from the same run: **ttft is identical** (70.2 vs 69.8 ms — the probe
+completes at wake, long before `respond`, and cannot touch the LLM segment),
+while `e2e_ms` (first TTS audio out) ranged 550–1115 ms across identical
+direct turns *in both arms* of the same run — it is TTS queueing noise, and
+a single pair per arm is under-powered. Registered amendment, before any
+powered run:
+
+- **G4 (v2)**: 6 interleaved pairs of the identical direct utterance
+  ("What is the capital of France?"), reset before each, ambient_state
+  off/on alternating within each round to distribute drift. Gate:
+  median(ambient-on e2e) ≤ median(ambient-off e2e) × 1.15 AND
+  median(ambient-on ttft) ≤ median(ambient-off ttft) × 1.15. The ttft leg
+  is the causal check (the probe can only contend there); the e2e leg
+  guards the user-visible path. Run as `tools/probe_ambient_latency.py`.
+- Also registered here (from the same first-run evidence, fixing harness
+  and probe bugs, no gate relaxation): (a) "Who am I?" garbles in ASR
+  ("Two am I?", measured) — identity cases use "Who am I, do you know?"
+  (transcribes cleanly, routes direct 0.88; "Do you know who I am?" and
+  "Tell me who I am." transcribe cleanly but route **vision** 0.876–0.893 —
+  more evidence that identity content routes unpredictably, which is the
+  motivation for ambient context in the first place); (b) the ambient probe
+  honors decision 4's store-nonempty precondition literally: empty store →
+  no probe, no frame even requested; (c) the mid-conversation forget case
+  runs after a reset, so it exercises the Rev 1 vision-branch gate (routes
+  vision 0.795, forget fires) rather than the manifest path.

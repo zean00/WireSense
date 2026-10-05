@@ -13,6 +13,7 @@
   },
   "face": {
     "enabled": false,
-    "_comment": "opt-in face recognition (docs/PROTOCOL-face-recognition.md); embeddings stay local in web/faces.json"
+    "ambient": false,
+    "_comment": "opt-in face recognition (docs/PROTOCOL-face-recognition.md); embeddings stay local in web/faces.json. 'ambient' adds the frame-at-speech-onset context line (docs/PROTOCOL-ambient-face.md); needs enabled too, plus the per-session UI toggle."
   }
 }

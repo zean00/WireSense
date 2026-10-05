@@ -129,6 +129,7 @@
   <div id="stats">not connected</div>
   <button id="mic">Start mic</button>
   <button id="cam">📷 Camera</button>
+  <button id="amb" hidden>👁 Ambient</button>
   <button id="reset">Reset</button>
 </header>
 
@@ -321,7 +322,14 @@ fetch("/tree.json").then(r => r.json()).then(t => { TREE = t; buildTree(); })
 function onMessage(ev) {
   const m = JSON.parse(ev.data);
   logEvent(m);
-  if (m.type === "partial") {
+  if (m.type === "capabilities") {
+    el("amb").hidden = !m.ambient;
+    if (m.ambient) {
+      let saved = null;
+      try { saved = localStorage.getItem("ws_ambient"); } catch (e) {}
+      setAmbient(saved === "1");  // re-arms the server-side session toggle
+    }
+  } else if (m.type === "partial") {
     el("partial").textContent = m.text;
   } else if (m.type === "decide") {
     el("r_n").textContent = m.top1 != null ? "running…" : "–";
@@ -505,6 +513,20 @@ function grabFrame() {
   return c.toDataURL("image/jpeg", 0.8).split(",")[1];
 }
 el("cam").onclick = toggleCamera;
+
+// --- ambient face context (docs/PROTOCOL-ambient-face.md): per-session
+// toggle; the button only appears when the server advertises it, and the
+// server clamps the state to its config opt-ins regardless ---
+let ambientOn = false;
+function setAmbient(on) {
+  ambientOn = !!on;
+  el("amb").textContent = ambientOn ? "👁 Ambient ✓" : "👁 Ambient";
+  el("amb").classList.toggle("on", ambientOn);
+  try { localStorage.setItem("ws_ambient", ambientOn ? "1" : "0"); } catch (e) {}
+  if (ws && ws.readyState === 1)
+    ws.send(JSON.stringify({type: "ambient_state", on: ambientOn}));
+}
+el("amb").onclick = () => setAmbient(!ambientOn);
 
 let micPaused = false;
 const tStats = {};
