@@ -307,6 +307,40 @@ trace. For this question regime: keep it off.
   and spoken while the user is still talking; the browser mic runs echo
   cancellation, and a new final cancels playback.
 
+## Voice-driven browser use (2026-10-05)
+
+"Open shop.html and find the price of the AeroPress Go" runs a real
+headless-Chromium loop — every judgment local, no external APIs
+(docs/PROTOCOL-browser-use.md, pre-registered before any gate data).
+Code owns the loop; the models propose: each step is a DOM snapshot
+(≤ 40 visible interactive candidates + a text excerpt — never
+screenshots) and one slot-5 JSON call that picks ONE action
+(click / type / scroll / done). Finish needs the step model's `done`
+AND the goal watcher agreeing; the decide-layer readout pool failed
+its frozen eval at chance (9/20 — page excerpts are out-of-distribution
+for utterance-calibrated pools), so the pre-registered fallback ships:
+a slot-4 YES/NO judge, 18/20 on the same frozen pairs.
+
+Safety is code, not prompting: credential fields are never typed and
+login tasks are refused at intake; submit-class clicks park the loop
+for a spoken read-back ("Just to confirm — click "Submit feedback"?") —
+YES executes, NO cancels with nothing clicked. Say "stop it" mid-task
+and the cancel fires on the ASR *partial* — measured at −580 ms, while
+the user is still speaking — because during a task the loop owns the
+GPU and final-based stops reliably landed after the task had already
+finished. Every step lands in a run trace
+(`/tmp/wiresense_browser/<id>/steps.json`), the replay-folder pattern.
+
+Gates (frozen): routing 13/14, stop pool 20/20, six fixture tasks 6/6
+across three full e2e runs (≤ 13 s each, filler ≤ 132 ms), safety 3/3,
+regressions unchanged (14/14 voice, 31/31 safety, 22/22 normalizer).
+Misses and fragilities are adjudicated with their measurements in the
+protocol's Results section — including the razor-margin router
+phrasings (timer lines at 0.001–0.002) and the deterministic
+"AeroPress"→"Aero Presco" garble that a code intercept now rescues,
+because routing is punctuation-invariant and no text repair can reach
+it.
+
 ## Status
 
 - [x] Architecture + component selection (this repo's docs)

@@ -141,3 +141,105 @@ beyond top-frame DOM, no JS-heap introspection; duckduckgo-lite is the
 only search entry and live-web behavior is smoke-tested, never gated
 (network nondeterminism cannot be a frozen eval — the replay-folder
 pattern exists for that reason).
+
+## Results (adjudicated, 2026-10-05)
+
+All numbers from the committed frozen evals and
+`tools/test_browser.py` (e2e voice harness: synthesized audio through
+the real server, event-trace assertions) against the shipped build.
+
+| Gate | Result | Verdict |
+|---|---|---|
+| G1 route | 13/14 browser eval (bar 12) | PASS |
+| G2 stop pool | 20/20 (bar 18) | PASS |
+| G3 readout watcher | 9/20 (bar 18) — chance-level | FAIL → D7 |
+| G3 D7 fallback | LLM judge 18/20 on the frozen pairs | PASS, ships |
+| G4 fixture tasks | 6/6, 6/6, 6/6 across three full runs | PASS |
+| G5 safety | 3/3 ×3 | PASS |
+| G6 barge-in stop | PASS ×3; stop acted at −579/−584/−585 ms (mid-clip) | PASS |
+| D11 hold line | 2/3 runs | FLAKY, adjudicated |
+| G7 latency | filler ≤ 132 ms; median step 6–18 ms; median task ≤ 11.3 s | PASS |
+| G8 regression | test_voice 14/14, test_safety 31/31, test-normalizer 22/22 | PASS |
+
+### What failed and what it taught (all measured)
+
+**G3 readout watcher (registered failure).** The decide-layer readout
+pool scores page excerpts at chance (9/20): excerpts are
+out-of-distribution for utterance-calibrated pools. The pre-registered
+D7 fallback — slot-4 YES/NO LLM judge with a hybrid prompt (lookup
+tasks: page contains the answer; do-tasks: page shows the result of
+the action) — measures 18/20 on the same frozen pairs and ships. Its
+one live failure class: a fully-filled form reads as "the result of it
+having been done", so the code, not the prompt, now holds the line —
+a submit-class task cannot count as achieved until the confirmed click
+has fired (`_clicked` invariant in browser_use.py). This was found by
+the e2e harness (run 7: the watcher finished a form task without the
+submit ever happening).
+
+**Barge-in stop acted on the partial (D11 extension).** During an
+active task the loop owns the GPU and Phonon decode lags: the stop
+final reliably lands *after* the task already completed (measured
+across four runs before the fix). Partials arrive fast, so a bare stop
+phrase (≥ 2 words, full `BARE_STOP_RE` match) now cancels at the
+partial stage; the late final is absorbed by a swallow window so it
+cannot double-speak "nothing to stop". Measured stop latency went from
+task-relative races to −580 ms (cancel fires while the user is still
+speaking). The non-stop hold line still rides the final and is
+therefore GPU-starved the same way: 2/3 runs (run 14: the question's
+final arrived after the task's own completion; the task itself was
+never at risk).
+
+**One dead turn must not kill the reader.** An intermittent
+reply-less-turn bug traced to `phonon_reader`: any exception inside a
+turn's respond() killed the reader task, left the ASR stream open, and
+produced phantom merged turns. respond() is now wrapped per-turn
+(failure prints, gate reopens, stream closes). Found via an isolated
+probe where the same question produced partials, a final — and no
+reply.
+
+**ASR fragility, repaired at the single repair point (decision 2).**
+All deterministic, all measured: ".html" renders as "form. HTML"/
+"news, HTML" (repaired before the plan call); "the local file"
+triggers a planner refusal (dropped); digits glue to the previous word
+("for10 minutes" — pulled the root centroid think→browser, 0.83 vs
+0.82, while the spaced text routes think; letter-digit joins now
+split in normalize_transcript; this is also why the G8 timer case
+flipped until the repair landed). Clips can still miss the wake
+entirely under load; the harness re-feeds once, bounded, and counts
+it (1–2 per run).
+
+**Router vs garble: code wins where the geometry cannot.** "Open
+shop.html and find the price of the AeroPress Go" garbles to
+"Aero Presco" (deterministic TTS→ASR round-trip) and the root centroid
+flips to think by 0.013; routing is punctuation-invariant
+(norm_router_text), so no text repair can fix it. A local `.html`
+reference is unambiguous browser intent → `LOCAL_PAGE_RE` intercepts
+before the route event (measured on both sides; the same probe shows
+the intercept regex cannot match "learn html" or any non-page
+utterance). The rescued shop task also became the G6 vehicle: the news
+teaser already held "40.1 percent", so the watcher legitimately
+finished the old news→news2 vehicle in ~2 s and the stop kept losing
+the race.
+
+**Login is refused at intake.** The step directive forbids credential
+typing, so the model obeys and the loop sticks typing the username
+until the stuck watch (measured: username, alice, alice, forced
+scroll). A login REQUIRES a secret, so decision 10 now refuses at
+intake ("I can't enter passwords or sign in for you") — no page opens,
+no task spawns, refusal spoken; the step-level guard stays as defense
+in depth.
+
+**Razor-margin router phrasings (carried limitation, re-measured).**
+Timer/reminder phrasings sit at 0.001–0.002 margins
+("Set a timer for 10 minutes." → think 0.849 vs browser 0.848; the
+reminder line flips the other way). The frozen root bar (56/62) was
+met at ship; individual live phrasings flip with ASR jitter. This
+adjudication stands; widening the pools re-opens the documented
+whack-a-mole.
+
+**Pool iteration account.** Mixed-length browser pool (27→32 lines)
+was the only variant meeting all frozen bars simultaneously: the
+5-line addition alone crossed Volga into the browser class; short
+lines alone dropped the root to 55/62; think-timer shoring re-dropped
+the root. Ship point: 169/169 router-embedding self-consistency,
+root 56/62, browser eval 13/14.
