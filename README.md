@@ -220,6 +220,20 @@ frozen router bars unchanged. G4's first version failed honestly
 (single-pair e2e is TTS-noise-dominated; Rev 1 records the diagnosis and
 the powered 6-pair amendment before the rerun).
 
+**ASR transcript normalizer** (`docs/PROTOCOL-asr-normalizer.md`): the
+e2e run exposed that "Who am I?" deterministically transcribes "Two am
+I?" — measured to sit on Phonon's who/two decision boundary (non-monotonic
+under leading-silence perturbations; 1 of 5 natural identity questions
+affected). Repaired at a single point — the Phonon final, before routing —
+by one full-utterance rule (`two|to|too|2 am i` → "Who am I?"), inert
+against "It's two a.m." / "Two am I late?", every firing logged, and a
+registered deletion criterion: a rule that never fires on real traffic is
+removed at the next revision. New rules require a logged real firing —
+the one observed garble is testbench speech, so the rule ships
+instrumented rather than extended. Hotword biasing was considered and
+rejected: the serve path has no knob, and a static "who" prior would
+endanger number-heavy utterances (timers).
+
 ## Deep think (2026-10-05)
 
 Optional big-model route for the deep class, fully config-gated in

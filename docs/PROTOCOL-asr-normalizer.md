@@ -81,3 +81,40 @@ non-monotonic bisect. Behavioral clarify-on-nonsense: out of scope here
   ≥ 6/8 and strictly > raw. The normalizer runs before the router on
   live text only; frozen evals feed their own strings, so they are
   unaffected by construction — the run confirms no drift anyway.
+
+## Results (2026-10-05, adjudicated)
+
+All gates pass. Runtime state after adjudication: face block removed from
+config, `faces.json` deleted, server restarted — boot line "face
+recognition: disabled" (the normalizer itself is always-on by decision 1;
+it is inert unless the exact garble family appears).
+
+- **G1 offline**: `make test-normalizer` — 22 checks ALL PASS (8 positives
+  across the two/too/to/2 × case × punctuation family, 13 negatives
+  including "It's two a.m.", "Two am I late?", "wake me at two am" and
+  suite utterances byte-identical, plus the registered single-rule table
+  check).
+- **G3 default run**: 12/12 (normalizer loaded, zero firings on suite
+  text).
+- **G2 enabled run**: 15/15 **twice consecutively**. The new natural-
+  phrase case — the exact deterministically-garbled audio — now reads:
+  `final: 'Who am I?'` (server log: `[asr-normalizer] 'Two am I?' ->
+  'Who am I?'`), route direct 0.876, reply **"You are Albert."**, metrics
+  `face {n:1, names:["Albert"], ms:16.2, ambient:true}` — the full
+  pipeline (repair → route → ambient probe → identity answer) on the
+  phrase that started this. The robust-phrasing case still passes
+  (ASR-agnostic workhorse). Firings across both enabled runs + the
+  default run: exactly one per run, the garbled phrase, no false
+  positives.
+- **G4 router evals**: root 56/62, think 24/26, followup 6/8 > raw 4/8 —
+  identical frozen bars (the intermittent coffee-beans drift case passed
+  this time, consistent with its documented serving-numerics flakiness).
+- Latency note (unregistered observation from the same runs): ambient
+  latency pair in the second enabled run 743.1 vs 739.9 ms — normalizer
+  adds nothing measurable.
+
+**Verdict**: the who/two garble is repaired at the single registered
+point, provably inert everywhere else, with the deletion criterion
+instrumented (log line per firing). The rule is one line; its lifecycle
+now depends on real traffic — if no one ever says the phrase, the next
+revision deletes it.
