@@ -925,14 +925,18 @@ class Session:
                     WALKER.cfg["nodes"]["root"]["classes"]["browser"])
                 cls, spec["_class"] = "browser", "browser"
                 note = "local-page intercept"
-            elif spec.get("action") not in ("browser", "ir") and (
-                    ir_use.SEARCH_INTENT_RE.search(utterance)
-                    or ir_use.PAGE_QUESTION_RE.search(utterance)):
+            elif ir_use.SEARCH_INTENT_RE.search(utterance) \
+                    or ir_use.PAGE_QUESTION_RE.search(utterance):
                 # PROTOCOL-ir.md revision log: the fact-lookup and
                 # page-question frames are not separable at the root
                 # (measured: a pool member scored nearest browser), so
                 # they ship as intercepts; the routed ir class covers
-                # only research frames
+                # only research frames. Registered intake order — the
+                # intercept wins over ANY centroid pick (measured e2e:
+                # with the intercept gated on the centroid not saying
+                # browser, 'Search the archive for how long to proof
+                # dough' flipped browser or ir depending on which side
+                # of a 0.01 margin the centroid landed)
                 spec = dict(WALKER.cfg["nodes"]["root"]["classes"]["ir"])
                 cls, spec["_class"] = "ir", "ir"
                 note = "ir intercept"
@@ -1325,7 +1329,7 @@ class Session:
         # file" is also dropped: that phrase deterministically triggers a
         # planner refusal ("I cannot open local files", measured), while
         # the same text as "Open docs.html and ..." parses clean.
-        plan_text = re.sub(r"\b([\w-]+)\.?,?\s+html\b,?\s*", r"\1.html ",
+        plan_text = re.sub(r"\b([\w-]+)[.,?]?\s+html\b,?\s*", r"\1.html ",
                            utterance, flags=re.I)
         plan_text = re.sub(r"\bthe local file\b\s*", "", plan_text,
                            flags=re.I)
@@ -1398,7 +1402,7 @@ class Session:
             # one task at a time, shared with the browser track
             return ("One thing at a time — say stop to cancel what I'm "
                     "doing first.", False)
-        plan_text = re.sub(r"\b([\w-]+)\.?,?\s+html\b,?\s*", r"\1.html ",
+        plan_text = re.sub(r"\b([\w-]+)[.,?]?\s+html\b,?\s*", r"\1.html ",
                            utterance, flags=re.I)
         plan_text = re.sub(r"\bthe local file\b\s*", "", plan_text,
                            flags=re.I)
@@ -1434,7 +1438,7 @@ class Session:
             # requires a secret is refused before any page opens
             return ("I can't enter passwords or sign in for you — that "
                     "has to stay in your hands.", False)
-        task = ir_use.IRTask(self, plan, utterance)
+        task = ir_use.IRTask(self, plan, plan_text)
         self.ir_task = task
         task._handle = asyncio.create_task(task.run())
         return (fb_text or "On it.", True)

@@ -341,6 +341,40 @@ phrasings (timer lines at 0.001–0.002) and the deterministic
 because routing is punctuation-invariant and no text repair can reach
 it.
 
+## Information retrieval track (2026-10-05)
+
+The browser track acts; the IR track reads (docs/PROTOCOL-ir.md,
+pre-registered). "Research espresso brewing ratios in the local
+archive" runs a read-only loop — goto only, no click/type/fill, no
+submit guards needed because nothing is ever submitted. Three depths
+in one code-owned budget (20/45/90 s): a named page is fetched and
+read (depth 1), a search fans out over the top-3 results into ONE
+synthesis (depth 2), a research frame digests page after page —
+following deeper links, reformulating when a search comes back empty
+— until it can answer or honestly hedges (depth 3).
+
+The split is measured, not aesthetic: fact-lookup frames are not
+separable from browser frames in this embedding space (a pool member
+scored nearest browser even at 1.0 self-match), so search/page-question
+frames ship as two code intercepts above the centroid and the ir class
+covers only research/dig frames — nine anchors, recording-clean, with
+the root eval held at exactly its pre-IR 56/62 and the browser G1 at
+12/14.
+
+Every judgment is a slot-5 LLM call over page text — the readout-pool
+lesson applied from day one. Gates run on committed replay fixtures in
+the real DuckDuckGo-lite DOM shape (registry-matched, never live:
+measured, the real engine serves a bot challenge from this box — the
+live smoke ends in the honest spoken "The search engine isn't
+returning results right now"). Spoken-input reality drove the last
+mile: ASR writes "burr? HTML" and "Doe" for dough, so measured joins
+and a measured homophone map live at the task layer; a wrong result
+pick self-heals by walking the results queue instead of re-searching.
+Final adjudicated gates: intake 13/14, fetch 4/4, search 2/2, research
+2/2 (the ratio case lands the full multi-hop chain: wrong pick →
+self-heal → deeper link → "1:2 — 18 grams in, 36 grams out"), safety
+2/2 with zero structural violations, regressions unchanged.
+
 ## Status
 
 - [x] Architecture + component selection (this repo's docs)

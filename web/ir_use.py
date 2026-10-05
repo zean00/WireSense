@@ -74,13 +74,31 @@ PAGE_QUESTION_RE = re.compile(
     r"\b(?:say|says|about|recommend|contain|list|cover|mention|state)\b",
     re.I)
 
+# research frames are depth 3 by registered definition (decision 5);
+# the planner miscounts them under plan variance, so code owns the floor
+RESEARCH_RE = re.compile(
+    r"\b(?:research(?:ing)?|dig(?:ging)?)\b|\blocal\s+archive\b", re.I)
+
+# request-frame words that leak into planned queries (measured e2e:
+# 'Research espresso brewing ratios in the local archive' planned
+# 'brewing ratios local archive' — missing the frozen replay key);
+# dropped on both sides before token-subset matching
+QUERY_STOPWORDS = {"local", "archive", "page", "web", "online",
+                   "internet", "please"}
+
+# measured TTS->ASR homophones (spoken gates only): Phonon writes
+# 'doe' for 'dough' (deterministic, difflib ratio 0.5 — below any
+# defensible fuzzy cutoff), so the resolver fallback matches key
+# tokens against their measured spoken variants
+TOKEN_VARIANTS = {"dough": ("doe",)}
+
 IR_PLAN_DIRECTIVE = (
     "You are a parser, not the assistant: never refuse and never "
     "explain. Extract the information request. Reply with ONLY a JSON "
     "object: "
     '{"depth": 1 or 2 or 3, '
     '"url": "the page to read, like moon.html or https://..., or null", '
-    '"query": "search keywords, or null", '
+    '"query": "two to five content keywords, or null", '
     '"question": "what to answer, one short clause"}. '
     "depth 1 = a named page is given; depth 2 = search and tell; "
     "depth 3 = research, dig in, compare, or find out in depth. "
@@ -102,7 +120,11 @@ IR_DIGEST_DIRECTIVE = (
     ' "findings": "everything collected so far, in one short '
     'paragraph, only what the pages actually say",\n'
     ' "next_query": "a better search query, if the answer is still '
-    'missing and another search would help, else null",\n'
+    'missing and another search would help — name a concrete thing to '
+    'look up (a product, a device, a topic page), not the question '
+    'itself; if the first search failed, approach the topic from a '
+    'different angle (a question about X often matches pages about the '
+    'tool or product that does X), else null",\n'
     ' "next_open": "the address of a link worth opening from this '
     'page, if one is listed, else null",\n'
     ' "give_up": true only if no search or link could plausibly '
@@ -177,12 +199,27 @@ def fixture_snap(url):
 
 
 def _tokens(s):
-    return set(norm_router_text(s).split())
+    return set(norm_router_text(s).split()) - QUERY_STOPWORDS
 
 
-def resolve_query(query):
+def _fuzzy_hit(token, tokens):
+    for t in tokens:
+        if t == token or difflib.SequenceMatcher(
+                None, t, token).ratio() >= 0.75:
+            return t
+    return None
+
+
+def resolve_query(query, utterance=None):
     """Registered query -> replay fixture, or the live SERP URL
-    (decision 6). Returns (url, replay_name_or_None)."""
+    (decision 6). Planned query: exact, then substring, then
+    token-subset, all on norm_router_text (registered rule). Revision 3
+    fallback: if the plan misses, the raw repaired utterance is matched
+    one-directionally — every registry-key token must fuzzy-match a
+    distinct utterance token at the fixture_snap cutoff (0.75) —
+    because TTS->ASR garbles content words (measured: 'dough' -> 'doe')
+    and planned queries copied from garbled input can never hit.
+    Returns (url, replay_name_or_None)."""
     q = norm_router_text(str(query or ""))
     if not q:
         return None, None
@@ -198,6 +235,36 @@ def resolve_query(query):
         kt = _tokens(key)
         if qt and (qt <= kt or kt <= qt):
             return f"file://{FIXTURE_DIR}/{fixture}", fixture
+    # revision 5 (7): reformulations are LLM-phrased and rarely land a
+    # strict subset — 'best espresso grinder settings' must reach the
+    # grinder fixture — so a containment layer scores how much of the
+    # QUERY a key covers; needs >= 2 shared tokens, best key wins
+    best_fix, best_score = None, 0.0
+    for key, fixture in FROZEN_SERP_FIXTURES.items():
+        kt = _tokens(key)
+        inter = len(qt & kt)
+        if inter >= 2 and qt:
+            score = inter / len(qt)
+            if score >= 0.75 and score > best_score:
+                best_fix, best_score = fixture, score
+    if best_fix:
+        return f"file://{FIXTURE_DIR}/{best_fix}", best_fix
+    if utterance:
+        ut = norm_router_text(utterance).split()
+        for key, fixture in FROZEN_SERP_FIXTURES.items():
+            pool = list(ut)
+            for t in _tokens(key):
+                cands = [t] + list(TOKEN_VARIANTS.get(t, ()))
+                hit = None
+                for c in cands:
+                    hit = _fuzzy_hit(c, pool)
+                    if hit is not None:
+                        break
+                if hit is None:
+                    break
+                pool.remove(hit)
+            else:
+                return f"file://{FIXTURE_DIR}/{fixture}", fixture
     return SERP_URL + quote(str(query)), None
 
 
@@ -242,13 +309,36 @@ class IRTask:
             self.depth = 2
         if self.depth not in (1, 2, 3):
             self.depth = 2
-        if plan.get("url"):
+        if RESEARCH_RE.search(utterance):
+            # research frames are depth 3 by registered definition;
+            # code owns this over plan variance (measured e2e: the
+            # planner returned depth 2 for both E4 research cases;
+            # run 4: the ASR dropped the leading 'Research', so the
+            # floor also fires on 'local archive')
+            self.depth = 3
+        self.utterance = utterance
+        # same shape as browser LOCAL_PAGE_RE: dot or punctuated html —
+        # bare 'learn html' must never become a page name (recorded trap)
+        # measured ASR joins: 'burr.html', 'burr, html', 'burr? HTML'
+        u = re.search(r"\b([\w-]+)(?:\.html?|[.,?]\s+html?)\b",
+                      utterance, re.I)
+        self.url = u.group(1).lower() + ".html" if u else plan.get("url")
+        if self.url:
             self.depth = 1      # a named page is depth 1 (registered)
-        self.url = plan.get("url")
-        self.query = plan.get("query")
+        q = plan.get("query")
+        if isinstance(q, (list, tuple)):
+            # measured (run 4): the planner sometimes emits several
+            # query candidates — str() of a list built a garbage URL
+            q = " ".join(str(x) for x in q if x)
+        self.query = q
         self.question = str(plan.get("question")
                             or plan.get("task") or "")[:200]
-        self.utterance = utterance
+        for canon, variants in TOKEN_VARIANTS.items():
+            for v in variants:
+                # measured (run 4): the homophone propagates into the
+                # question; the temp-0 synth refuses doe == dough
+                self.question = re.sub(rf"\b{v}\b", canon, self.question,
+                                       flags=re.I)
         self.id = uuid.uuid4().hex[:8]
         self.fetches = []       # trace records: {url, snapped, title, ms}
         self.queries = []
@@ -303,7 +393,8 @@ class IRTask:
             d = f"{TRACE_ROOT}/{self.id}"
             os.makedirs(d, exist_ok=True)
             with open(f"{d}/trace.json", "w") as f:
-                json.dump({"question": self.question, "depth": self.depth,
+                json.dump({"utterance": self.utterance,
+                           "question": self.question, "depth": self.depth,
                            "url": self.url, "query": self.query,
                            "queries": self.queries,
                            "findings": self.findings,
@@ -373,7 +464,7 @@ class IRTask:
     async def run_search(self):
         """Decision 8: the fan-out is code-owned — first 3 parseable
         results fetched in order, then ONE synthesis over the extracts."""
-        serp, replay = resolve_query(self.query)
+        serp, replay = resolve_query(self.query, self.utterance)
         if serp is None:
             return await self.finish(
                 "error", "I couldn't work out what to search for — "
@@ -381,9 +472,12 @@ class IRTask:
         self.queries.append({"query": self.query, "replay": replay})
         state = await self.goto(serp, "serp")
         if state is None or is_serp_anomaly(state):
-            # decision 6: anomaly/empty SERP -> one fallback engine
-            state = await self.goto(FALLBACK_SERP_URLS[0]
-                                    + quote(str(self.query)), "serp-fb")
+            # revision 5: the replay IS the engine's answer — the live
+            # fallback fires only when the SERP was live; a replayed
+            # empty SERP at depth 2 answers honestly
+            if replay is None:
+                state = await self.goto(FALLBACK_SERP_URLS[0]
+                                        + quote(str(self.query)), "serp-fb")
         if state is None or is_serp_anomaly(state):
             return await self.finish(
                 "error", "The search engine isn't returning results "
@@ -408,25 +502,37 @@ class IRTask:
     async def run_research(self):
         query = self.query
         pending_open = None
+        queue = []          # unfetched results, DOM order (revision 5)
+        first = True        # the utterance fallback applies only to the
+                            # first query (revision 5: a digest-driven
+                            # reformulation must resolve on its own —
+                            # else it re-hits the same replay forever)
         for _ in range(SERP_BUDGET[3]):
             if not self.budget_left():
                 break
             if pending_open:
                 page = await self.goto(pending_open, "deep-link")
                 pending_open = None
+            elif queue:
+                page = await self.goto(decode_serp_href(queue.pop(0)),
+                                       "result")
             else:
                 if not query:
                     break
-                serp, replay = resolve_query(query)
+                serp, replay = resolve_query(
+                    query, self.utterance if first else None)
+                first = False
                 self.queries.append({"query": query, "replay": replay})
                 page = await self.goto(serp, "serp")
                 if page is None or is_serp_anomaly(page):
-                    page = await self.goto(
-                        FALLBACK_SERP_URLS[0] + quote(str(query)),
-                        "serp-fb")
+                    # revision 5: live fallback only on a live SERP
+                    if replay is None:
+                        page = await self.goto(
+                            FALLBACK_SERP_URLS[0] + quote(str(query)),
+                            "serp-fb")
                 if page is None or is_serp_anomaly(page):
                     self.findings = self.findings or ""
-                    d = await self.digest(no_results=True)
+                    d = await self.digest(no_results=True, failed_query=query)
                     if d.get("next_query"):
                         query = d["next_query"]
                         continue
@@ -434,15 +540,25 @@ class IRTask:
                 results = page.get("results") or []
                 if not results:
                     break
-                pick = await self.pick(query, results)
+                named = {decode_serp_href(l.get("href")):
+                         (l.get("name") or "")
+                         for l in (page.get("links") or [])}
+                options = [{"href": r,
+                            "name": named.get(decode_serp_href(r), "")}
+                           for r in results]
+                pick = await self.pick(query, options)
                 if pick is None:
                     d = await self.digest(no_pick=True)
                     if d.get("next_query"):
                         query = d["next_query"]
                         continue
                     break
-                page = await self.goto(decode_serp_href(results[pick]),
-                                       "result")
+                # the pick decides who goes FIRST; unanswered rounds
+                # walk the rest in DOM order (revision 5: a wrong pick
+                # must not re-SERP into the same round forever)
+                queue = [o["href"] for o in options]
+                page = await self.goto(
+                    decode_serp_href(queue.pop(pick)), "result")
             if page is None or not page.get("text"):
                 continue
             d = await self.digest(page=page)
@@ -452,7 +568,12 @@ class IRTask:
                 break
             if d.get("next_open"):
                 pending_open = d["next_open"]
-            if d.get("next_query"):
+            elif queue:
+                pass          # revision 5: results before reformulation
+                              # — a wrong pick self-heals by walking the
+                              # queue; re-searching now would re-resolve
+                              # to the same replay or go live
+            elif d.get("next_query"):
                 query = d["next_query"]
             await self._maybe_progress()
         await self.finish("done" if self.findings else "budget",
@@ -461,8 +582,14 @@ class IRTask:
     # ---------- model calls ----------
 
     async def pick(self, query, results):
-        lines = "\n".join(f"[{i}] {h}" for i, h in
-                          enumerate(results[:8]))
+        # revision 4: the picker sees result NAMES, not bare hrefs —
+        # measured e2e: with only '[0] burr.html [1] kitchen.html' the
+        # slot-5 pick deterministically chose kitchen.html (recipe-ish)
+        # for a ratio question in all three rounds; names are the only
+        # signal the registered pick has
+        lines = "\n".join(
+            f"[{i}] {r['name']} — {r['href']}"
+            for i, r in enumerate(results[:8]))
         u = (f"Question: {self.question}\nSearch: {query}\n\n"
              f"Results:\n{lines}")
         prompt = ("Directives: " + IR_PICK_DIRECTIVE
@@ -472,16 +599,38 @@ class IRTask:
             text = await loop.run_in_executor(
                 None, lambda: _llm(prompt, 24))
         except Exception:
-            return None
-        j = _extract_json("{" + text if not text.lstrip().startswith(
-            "{") else text)
+            text = None
+        j = _extract_json("{" + text if text and not text.lstrip()
+                          .startswith("{") else (text or ""))
         n = j.get("open") if isinstance(j, dict) else None
-        return n if isinstance(n, int) and 0 <= n < len(results) else None
+        if isinstance(n, int) and 0 <= n < len(results):
+            return n
+        # deterministic floor: argmax token overlap of name+href with
+        # the query; a null LLM pick must not waste a round
+        qt = set(norm_router_text(str(query or "")).split())
+        best, best_n = None, 0
+        for i, r in enumerate(results):
+            words = set(norm_router_text(
+                f"{r['name']} {r['href']}").split())
+            ov = len(qt & words)
+            if ov > best_n:
+                best, best_n = i, ov
+        return best
 
-    async def digest(self, page=None, no_results=False, no_pick=False):
+    async def digest(self, page=None, no_results=False, no_pick=False,
+                     failed_query=None):
         if no_results:
-            page_state = 'The search returned: "No results for that '\
-                         'search."'
+            # measured: with no query context the slot-5 reformulation
+            # degenerates into repetition ('coffee beans, coffee
+            # beans…'); the failed query is the thing to improve on
+            page_state = (f'The search for "{failed_query or self.query}" '
+                          'returned: "No results for that search." '
+                          'Questions about doing X are often answered '
+                          'by pages about the tool or product that '
+                          'does X (a question about which grind to '
+                          'use → a search about grinders). Suggest a '
+                          'better, shorter search query naming such '
+                          'a concrete thing.')
             links_line = ""
         else:
             body = (page or {}).get("text") or ""
