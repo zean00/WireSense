@@ -87,6 +87,12 @@ FACE_UTTERANCES = [
     ("direct", "Who am I, do you know?",
      {"reset": True, "ambient": True, "face_names": ["albert"],
       "ambient_flag": True, "albert": True, "ms_budget": 50}),
+    # natural phrasing through the ASR normalizer (docs/PROTOCOL-asr-
+    # normalizer.md): this audio deterministically transcribes "Two am
+    # I?" — the server must repair it before routing (final_text check)
+    ("direct", "Who am I?",
+     {"reset": True, "ambient": True, "face_names": ["albert"],
+      "ambient_flag": True, "albert": True, "final_text": "Who am I?"}),
     # vision turn with ambient on: fresh recognition serves it (metrics
     # must NOT carry the ambient flag — no injection into the vision path)
     ("vision", "What do you see right now?",
@@ -266,6 +272,8 @@ async def run() -> int:
                     print(f"  {at} route: {route} (conf {e['conf']})")
                 elif t == "feedback":
                     print(f"  {at} feedback: {e['text']!r}")
+                elif t == "final":
+                    print(f"  {at} final: {e['text']!r}")
                 elif t == "tool_event":
                     print(f"  {at} tool_event: {e['tool']} "
                           f"{json.dumps(e, default=str)[:90]}")
@@ -428,6 +436,13 @@ async def run() -> int:
             if "lat" in checks:
                 m = next((e for e in events if e.get("type") == "metrics"), None)
                 lat_vals[checks["lat"]] = m.get("e2e_ms") if m else None
+            if "final_text" in checks:
+                fin = next((e.get("text") for e in events
+                            if e.get("type") == "final"), None)
+                if fin != checks["final_text"]:
+                    failures.append(f"{want}: final transcript {fin!r} != "
+                                    f"{checks['final_text']!r} "
+                                    "(normalizer did not repair?)")
             await asyncio.sleep(1.5)
         rt.cancel()
     if FACE_MODE and lat_vals.get("off") and lat_vals.get("on"):

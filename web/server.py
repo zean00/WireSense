@@ -111,6 +111,23 @@ def ambient_active(session_on) -> bool:
 
 REL_TIME = re.compile(r"\bin (\d+) (second|minute|hour)s?\b", re.I)
 
+# transcript repair (docs/PROTOCOL-asr-normalizer.md): the complete v1
+# rule set. Full-utterance matches only, so "It's two a.m." and
+# "Two am I late?" can never match; every firing is logged and a rule
+# that never fires on real traffic is removed at the next revision.
+ASR_NORMALIZERS = [(re.compile(r"^\s*(two|to|too|2)\s+am\s+i\s*[?!.]*\s*$",
+                              re.I), "Who am I?")]
+
+
+def normalize_transcript(text: str) -> str:
+    for rx, replacement in ASR_NORMALIZERS:
+        if rx.match(text):
+            fixed = replacement
+            if fixed != text:
+                print(f"[asr-normalizer] {text!r} -> {fixed!r}", flush=True)
+            return fixed
+    return text
+
 TOOL_FALLBACK_DIRECTIVE = ("No available tool fits this request. Answer briefly; "
                            "if you lack the ability (for example live data or "
                            "device control), say so honestly.")
@@ -601,8 +618,11 @@ class Session:
                     await self.send({"type": "partial", "text": m["text"]})
                     asyncio.create_task(self.decide(m["text"]))
                 elif t == "final":
-                    await self.send({"type": "final", "text": m["text"]})
-                    await self.respond(m["text"])
+                    # single repair point (protocol decision 2): routing,
+                    # history, UI and the reply all see the normalized text
+                    text = normalize_transcript(m["text"])
+                    await self.send({"type": "final", "text": text})
+                    await self.respond(text)
                     # turn over: close the ASR stream so idle room tone can
                     # never reach a primed decoder (hallucination source)
                     await self.phonon.close()
