@@ -49,6 +49,12 @@ SUBMIT_RE = re.compile(
     r"submit|sign ?in|log ? ?in|place ?order|pay|checkout|\bbuy\b|"
     r"purchase|\border\b|delete|confirm|send\b", re.I)
 
+# Rev F: a done answer that already reads as a submission receipt is
+# kept verbatim; anything else on a confirmed submit is re-written
+# from the page by the receipt-aware writer
+_RECEIPT_RE = re.compile(r"thanks|received|submitted|confirmed|\bsent\b",
+                         re.I)
+
 # tasks that require entering a secret are refused at intake (decision
 # 10: credential fields are never typed — including by proxy); the
 # step-level guard below stays as defense in depth
@@ -384,12 +390,17 @@ def stop_scorer():
 
 
 class BrowserTask:
-    def __init__(self, session, plan, utterance):
+    def __init__(self, session, plan, utterance, detached=False):
         self.session = session
         self.site = plan.get("site")
         self.query = plan.get("query")
         self.task = str(plan.get("task") or "")[:200]
         self.utterance = utterance
+        # deep-agents tool leg (PROTOCOL-deep-agents.md decision 16):
+        # detached legs own their trace and page but never speak, set
+        # pending, or enter history — the deep loop reads the outcome
+        self.detached = detached
+        self.park_text = None  # composed on park (detached yield uses it)
         self.id = uuid.uuid4().hex[:8]
         self.steps = []          # trace records, one per executed step
         self.outcome = None      # done|parked|cancelled|refused|error|stuck|budget
@@ -555,9 +566,18 @@ class BrowserTask:
                     continue
             if step and step.get("action") == "done":
                 if achieved:
-                    return await self.finish("done",
-                                             answer=str(step.get("answer")
-                                                        or "")[:300])
+                    ans = str(step.get("answer") or "")[:300]
+                    if (self._submit_task and self._clicked
+                            and not _RECEIPT_RE.search(ans)):
+                        # stage-2 Rev F (measured canaryD8/D9): on a
+                        # confirmed submit the answer is the page's
+                        # receipt — the model echoes its own typed
+                        # note on vague send tasks; the receipt-aware
+                        # writer quotes the page instead
+                        receipt = await self.synth_answer(state)
+                        if "doesn't seem" not in receipt:
+                            ans = receipt
+                    return await self.finish("done", answer=ans)
                 # LLM done without watcher agreement (decision 7): keep
                 # going, and nudge the next step call
                 self._disagree = True
@@ -594,6 +614,12 @@ class BrowserTask:
         prompt = (f"Task: {self.task}\nURL: {state['url']}\n\n"
                   f"Candidates:\n{self._state_lines(state)}\n\n"
                   f'Page text: "{state["excerpt"][:800]}"')
+        if self.detached:
+            # stage-2 Rev A (measured, 5 canaries): the deep model
+            # compresses the leg task clause ("the price of the
+            # AeroPress Go" -> "find the price") and the step planner
+            # then clicks blind — give it the deep utterance itself
+            prompt += f"\nUser request: {self.utterance}"
         if self._disagree:
             prompt += ("\nNote: the page does not show the answer yet — "
                        "look for a link that leads closer.")
@@ -638,10 +664,20 @@ class BrowserTask:
         # ChatML + empty-think prefill: the plain-text "Assistant: "
         # continuation leaked <think> blocks and burned its budget
         # (measured); this shape answers clean
-        u = (f'Task: {self.task}\n\nPage text: "{state["excerpt"]}"\n\n'
-             "Reply with only the answer to the task, taken from "
-             "the page. If the page does not contain it, reply "
-             "exactly: NOT FOUND.")
+        if self._submit_task:
+            # stage-2 Rev F (measured, canaryD8): the generic prompt
+            # answers a send task with the message echo it typed — the
+            # page's receipt is the answer the user should hear
+            u = (f'Task: {self.task}\n\nPage text: "{state["excerpt"]}"\n\n'
+                 "The task was to send or submit something: reply with "
+                 "the page's confirmation that it was received, quoted "
+                 "from the page. If the page does not confirm it, "
+                 "reply exactly: NOT FOUND.")
+        else:
+            u = (f'Task: {self.task}\n\nPage text: "{state["excerpt"]}"\n\n'
+                 "Reply with only the answer to the task, taken from "
+                 "the page. If the page does not contain it, reply "
+                 "exactly: NOT FOUND.")
         prompt = (f"<|im_start|>system\n{CHATML_SYS}<|im_end|>\n"
                   f"<|im_start|>user\n{u}<|im_end|>\n{EMPTY_THINK}")
         loop = asyncio.get_event_loop()
@@ -717,12 +753,17 @@ class BrowserTask:
         self.parked = (n, name)
         self.outcome = "parked"
         host = urlparse(self.page.url).hostname or "the local page"
+        self.park_text = f'Just to confirm — click "{name}" on {host}?'
         self._state = await self.snapshot()
         self._trace({"parked_click": name})
+        if self.detached:
+            # guard-yield (PROTOCOL-deep-agents.md decision 17): the deep
+            # turn is still holding the mic; respond() speaks this
+            # read-back only after the partial answer, then sets pending
+            return
         # the read-back is the out-of-turn reply; the session's pending
         # state machine takes over until YES/NO/drop
-        await self.session.browser_done(
-            self, text=f'Just to confirm — click "{name}" on {host}?')
+        await self.session.browser_done(self, text=self.park_text)
 
     async def confirm_resume(self):
         """YES resolution (respond pending branch): execute the parked
@@ -789,6 +830,11 @@ class BrowserTask:
         await self._screenshot()
         self._trace()
         self._release()
+        if self.detached:
+            # deep-agents leg (decision 16): the deep reply is the
+            # completion — no spoken answer, no history, no terminal
+            # browser_event (the IR-leg precedent)
+            return
         await self.session.browser_done(self)
 
 

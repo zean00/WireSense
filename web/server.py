@@ -212,31 +212,47 @@ def parse_tool_json(text):
 # stream consumer (holdback window), so it is endpoint-agnostic across
 # the provider dialects and the local open-think source alike.
 IR_TOOL_MARKER = "IR_TOOL"
+BROWSE_TOOL_MARKER = "BROWSE_TOOL"
 IR_TOOL_HOLD = 16        # chars of answer text withheld from the stream
 DEEP_MAX_LEGS = 3        # tool legs per deep turn (code-owned budget)
 DEEP_LEG_TIME = 180.0    # combined leg seconds per deep turn
 DEEP_MAX_ROUNDS = 6      # generation rounds incl. invalid/refused notes
 
+# Stage 2 (PROTOCOL-deep-agents.md decision 20): both markers in one
+# directive; the IR line is byte-identical to stage 1 (frozen DA1 shape
+# checks); angle-bracket placeholders only — no quotable example values
 DEEP_TOOL_DIRECTIVE = (
-    "You can look facts up before answering. If the answer depends on "
-    "facts you are not sure of, or if the user names a source (a page, "
-    "a file, the archive, the web), never guess that source's contents "
-    "— look it up: keep the text to one short sentence, then end with "
-    "exactly this line and nothing after it, with the angle-bracket "
-    "fields filled in for the user's actual topic:\n"
+    "You can look facts up or work a web page before answering. If the "
+    "answer depends on facts you are not sure of, or if the user names "
+    "a source (a page, a file, the archive, the web), never guess that "
+    "source's contents — look it up: keep the text to one short "
+    "sentence, then end with exactly one of these lines and nothing "
+    "after it, with the angle-bracket fields filled in for the user's "
+    "actual topic:\n"
     "IR_TOOL {\"query\": <two to five content keywords>, "
     "\"question\": <what to answer, one short clause>, "
     "\"depth\": <1, 2, or 3>}\n"
-    "depth: 1 = a named page, 2 = quick search, 3 = deep research. "
+    "BROWSE_TOOL {\"site\": <the page to open — a bare name: a local "
+    "file name ending in .html, or a host; never a URL>, \"query\": "
+    "<search keywords, or null when a site is named>, \"task\": <what "
+    "to do on that page, one short clause that keeps the user's "
+    "action verb and names the exact thing, e.g. find the price of "
+    "the named product, or fill the named form and submit it>}\n"
+    "IR_TOOL reads the archive or the web for facts (depth: 1 = a "
+    "named page, 2 = quick search, 3 = deep research). BROWSE_TOOL "
+    "opens a page and works it step by step — links, forms, buttons; "
+    "a local file or page the user names is always BROWSE_TOOL. "
     "You will receive the findings, then finish the answer from them. "
     "If you already know the answer with confidence and no source was "
-    "named, never write IR_TOOL.")
+    "named, never write either marker.")
 
 IR_TOOL_CONT_DIRECTIVE = (
     "Finish the answer using these research findings. Cite the "
-    "concrete facts you found; if the findings do not settle the "
-    "question, say what is missing instead of inventing facts. Call "
-    "IR_TOOL again only if a specific missing fact is still lookable.")
+    "concrete facts you found in plain sentences — never HTML or "
+    "markup; if the findings do not settle the question, say what is "
+    "missing instead of inventing facts. Call IR_TOOL or BROWSE_TOOL "
+    "again only if a specific missing fact is still lookable or a "
+    "page still needs working.")
 
 IR_TOOL_REFUSED_NOTE = (
     "[That lookup was refused: it asks for credentials or sign-in, "
@@ -244,22 +260,45 @@ IR_TOOL_REFUSED_NOTE = (
 IR_TOOL_INVALID_NOTE = (
     "[Your IR_TOOL line could not be used (missing question or "
     "keywords) — answer from what you know.]")
+BROWSE_TOOL_INVALID_NOTE = (
+    "[Your BROWSE_TOOL line could not be used (missing task or page) "
+    "— answer from what you know.]")
 IR_TOOL_BUDGET_NOTE = (
     "[Research budget spent — answer with what you have now; do not "
-    "call IR_TOOL again.]")
+    "call IR_TOOL or BROWSE_TOOL again.]")
+DEEP_PARK_REPLY = "I need your okay to continue on that page."
+
+
+def _marker_pos(text):
+    """Earliest tool-marker position in text, or -1 (stage 2: the
+    holdback consumer must cover both markers)."""
+    p_ir = text.find(IR_TOOL_MARKER)
+    p_br = text.find(BROWSE_TOOL_MARKER)
+    if p_ir < 0:
+        return p_br
+    if p_br < 0:
+        return p_ir
+    return min(p_ir, p_br)
 
 
 def split_tool_marker(text):
-    """-> (answer_before_marker, tool_json_text or None). The marker is
-    only a tool call when JSON follows it; a bare mention of IR_TOOL in
-    a normal sentence is left in the answer (the parse decides)."""
-    pos = text.find(IR_TOOL_MARKER)
-    if pos < 0:
+    """-> (answer_before_marker, tool_json_text or None). The earliest
+    marker wins, and only when JSON follows it (stage 2: both marker
+    kinds); a bare mention in a normal sentence is left in the answer
+    (the parse decides). Signature unchanged from stage 1."""
+    best = None
+    for marker in (IR_TOOL_MARKER, BROWSE_TOOL_MARKER):
+        pos = text.find(marker)
+        if pos < 0:
+            continue
+        if browser_use._extract_json(text[pos + len(marker):]) is None:
+            continue
+        if best is None or pos < best[0]:
+            best = (pos, marker)
+    if best is None:
         return text, None
-    tail = text[pos + len(IR_TOOL_MARKER):]
-    if browser_use._extract_json(tail) is None:
-        return text, None
-    return text[:pos].rstrip(), tail
+    pos, marker = best
+    return text[:pos].rstrip(), text[pos + len(marker):]
 
 
 def validate_leg_args(args):
@@ -283,6 +322,72 @@ def validate_leg_args(args):
         depth = 2
     return {"query": q or None, "url": url, "question": question,
             "depth": depth}
+
+
+def validate_browse_args(args):
+    """BROWSE_TOOL args -> BrowserTask plan (stage-2 decision 15): the
+    browser plan schema, code-validated; None when invalid."""
+    if not isinstance(args, dict):
+        return None
+    site = str(args.get("site") or "").strip()[:200] or None
+    if site:
+        # measured (canaries): the model echoes the user's noun phrase
+        # instead of the bare name — "local file shop",
+        # "file:///local/fileshop.html", "shop. HTML" (the ASR
+        # separator form). The IR track strips "the local file" for the
+        # same measured reason; every repair lands on the bare stem and
+        # build_url owns the fixture snap.
+        site = re.sub(r"^(?:the\s+)?local\s+file\s+", "", site,
+                      flags=re.I).strip()
+        m2 = re.fullmatch(r"([\w-]+)[.,]?\s+html", site, re.I)
+        if m2:
+            site = f"{m2.group(1)}.html"
+    if site and "/" in site:
+        m = re.search(r"([\w-]+\.html?)\s*$", site)
+        site = m.group(1) if m else None
+    query = str(args.get("query") or "").strip()[:200] or None
+    task = str(args.get("task") or "").strip()[:200]
+    if not task or (not site and not query):
+        return None
+    return {"site": site, "query": query, "task": task}
+
+
+def rescope_ir_to_browse(first_user, plan):
+    """A named local .html file is unambiguous browser intent (the
+    LOCAL_PAGE_RE principle one level down, stage-2 Rev A): when the
+    model picked the research tool for a file-naming utterance, the
+    leg runs as a browse leg instead. Measured: the canary fired
+    IR_TOOL {query: "Aero Presco price", depth: 1} for "look at the
+    local file shop.html" — the IR replay has no such page and the leg
+    errored. Returns the browse plan, or None when this is a genuine
+    research frame (no .html named, or a url was already planned —
+    an IR url-leg reads the page itself)."""
+    if plan is None or plan.get("url"):
+        return None
+    # the ASR separator form first (measured: "shop. HTML" — the same
+    # repair ir_flow/browser_flow apply to plan text)
+    t = re.sub(r"\b([\w-]+)[.,?]?\s+html\b", r"\1.html", first_user,
+               flags=re.I)
+    m = re.search(r"\b([\w-]+)\.html?\b", t, re.I)
+    if not m:
+        return None
+    return {"site": f"{m.group(1)}.html", "query": None,
+            "task": plan["question"]}
+
+
+def deep_asr_repair(text):
+    """The ASR separator artifact repaired on the DEEP turn's utterance
+    itself (stage-2 Rev C): ir_flow/browser_flow repair plan text, but
+    deep turns feed the raw transcript to the model, and on the
+    corrupted form the model abandons the task for protocol-speak —
+    measured offline, verbatim: "look at the local file form. HTML to
+    send a note" -> "I understand the protocol and will adhere to the
+    one or two sentence constraint...". Same regex family as the track
+    intakes ("shop. HTML" precedent); a clean "form.html" never matches
+    (no whitespace before html). History keeps the raw transcript —
+    the caller's copy is untouched."""
+    return re.sub(r"\b([\w-]+)[.,?]?\s+html\b,?\s*", r"\1.html ",
+                  text, flags=re.I)
 
 
 def validate_tool(name, args) -> dict:
@@ -1152,9 +1257,24 @@ class Session:
                     await self.send({"type": "response_delta", "text": reply})
         # fp4-fault signature check + the shared epilogue live in
         # finish_turn (canned clarify/resolve turns end through it too)
+        # the parked task object never enters metrics (stage-2 decision
+        # 21): pop before finish_turn serializes deep_meta
+        parked_task = (deep_meta or {}).pop("parked_task", None)
         await self.finish_turn(hist_utterance, reply, timings, judge_meta,
                                round(first, 1) if first else None, deep_meta,
                                skip_tts=skip_tts)
+        if parked_task is not None:
+            # guard-yield handoff (stage-2 decision 17): the partial
+            # answer is spoken; now the read-back, then the pending
+            # machinery owns YES/NO — the same out-of-turn park shape
+            # as the browser track. The handoff also ends the detached
+            # contract (Rev E, measured canaryD7): from here the task
+            # must speak through browser_done like any track task —
+            # finish() early-returns on detached, which left the
+            # post-YES confirmed click mute (trace done, no event).
+            parked_task.detached = False
+            self.browser_task = parked_task
+            await self.browser_done(parked_task, text=parked_task.park_text)
 
     async def finish_turn(self, hist_utterance, reply, timings, judge_meta,
                           ttft_ms, deep_meta=None, skip_tts=False):
@@ -1390,27 +1510,68 @@ class Session:
             pass
         self.ir_task = None
         ms = round((time.perf_counter() - tl0) * 1000)
-        meta["tool_calls"].append({"query": task.query, "depth": task.depth,
+        meta["tool_calls"].append({"tool": "ir", "query": task.query,
+                                   "depth": task.depth,
                                    "outcome": task.outcome, "ms": ms})
         meta["legs"] = len(meta["tool_calls"])
         findings = task.findings or task.answer or ""
         return (f"[Research findings for '{task.query or task.url}' "
                 f"(outcome: {task.outcome}): {findings}]")
 
+    async def run_browse_leg(self, plan, utterance, meta):
+        """One detached BrowserTask tool leg (PROTOCOL-deep-agents.md
+        decision 16): the think loop's validated args go straight to
+        build_url + BrowserTask — the track's slot-5 plan call does not
+        run. Step events, fillers, goal watch, submit gate, traces: all
+        the track's machinery. finish() returns to this loop instead of
+        speaking. Returns the task; the caller reads outcome/parked."""
+        task = browser_use.BrowserTask(self, plan, utterance, detached=True)
+        self.browser_task = task
+        tl0 = time.perf_counter()
+        try:
+            task._handle = asyncio.create_task(task.run())
+            await asyncio.wait_for(
+                task._handle,
+                timeout=browser_use.MAX_SECONDS + 20.0)
+        except asyncio.TimeoutError:
+            # run() owns its budgets; this only fires on a hung goto —
+            # cancel through the shared stop contract
+            await task.cancel()
+        except asyncio.CancelledError:
+            self.browser_task = None
+            if task.outcome is None:
+                raise
+        except Exception:
+            pass
+        self.browser_task = None
+        ms = round((time.perf_counter() - tl0) * 1000)
+        meta["tool_calls"].append({"tool": "browse", "site": task.site,
+                                   "task": task.task,
+                                   "outcome": task.outcome,
+                                   "steps": len(task.steps), "ms": ms})
+        meta["legs"] = len(meta["tool_calls"])
+        return task
+
     async def deep_turn(self, utterance, spec):
-        """Deep think with bounded IR tool legs (PROTOCOL-deep-agents.md).
+        """Deep think with bounded tool legs (PROTOCOL-deep-agents.md).
         One handler for every deep turn: round 1 through the configured
         provider; any provider failure flips the whole loop to the local
         open-think source (meta.fallback; the measured refusal costs
-        69 ms). A round ending with an IR_TOOL {...} marker line runs its
-        args as a detached IRTask leg — budgets are code-owned (<= 3
-        legs, <= 180 s combined leg time, <= 6 rounds) — and the findings
-        ride a continuation note; the model continues the same answer,
-        so the final spoken reply is partial + continuation concatenated.
-        Returns (reply, meta); reply is None only on a hard local failure
-        (the error event and gate release are already done; the caller
-        returns without finish_turn)."""
+        69 ms). A round ending with an IR_TOOL {...} or BROWSE_TOOL
+        {...} marker line runs its args as a detached leg — IR research
+        or a browser task whose submit-class clicks PARK and the turn
+        YIELDS (stage-2 decision 17) — budgets are code-owned (<= 3
+        legs, <= 180 s combined leg time, <= 6 rounds) — and the
+        findings ride a continuation note; the model continues the same
+        answer, so the final spoken reply is partial + continuation
+        concatenated. Returns (reply, meta); reply is None only on a
+        hard local failure (the error event and gate release are
+        already done; the caller returns without finish_turn)."""
         t0 = time.perf_counter()
+        # Rev C: the model sees the repaired utterance (deep_asr_repair);
+        # everything downstream — prompt, first_user, rescope, the parked
+        # leg's User request line — inherits the clean form
+        utterance = deep_asr_repair(utterance)
         meta = {"model": f"{DEEP.provider}:{DEEP.model}" if DEEP
                 else "local:open-think",
                 "fallback": DEEP is None, "legs": 0, "tool_calls": []}
@@ -1481,8 +1642,9 @@ class Session:
                     round_text += delta
                     # holdback: never stream the last HOLD chars unless a
                     # marker already showed — the marker itself must not
-                    # reach the UI or TTS (protocol decision 2)
-                    pos = round_text.find(IR_TOOL_MARKER)
+                    # reach the UI or TTS (protocol decision 2; stage 2:
+                    # earliest of BOTH markers)
+                    pos = _marker_pos(round_text)
                     limit = pos if pos >= 0 else \
                         max(0, len(round_text) - IR_TOOL_HOLD)
                     if limit > emitted:
@@ -1509,19 +1671,55 @@ class Session:
             args = browser_use._extract_json(tail)
             if isinstance(args, dict) and isinstance(args.get("args"), dict):
                 args = args["args"]     # wrapped form accepted (decision 3)
-            plan = validate_leg_args(args)
-            if plan is None:
-                note = IR_TOOL_INVALID_NOTE
-            elif browser_use.CREDS_TASK_RE.search(plan["question"]) or \
-                    browser_use.CREDS_TASK_RE.search(first_user):
-                note = IR_TOOL_REFUSED_NOTE
-            elif len(meta["tool_calls"]) >= DEEP_MAX_LEGS or \
-                    leg_time >= DEEP_LEG_TIME:
-                note = IR_TOOL_BUDGET_NOTE
+            spent = len(meta["tool_calls"]) >= DEEP_MAX_LEGS or \
+                leg_time >= DEEP_LEG_TIME
+            p_ir = round_text.find(IR_TOOL_MARKER)
+            p_br = round_text.find(BROWSE_TOOL_MARKER)
+            tool_kind = "browse" if p_br >= 0 and \
+                (p_ir < 0 or p_br < p_ir) else "ir"
+            note, leg0 = None, None
+            if tool_kind == "ir":
+                plan = validate_leg_args(args)
+                if plan is None:
+                    note = IR_TOOL_INVALID_NOTE
+                elif browser_use.CREDS_TASK_RE.search(plan["question"]) or \
+                        browser_use.CREDS_TASK_RE.search(first_user):
+                    note = IR_TOOL_REFUSED_NOTE
+                elif spent:
+                    note = IR_TOOL_BUDGET_NOTE
+                else:
+                    br = rescope_ir_to_browse(first_user, plan)
+                    tl0 = time.perf_counter()
+                    if br is not None:
+                        leg0 = await self.run_browse_leg(br, first_user,
+                                                         meta)
+                    else:
+                        note = await self.run_leg(plan, first_user, meta)
+                    leg_time += time.perf_counter() - tl0
             else:
-                tl0 = time.perf_counter()
-                note = await self.run_leg(plan, first_user, meta)
-                leg_time += time.perf_counter() - tl0
+                plan = validate_browse_args(args)
+                if plan is None:
+                    note = BROWSE_TOOL_INVALID_NOTE
+                elif browser_use.CREDS_TASK_RE.search(plan["task"]):
+                    note = IR_TOOL_REFUSED_NOTE
+                elif spent:
+                    note = IR_TOOL_BUDGET_NOTE
+                else:
+                    tl0 = time.perf_counter()
+                    leg0 = await self.run_browse_leg(plan, first_user, meta)
+                    leg_time += time.perf_counter() - tl0
+            if leg0 is not None:
+                if leg0.outcome == "parked":
+                    # guard-yield (stage-2 decision 17): the leg parked on
+                    # a submit-class click with nothing clicked — stop
+                    # generating; the turn ends with the partial answer
+                    # and respond() hands the read-back to the pending
+                    # machinery after it
+                    meta["parked"] = True
+                    meta["parked_task"] = leg0
+                    break
+                note = (f"[Page findings for '{leg0.task or leg0.site}' "
+                        f"(outcome: {leg0.outcome}): {leg0.answer or ''}]")
             # continuation (decision 8): the same answer continues after
             # the findings note; only the final text enters history/TTS.
             # The appended pair is THIS round's user turn + its answer,
@@ -1530,7 +1728,9 @@ class Session:
             round_utt = note
             round_dir = IR_TOOL_CONT_DIRECTIVE
         meta["ms"] = round((time.perf_counter() - t0) * 1000)
-        reply = partial.strip() or THINK_NOCLOSE_REPLY
+        reply = partial.strip() or (DEEP_PARK_REPLY
+                                    if meta.get("parked")
+                                    else THINK_NOCLOSE_REPLY)
         if first is None:
             first = (time.perf_counter() - t0) * 1000
             meta["ttft_ms"] = round(first, 1)

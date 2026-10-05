@@ -219,6 +219,191 @@ agreed 2026-10-05:
   refused rather than answered — consistency with the tracks wins.
   Decision 6 (leg-intake refusal) is unchanged and now redundant with
   this turn-intake refusal for single-turn asks.
+- Stage-2 Rev A (2026-10-05, registered BEFORE any stage-2 gate run,
+  on measured canary evidence): **case C's utterance is revised.** The
+  registered phrasing ("which espresso grinder is the best value") is
+  unanswerable BY CONSTRUCTION in the fixture world: shop.html's two
+  grinder links are dead (`href="#"` — measured canary: the step LLM
+  clicked "Comandante C40" three times, hash unchanged x3, forced
+  scroll, honest `stuck` in 7.6 s — the stuck watch working exactly as
+  the browser track gates it), and the only priced product page is
+  shop2.html via the AeroPress Go link — the browser track's own
+  barge-in vehicle chain. Revised case C: "Think hard about the price
+  of the AeroPress Go, and look at the local file shop.html before
+  answering." (checked against the registered intercepts: no
+  LOCAL_PAGE_RE verb, no what/how near "local file", so the centroid
+  decides — as in stage-1 case A). Frozen citation substring
+  unchanged: `39.95`. Two more measured canary lessons folded into the
+  constants (implementation-owned wording, requirements of decision 20
+  unchanged): the model echoes the user's noun phrase into `site`
+  ("local file shop", "file:///local/fileshop.html") ->
+  validate_browse_args now strips a leading "local file" and a
+  trailing *.html basename (the IR track's measured repair, adapted);
+  and one continuation answer came out wrapped in literal `<p>` tags
+  -> the continuation directive now demands plain sentences, never
+  markup. **Rev A extension (same evidence series, still before any
+  gate run):** canary 5 fired IR_TOOL for the file-naming frame
+  (query "Aero Presco price" — the ASR garble — depth 1; the IR replay
+  has no such page and the leg errored in 255 ms; 4/5 canaries had
+  chosen BROWSE). Marker choice for a named local file is exactly the
+  LOCAL_PAGE_RE situation ("a local .html reference is unambiguous
+  browser intent — code wins over the centroid"), one level down: when
+  an IR_TOOL leg is planned with no url and the deep utterance names a
+  bare `<name>.html`, the leg RE-SCOPES to a browse leg
+  (site=<name>.html, task=<the planned question>) — new unit function
+  `rescope_ir_to_browse`, gated in DA4; a genuine research frame
+  ("local archive", no .html) is untouched, so stage-1 case A cannot
+  re-scope. The re-scope match runs after the ASR separator repair —
+  measured final transcript: "look at the local file shop. HTML"
+  (capitalized, separated), the exact form ir_flow/browser_flow
+  already repair in plan text; validate_browse_args normalizes the
+  same form when the model echoes it into site. **Leg-task lossiness
+  (5 canaries, one evidence series):** the deep model persistently
+  compresses the task clause ("the price of the AeroPress Go" ->
+  "find the price"), and the step planner then clicks blind
+  (candidate 0, dead link, honest stuck). Prompt-side fix attempts
+  (name-the-exact-thing clause) did not move it. Code-owned fix: a
+  DETACHED leg's step calls append the deep utterance as
+  `User request: ...` (BrowserTask already holds it as self.utterance);
+  the browser track's step prompts stay byte-identical (gated on
+  detached). The barge-in vehicle proves the step planner clicks the
+  named product when the task text names it — the utterance does.
+- Stage-2 Rev B (2026-10-05, registered BEFORE any stage-2 gate run,
+  on measured evidence): **case D's utterance is revised — the
+  registered phrasing routes browser at the centroid.** Live canary:
+  "use the local feedback form at form.html to send a note" routed
+  browser 0.775 (the action frame "use ... to send" pulls the
+  centroid), and the browser track then planned a live DuckDuckGo
+  search for it (its planner read the same action frame; the bot-check
+  page came back — no wiresense code failed, the case was wrong).
+  Offline router table over candidates (real DecideReadout +
+  TreeWalker, deterministic): registered -> browser 0.775;
+  "consult ..." -> browser 0.801; "... sending a note ..." -> deep
+  0.811; "... to send a note that the app is great." WITHOUT "before
+  answering" -> vision 0.838 (the tail is load-bearing);
+  "about the app before answering" variant -> browser 0.813; FINAL
+  choice, deep on both the written and the ASR-realistic forms
+  ("form. HTML", the measured separator): **"Think hard about our
+  feedback. Look at the local file form.html to send a note before
+  answering." -> deep 0.843 / 0.843**. The truncation that forced this
+  series is measured, not variance: synthesized clips of the comma
+  forms carry a 0.50 s intra-clip silence at ~3.3 s (the "form" dot
+  break), past the endpointer's cut, and 5/5 live finals truncated to
+  "...the local file form." (which routes browser 0.734) — case C's
+  clip peaks at 0.40 s and survives. The two-sentence reshape ("our
+  feedback. Look at ...") re-prosifies the dot: clip peak silence
+  0.30 s, and 3/3 live ASR finals complete.
+  Everything else about case D (park, yield, read-back order, YES
+  resolution) is unchanged; the note rides content-free ("send a
+  note") — the gate cares that a submit-class click parks, not what
+  the form says.
+- Stage-2 Rev C (2026-10-05, registered BEFORE any stage-2 gate run,
+  on measured evidence): **the case-D canary meta answer is an ASR
+  artifact, not a directive failure — the deep utterance gets the
+  separator repair.** Live canaries D4/D5 (identical, temp 0):
+  route deep, no marker, no leg — the reply was protocol-speak
+  ("I understand the protocol and will adhere to the one or two
+  sentence constraint. I am ready to use the IR_TOOL or BROWSE_TOOL
+  markers ..."). Offline reproduction through the exact serving path
+  (build_prompt + 700-token think + forced close, temp 0, slot 5)
+  pins the cause to the transcript the model actually saw: the clean
+  registered text emits `BROWSE_TOOL {"site": "form.html", ...}`;
+  the ASR separator form "form. HTML" (the measured artifact — case
+  C's "shop. HTML" is the same family) reproduces the meta answer
+  VERBATIM; the truncated form "...the local file form." gives an
+  honest no-access reply (no marker, no meta). The corrupted text
+  never reaches the deep prompt in the other tracks — ir_flow and
+  browser_flow repair it at intake — deep turns fed it raw.
+  Revision: `deep_asr_repair()` (same regex family as the track
+  intakes) applied to the utterance at deep_turn entry; the model
+  prompt, first_user, rescope and the parked leg's User request line
+  all inherit the clean form; history keeps the raw transcript
+  (house precedent). DA4 gains unit checks for the helper
+  (corrupted -> clean, clean unchanged, unrelated text untouched);
+  all other gate definitions unchanged. Directive-side anti-meta
+  clauses were considered and REJECTED: the meta answer does not
+  occur on clean text, so prompt surgery would be unfalsifiable
+  superstition.
+- Stage-2 Rev D (2026-10-05, registered BEFORE any stage-2 gate run,
+  on measured evidence): **the BROWSE task clause keeps the user's
+  action verb.** With the Rev C repair live, canary D6 routed deep
+  and fired the form.html browse leg — the meta answer is gone —
+  but the leg ended `stuck`, not `parked`: the deep model wrote
+  task "read the feedback note" for a "send a note" utterance (a
+  verb flip, not compression: "Look at ... to send" fronts the
+  look), and the step planner — holding a read task with no content
+  to type — issued three no-op `type` steps into "Your message"
+  (final screenshot: the form completely empty), never reached the
+  submit-class click, and the stuck watch fired. The browser track's
+  own green form.html runs all carry verb+content tasks ("fill
+  feedback form as Bob with message ... and submit") and walk
+  type -> type -> done_rejected -> click "Submit feedback" -> park.
+  Root cause on the prompt side: the directive's task example was
+  noun-only ("naming the exact thing, e.g. the product or field by
+  name") — it steers toward exactly this noun task. Revision: the
+  task clause now reads "one short clause that keeps the user's
+  action verb and names the exact thing, e.g. find the price of the
+  named product, or fill the named form and submit it" (angle-
+  bracket discipline kept — generic nouns only, no quotable values).
+  Measured offline at temp 0 through the serving path BEFORE the
+  canary: case C's args are unchanged (site shop.html, task "find
+  the price of the AeroPress Go" — the green canary task,
+  byte-identical); case D's task becomes "read the file and send a
+  note". DA4 gains `directive-verb-clause`. The content question
+  (a content-free send may submit an empty form) is register-level
+  fine: the gate cares that a submit-class click parks; the read-
+  back names the button and YES is the user's act.
+- Stage-2 Rev E (2026-10-05, registered BEFORE any stage-2 gate run,
+  on measured evidence): **the park handoff clears the detached
+  flag.** Canary D7 was the guard-yield working end to end — route
+  deep, the leg parked at "Submit feedback" in 3 steps, partial
+  first, read-back spoken, nothing clicked before YES, mic reopened
+  — except the resolution: the spoken YES executed the parked click
+  (trace: type, type, click confirm-gated, click confirmed: true,
+  outcome done) but the session never heard about it — no terminal
+  browser_event, no spoken answer, no history entry, mic/gate never
+  released. Cause: the parked task still carried detached=True, and
+  finish() early-returns on detached (decision 16's no-speaking
+  contract for deep-loop legs) — right DURING the deep loop, wrong
+  after the handoff. Revision: respond()'s handoff sets
+  `parked_task.detached = False` before browser_done, making the
+  post-park task behave exactly like a track-parked task (YES speaks
+  the thanks/received answer; NO/drop abort reports the same way).
+  No gate definition changes.
+- Stage-2 Rev F (2026-10-05, registered BEFORE any stage-2 gate run,
+  on measured evidence): **the spoken completion of a confirmed
+  submit is the page's receipt.** Canary D8 with Rev E: the full
+  guard-yield chain went green — park, read-back, YES, confirmed
+  click, terminal browser_event with the answer — except the
+  answer's text: "I have read the file and I am ready to send a
+  note." for a completed send. Diagnosis (canaryD9 reproduced it
+  with the Rev F synth prompt live, so the first hypothesis — the
+  watcher-only synth_answer composer — was WRONG and is corrected
+  here): the composer is the model's own `done` answer in the step
+  loop. Offline repro of the exact step prompt on the post-submit
+  page: task "read the file and send a note" -> done with the echo
+  (the model answers with the very sentence it typed into the
+  message field, which the page echoes back); the track's task
+  "fill feedback form as Alice with message grade app and submit"
+  -> done quoting the receipt ("Thanks! Your feedback was
+  received. Name: Alice Message: grade app"). The generic
+  synth_answer probe reproduced the echo too — the echo sentence
+  literally sits on the page — so BOTH submit completion paths are
+  now receipt-aware. Revision: (a) synth_answer is submit-task-
+  aware (gated on _submit_task): "The task was to send or submit
+  something: reply with the page's confirmation that it was
+  received, quoted from the page." Measured offline: deep task ->
+  'The page confirms: "Thanks! Your feedback was received."';
+  track-style task -> 'Thanks! Your feedback was received.'; the
+  unchanged find path still answers 'The price of the AeroPress Go
+  is $39.95.' (find-path prompt byte-identical). (b) the step
+  loop's done acceptance: on a confirmed submit (_submit_task and
+  _clicked), a model done answer without receipt words
+  (thanks/received/submitted/confirmed/sent) is replaced by the
+  receipt-aware writer's answer, kept as-is when the page shows no
+  receipt. The track's green model answers contain "received" and
+  are kept verbatim — the frozen battery (G4 wants done+thanks)
+  is untouched by construction and re-verified at gate time.
 
 ## Results (adjudicated, 2026-10-05)
 
@@ -415,23 +600,24 @@ fallback.
   BROWSE args fields.
 - **DA5 spoken e2e (harness shared with test_ir/test_browser; frozen
   browser fixtures over file://):**
-  - **Case C (read-only browse leg):** "Think hard about which
-    espresso grinder is the best value, and look at the local file
-    shop.html before answering." — must route deep, run exactly one
-    browse leg whose recorded outcome is "done", keep steps <= 10,
-    speak a final reply citing the price (frozen substring `39.95` —
-    read off the committed fixture shop2.html BEFORE any run), and
-    produce no confirm read-back (a read-only leg never parks).
-  - **Case D (guard-yield):** "Think hard about our feedback quality,
-    and use the local feedback form at form.html to send a note that
-    the app is great, before answering." — must route deep; the
-    browse leg must park (recorded outcome "parked", deep.parked
-    true); the turn must YIELD: the deep partial is spoken
-    (response_done) BEFORE the read-back; the read-back contains
-    "confirm" and the mic reopens; no click is confirmed before the
-    resolution; then the spoken resolution "Yes please" produces a
-    confirmed click step and a terminal done whose spoken answer
-    contains thanks/received.
+  - **Case C (read-only browse leg; revised by stage-2 Rev A):**
+    "Think hard about the price of the AeroPress Go, and look at the
+    local file shop.html before answering." — must route deep, run
+    exactly one browse leg whose recorded outcome is "done", keep
+    steps <= 10, speak a final reply citing the price (frozen
+    substring `39.95` — read off the committed fixture shop2.html
+    BEFORE any run), and produce no confirm read-back (a read-only
+    leg never parks).
+  - **Case D (guard-yield; utterance revised by stage-2 Rev B):**
+    "Think hard about our feedback. Look at the local file form.html
+    to send a note before answering." — must route deep; the
+    browse leg must park (recorded
+    outcome "parked", deep.parked true); the turn must YIELD: the deep
+    partial is spoken (response_done) BEFORE the read-back; the
+    read-back contains "confirm" and the mic reopens; no click is
+    confirmed before the resolution; then the spoken resolution "Yes
+    please" produces a confirmed click step and a terminal done whose
+    spoken answer contains thanks/received.
   - Spoken-variance clause, same as DA2: exactly one case failed ->
     one bounded rerun, final.
 - **DA3 battery re-run (unchanged bars), test_browser explicitly

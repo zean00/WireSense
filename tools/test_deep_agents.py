@@ -1,4 +1,4 @@
-"""Frozen gate for deep-agents stage 1 (PROTOCOL-deep-agents.md).
+"""Frozen gate for deep-agents stages 1-2 (PROTOCOL-deep-agents.md).
 
 DA1 unit (offline, no network/browser): the IR_TOOL marker parser, leg
 args validation, the stream holdback rule, directive shape, credential
@@ -11,6 +11,11 @@ replay registry, harness shared with test_ir.py):
   case B (control) must run ZERO legs and answer the math from knowledge.
 DA3 (the regression battery) is run separately — the runner prints the
 bars; this file never edits a frozen eval.
+
+Stage 2 extension (registered 2026-10-05 before any stage-2 data): the
+DA1/DA2 checks above are untouched; DA4 adds the dual-marker unit
+gate; DA5 adds the spoken browser-leg gates (case C read-only, case D
+guard-yield park + spoken YES resolution).
 
     .venv/bin/python tools/test_deep_agents.py
 """
@@ -232,19 +237,315 @@ async def da2():
                     rt.cancel()
 
 
+# ---------------------------------------------------------------- DA4 unit
+def da4():
+    print("DA4 unit (offline, stage 2):")
+    m = S.IR_TOOL_MARKER
+    bm = S.BROWSE_TOOL_MARKER
+
+    # browse marker cut (dual-marker parser, decision 15)
+    txt = (f'Check the page.\n{bm} {{"site": "shop.html", "query": null,'
+           ' "task": "find the price"}}')
+    a, t = S.split_tool_marker(txt)
+    check("browse-marker-cut", a == "Check the page.", repr(a))
+    j = browser_use._extract_json(t or "")
+    check("browse-marker-json",
+          isinstance(j, dict) and j.get("site") == "shop.html", repr(j))
+
+    # earliest of both wins
+    txt = (f'Go.\n{bm} {{"task": "t", "site": "a.html"}}\n'
+           f'and later {m} {{"query": "q", "question": "w"}}')
+    a, t = S.split_tool_marker(txt)
+    check("browse-earliest", a == "Go." and t is not None
+          and t.lstrip().startswith('{"task"'), repr((a, t)))
+    txt = (f'Go.\n{m} {{"query": "q", "question": "w"}}\n'
+           f'and later {bm} {{"task": "t", "site": "a.html"}}')
+    a, t = S.split_tool_marker(txt)
+    check("ir-earliest", a == "Go." and t is not None
+          and t.lstrip().startswith('{"query"'), repr((a, t)))
+
+    # browse marker without json / prose mention -> no call
+    a, t = S.split_tool_marker(f"{bm} not json at all")
+    check("browse-nojson", t is None and a.startswith(bm), repr((a, t)))
+    a, t = S.split_tool_marker(f"I could {bm} things if needed.")
+    check("browse-prose", t is None)
+
+    # browse args validation (stage-2 decision 15)
+    check("bargs-no-task",
+          S.validate_browse_args({"site": "shop.html"}) is None)
+    check("bargs-no-source", S.validate_browse_args({"task": "t"}) is None)
+    p = S.validate_browse_args({"site": "shop.html", "query": None,
+                                "task": "find the price"})
+    check("bargs-site-only",
+          p == {"site": "shop.html", "query": None,
+                "task": "find the price"}, repr(p))
+    p = S.validate_browse_args({"query": "grinder price", "task": "t"})
+    check("bargs-query-only",
+          p["site"] is None and p["query"] == "grinder price", repr(p))
+    check("bargs-both-null",
+          S.validate_browse_args({"site": None, "query": None,
+                                  "task": "t"}) is None)
+
+    # IR->browse re-scope (stage-2 Rev A): a named local .html is
+    # browser intent even when the model picked the research tool
+    p = S.validate_leg_args({"query": "aero presco price",
+                             "question": "what does it cost"})
+    br = S.rescope_ir_to_browse(
+        "Think hard about the price of the AeroPress Go, and look at "
+        "the local file shop.html before answering.", p)
+    check("rescope-named-file",
+          br == {"site": "shop.html", "query": None,
+                 "task": "what does it cost"}, repr(br))
+    check("rescope-archive-stays",
+          S.rescope_ir_to_browse(
+              "research it in the local archive before answering", p)
+          is None)
+    p_url = S.validate_leg_args({"url": "shop.html",
+                                 "question": "what does it cost"})
+    check("rescope-url-stays",
+          S.rescope_ir_to_browse(
+              "look at the local file shop.html before answering",
+              p_url) is None)
+
+    # deep-intake ASR repair (stage-2 Rev C): the corrupted separator
+    # form never reaches the deep prompt
+    check("asr-repair-separator",
+          S.deep_asr_repair("Look at the local file form. HTML to send "
+                            "a note before answering.")
+          == "Look at the local file form.html to send a note before "
+             "answering.",
+          repr(S.deep_asr_repair("form. HTML")))
+    check("asr-repair-clean-untouched",
+          S.deep_asr_repair("Look at the local file form.html before "
+                            "answering.")
+          == "Look at the local file form.html before answering.",
+          repr(S.deep_asr_repair("Look at the local file form.html "
+                                 "before answering.")))
+    check("asr-repair-nohtml-untouched",
+          S.deep_asr_repair("Think hard about our feedback. Look at "
+                            "the sky.")
+          == "Think hard about our feedback. Look at the sky.")
+
+    # holdback covers the longer marker; directive v2 names both tools
+    check("holdback-covers-browse", S.IR_TOOL_HOLD >= len(bm))
+    d = S.DEEP_TOOL_DIRECTIVE
+    check("directive-v2", m in d and bm in d and '"site"' in d
+          and '"task"' in d and '"query"' in d)
+    check("cont-v2", "IR_TOOL" in S.IR_TOOL_CONT_DIRECTIVE
+          and "BROWSE_TOOL" in S.IR_TOOL_CONT_DIRECTIVE)
+    check("budget-note-v2", "BROWSE_TOOL" in S.IR_TOOL_BUDGET_NOTE)
+    # Rev D: the task clause keeps the user's action verb (measured:
+    # the noun-only example let "send a note" flip to "read the
+    # feedback note", and the content-free leg then no-opped into the
+    # stuck watch without ever reaching the submit-class click)
+    check("directive-verb-clause", "action verb" in d
+          and "fill the named form and submit it" in d)
+
+
+# ------------------------------------------------------------- DA5 spoken
+CASE_C = ("Think hard about the price of the AeroPress Go, and look "
+          "at the local file shop.html before answering.")
+CASE_D = ("Think hard about our feedback. Look at the local file "
+          "form.html to send a note before answering.")
+
+
+async def open_session():
+    ws = await H.websockets.connect(H.WS, max_size=2 ** 22)
+    await ws.send(json.dumps({"type": "hello", "ctx_rate": 16000}))
+    runs = H.Runs()
+
+    async def reader():
+        try:
+            async for raw in ws:
+                runs.add(json.loads(raw))
+        except H.websockets.ConnectionClosed:
+            pass
+
+    rt = asyncio.create_task(reader())
+    await asyncio.sleep(0.5)
+    return ws, runs, rt
+
+
+async def close_session(ws, rt):
+    try:
+        await asyncio.wait_for(rt, timeout=2)
+    except asyncio.TimeoutError:
+        rt.cancel()
+    await ws.close()
+
+
+def latest_trace_matching(site):
+    """steps.json of the newest browser trace whose site matches (the
+    browser track's observation point; inlined to keep this file's
+    imports light)."""
+    import glob as _glob
+    import os as _os
+    root = "/tmp/wiresense_browser"
+    files = sorted(_glob.glob(f"{root}/*/steps.json"),
+                   key=_os.path.getmtime, reverse=True)
+    for f in files[:4]:
+        try:
+            d = json.load(open(f))
+        except (OSError, ValueError):
+            continue
+        if site in (d.get("site") or ""):
+            return d
+    return None
+
+
+async def case_c(ws, runs, failures, name, utt):
+    print(f"\n=== {name}: {utt!r}")
+    if not await H.case_start(ws, runs, failures, name):
+        return
+    s = runs.index()
+    t0 = time.monotonic()
+    await H.speak_turn(ws, runs, utt, since=s, timeout=260)
+    await wait_metrics(runs, s)
+    since = runs.since(s)
+    route = H.route_of(runs, s)
+    reply = next((e.get("text") for e in since
+                  if e.get("type") == "response_done"), None)
+    metrics = next((e for e in since if e.get("type") == "metrics"), None)
+    deep = (metrics or {}).get("deep") or {}
+    calls = deep.get("tool_calls") or []
+    browse = [c for c in calls if c.get("tool") == "browse"]
+    steps = sum(c.get("steps", 0) for c in browse)
+    confirms = [r for r in H.replies(runs, s) if "confirm" in r.lower()]
+    errs = [e for e in since if e.get("type") == "error"]
+    total_s = time.monotonic() - t0
+    print(f"  route={route} legs={deep.get('legs')} "
+          f"total={total_s:.1f}s calls={calls}")
+    print(f"  reply: {reply!r}")
+    check("C-route-deep", route == "deep", str(route))
+    check("C-browse-done",
+          len(browse) == 1 and browse[0].get("outcome") == "done",
+          str(calls))
+    check("C-steps", steps <= 10, str(steps))
+    check("C-cites-price", reply is not None and "39.95" in reply,
+          repr(reply))
+    check("C-no-confirm", not confirms, str(confirms))
+    check(f"{name}-no-error", not errs, str(errs))
+
+
+async def case_d(ws, runs, failures, name, utt):
+    print(f"\n=== {name}: {utt!r}")
+    if not await H.case_start(ws, runs, failures, name):
+        return
+    s = runs.index()
+    await H.speak_turn(ws, runs, utt, since=s, timeout=260)
+    # the handoff: the read-back must arrive out-of-turn after the yield
+    rb = []
+    end = time.monotonic() + 60
+    while time.monotonic() < end:
+        rb = [e for e in runs.since(s)
+              if e.get("type") == "response_done"
+              and "confirm" in (e.get("text") or "").lower()]
+        if rb:
+            break
+        await asyncio.sleep(0.25)
+        await ws.send(H.SILENCE)
+    await wait_metrics(runs, s, timeout=40)
+    since = runs.since(s)
+    route = H.route_of(runs, s)
+    metrics = next((e for e in since if e.get("type") == "metrics"), None)
+    deep = (metrics or {}).get("deep") or {}
+    calls = deep.get("tool_calls") or []
+    done_all = [e for e in since if e.get("type") == "response_done"]
+    partial = done_all[0] if done_all else None
+    pre_trace = latest_trace_matching("form.html")
+    errs = [e for e in since if e.get("type") == "error"]
+    print(f"  route={route} parked={deep.get('parked')} calls={calls}")
+    print(f"  partial: {(partial or {}).get('text')!r}")
+    print(f"  read-back: {(rb[-1] if rb else {}).get('text')!r}")
+    check("D-route-deep", route == "deep", str(route))
+    check("D-parked", deep.get("parked") is True and bool(calls)
+          and calls[-1].get("outcome") == "parked", str(calls))
+    check("D-partial-first",
+          partial is not None and bool(rb)
+          and partial.get("_arr", 0) < rb[0].get("_arr", 0)
+          and "confirm" not in (partial.get("text") or "").lower(),
+          repr((partial or {}).get("text")))
+    check("D-read-back", bool(rb), "no confirm reply")
+    check("D-no-click-before-yes",
+          not any(st.get("confirmed")
+                  for st in ((pre_trace or {}).get("steps") or [])),
+          str((pre_trace or {}).get("steps", [])[-3:]))
+    check(f"{name}-no-error", not errs, str(errs))
+    if not rb or not await H.wait_listening(ws, runs, s):
+        check("D-mic-reopens", False, "mic never reopened for resolution")
+        return
+    check("D-mic-reopens", True)
+    # the spoken resolution drives the EXISTING pending machinery
+    s2 = runs.index()
+    await H.speak_turn(ws, runs, "Yes please.", since=s2)
+    end = time.monotonic() + 60
+    ev = None
+    while time.monotonic() < end:
+        ev = next((e for e in runs.since(s2)
+                   if e.get("type") == "browser_event"
+                   and e.get("event") != "step"), None)
+        if ev:
+            break
+        await asyncio.sleep(0.1)
+        await ws.send(H.SILENCE)
+    steps = (ev or {}).get("steps") or []
+    conf = [st for st in steps if st.get("confirmed")]
+    ans = ((ev or {}).get("answer") or "").lower()
+    print(f"  outcome={(ev or {}).get('event')} confirmed={len(conf)} "
+          f"answer={(ev or {}).get('answer', '')[:70]!r}")
+    check("D-confirmed-click", bool(conf), str(steps[-3:]))
+    check("D-answer-spoken",
+          ev is not None and ev.get("event") == "done"
+          and ("thanks" in ans or "received" in ans), repr(ev))
+
+
+async def da5():
+    print("DA5 spoken e2e (stage 2):")
+    ws, runs, rt = await open_session()
+    await case_c(ws, runs, FAILS, "DA5c-shop", CASE_C)
+    await asyncio.sleep(0.5)
+    await case_d(ws, runs, FAILS, "DA5d-form", CASE_D)
+    await close_session(ws, rt)
+    # registered spoken-variance clause (as DA2): exactly one case
+    # failed -> one bounded rerun, final
+    c_failed = any(f.startswith("DA5c") or f == "C-route-deep"
+                   or f.startswith("C-") for f in FAILS)
+    d_failed = any(f.startswith("DA5d") or f.startswith("D-")
+                   for f in FAILS)
+    if c_failed != d_failed:
+        print("\n  [variance rerun: exactly one case failed]")
+        drop = (lambda f: f.startswith("DA5c") or f.startswith("C-")) \
+            if c_failed else \
+            (lambda f: f.startswith("DA5d") or f.startswith("D-"))
+        FAILS[:] = [f for f in FAILS if not drop(f)]
+        ws, runs, rt = await open_session()
+        if c_failed:
+            await case_c(ws, runs, FAILS, "DA5c-shop-rerun", CASE_C)
+        else:
+            await case_d(ws, runs, FAILS, "DA5d-form-rerun", CASE_D)
+        await close_session(ws, rt)
+
+
 def main() -> int:
     da1()
     if FAILS:
         print("\nDA1 failed — DA2 (spoken, slow) skipped; fix first.")
         return 1
+    da4()
+    if FAILS:
+        print("\nDA4 failed — spoken gates skipped; fix first.")
+        return 1
     asyncio.run(da2())
+    pre = len(FAILS)
+    asyncio.run(da5())
     print("\n" + "=" * 64)
     if FAILS:
         print(f"VERDICT: FAIL ({len(FAILS)}):")
         for f in FAILS:
             print(f"  - {f}")
         return 1
-    print("VERDICT: PASS (DA1 all; DA2 A+B)")
+    print(f"VERDICT: PASS (DA1 all; DA2 A+B; DA4 all; DA5 C+D"
+          f"{'' if pre == 0 else '; DA2 needed its rerun'})")
     return 0
 
 
