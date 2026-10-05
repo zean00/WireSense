@@ -6,3 +6,4 @@ __pycache__/
 nohup.out
 web/memory.json
 web/config.json
+web/faces.json
