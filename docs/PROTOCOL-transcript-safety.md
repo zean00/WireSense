@@ -141,6 +141,44 @@ uses /v1/chat/completions with enable_thinking:false (same as vision).
 - G6 no regressions: eval_router / think / followup bars identical;
   normalizer 22/22; face units 472/472.
 
+## Revision 1 (pre-registered before the final adjudication runs)
+
+Measured during bring-up (all on the shipped code):
+
+- **G5 budget split (amendment).** The registered "judge ms <= 200 on
+  every judged turn" is only meaningful for PASS-THROUGH turns (one
+  call): observed 54-108 ms. Clarify turns always run both calls
+  (verdict + repair): observed 242-363 ms total. Registered budgets:
+  pass-through judge ms <= 200; clarify judge chain <= 400; clarify turn
+  final->reply e2e <= 1200 ms — clarify turns skip the main LLM reply
+  entirely, so they measured FASTER than the ordinary LLM turns they
+  replace (clarify e2e observed 762-1208 ms; ordinary short LLM turns
+  1197-2554 ms in the same probes).
+- **E2E nonsense cases are probabilistic (registered finding).** Phonon's
+  transcript of the same nonsense render drifts across sessions ("The
+  purple sleeps loudly." was also seen as "sleeps loudly." and once as a
+  sensible question). The judge itself is deterministic per final text
+  (3x3 repeats, identical verdicts and repairs), so the e2e positive case
+  demonstrates the pipeline whenever the final IS fluent nonsense, and
+  fail-open degrades to the normal turn whenever it is not.
+- **Organic catch (unplanned demonstration).** Back-to-back probing
+  truncated "What time is it?" to "Time is it?"; the judge flagged it
+  (sensible=false), proposed a repair, and clarified in 762-853 ms e2e —
+  the truncation-garble class caught live, with zero false clarifications
+  on the surrounding clean turns.
+- **Known interaction (registered, not fixed in v1).** If an unrelated
+  TOOL-ish utterance follows a high-risk read-back without resolving the
+  pending (non-vocabulary -> pending dropped, per decision 6), the tool
+  planner still sees the read-back question in history and may plan the
+  tool from it (observed once in bring-up: an unresolved timer read-back
+  plus a later nonsense utterance produced a new timer plan). The state
+  machine itself behaved per protocol; hiding read-back turns from the
+  planner context is deferred as future work.
+- **Harness note.** Resolve turns must wait for mic_state listening=true
+  before feeding (the browser contract): the half-duplex guard discards
+  audio while the gate is closed, so an immediate feed loses the whole
+  confirmation utterance.
+
 ## Results
 
 (filled after adjudication)
