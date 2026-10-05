@@ -2,15 +2,18 @@
 16 kHz mic PCM into the wiresense WS, and assert the decision tree routes
 each turn to its expected class (root.subleaf after the think subtree).
 Covers all five root classes, the think subtree split, the V1 tool flow
-(timer via tool_event; reminder/note via web/memory.json), and the
-no-tool-fits fallback (weather -> honest answer).
+(reminder/note via web/memory.json), the transcript-safety layer
+(PROTOCOL-transcript-safety.md: high-risk timer/reminder read-back with
+YES/NO resolution; judge clarify on fluent nonsense), and the no-tool-fits
+fallback (weather -> honest answer).
 
 Run against the live stack (llama-server, Phonon, web):
     make test-voice
 
-Exits 1 on any route miss, empty reply, failed tool execution, or server
-error event. Vision/weather honesty is printed as a warning rather than
-asserted (the phrasing is the LLM's, not a protocol constant).
+Exits 1 on any route miss, empty reply, failed tool execution, missing
+read-back/clarification, or server error event. Vision/weather honesty is
+printed as a warning rather than asserted (the phrasing is the LLM's, not
+a protocol constant).
 """
 import asyncio
 import base64
@@ -43,9 +46,23 @@ UTTERANCES = [
     ("social", "So yesterday I was walking to the store and this guy comes up to me "
                "out of nowhere and starts telling me his whole life story and honestly "
                "I could not get away, it was something else.", {}),
-    ("think.tool", "Set a timer for 10 minutes.", {"timer": 600}),
+    ("think.tool", "Set a timer for 10 minutes.",
+     {"confirm_reply": "confirm", "resolve": "Yes.", "timer": 600}),
     ("think.tool", "Remind me to call mom in 15 seconds.",
-     {"reminder": "call mom", "fires": True}),
+     {"confirm_reply": "confirm", "resolve": "Yes.",
+      "reminder": "call mom", "fires": True}),
+    # M2 decline control: the read-back must park, and "No." must cancel
+    # with nothing executed (no timer tool_event, protocol G2)
+    ("think.tool", "Set a timer for 3 minutes.",
+     {"confirm_reply": "confirm", "resolve": "No.", "no_timer": True,
+      "cancel_reply": True}),
+    # M1 positive (protocol G3): fluent nonsense with no homophone escape
+    # (an earlier pick, "Yes, you are two.", was transcribed "Yes, you are
+    # too." — sensible — by Phonon itself; the judge correctly passed it).
+    # The judge must clarify, and "Yes." must resolve through the full
+    # pipeline (route re-runs, non-empty reply, no second proposal)
+    ("clarify", "The purple sleeps loudly.",
+     {"clarify": True, "resolve": "Yes."}),
     ("think.tool", "Make a note that the wifi password is falcon nimbus.",
      {"note": "falcon nimbus"}),
     ("think.tool", "What's the weather in Jakarta?", {"honest": True}),
@@ -67,7 +84,8 @@ UTTERANCES = [
 # Names are LLM/ASR-extracted ("Albert") — all comparisons fold case.
 FACE_UTTERANCES = [
     ("vision", "Forget my face.", {"face_gate": True}),
-    ("think.tool", "Set a timer for 10 minutes.", {"timer": 600}),
+    ("think.tool", "Set a timer for 10 minutes.",
+     {"confirm_reply": "confirm", "resolve": "Yes.", "timer": 600}),
     ("think.tool", "Learn my face as Albert.",
      {"face_enroll": True, "frame_face": True, "store_adds": ["albert"]}),
     ("vision", "What do you see right now?",
@@ -98,9 +116,11 @@ FACE_UTTERANCES = [
     ("vision", "What do you see right now?",
      {"ambient": True, "frame_face": True, "face_names": ["albert"],
       "vision_face": True}),
-    # tool turn with ambient on: injection must not break tool selection
+    # tool turn with ambient on: injection must not break tool selection;
+    # high-risk read-back (M2) applies with ambient on too
     ("think.tool", "Set a timer for 10 minutes.",
-     {"ambient": True, "timer": 600}),
+     {"ambient": True, "confirm_reply": "confirm", "resolve": "Yes.",
+      "timer": 600}),
     # toggle on but camera off: probe finds nothing, honest absence
     ("direct", "Who am I, do you know?",
      {"reset": True, "ambient": True, "camera_off": True,
@@ -286,12 +306,39 @@ async def run() -> int:
                     print(f"  {at} metrics: e2e={e['e2e_ms']}ms "
                           f"ttft={llm.get('ttft_ms')}ms "
                           f"decode={llm.get('decode_tps')}tps"
-                          + (f" face={face}" if face is not None else ""))
+                          + (f" face={face}" if face is not None else "")
+                          + (f" judge={e['judge']}" if e.get("judge")
+                             else ""))
                     if "face" in e:
                         face_metrics.append(e["face"])
                 elif t == "error":
                     print(f"  {at} ERROR: {e['message']}")
                     failures.append(f"{want}: server error {e['message'][:80]}")
+            # transcript-safety resolution turn (PROTOCOL-transcript-
+            # safety.md G2/G3): wait for the mic gate to reopen (the
+            # browser contract — the half-duplex guard discards audio
+            # while the gate is closed), then feed the YES/NO follow-up
+            # and keep collecting into events so the checks below see
+            # both turns
+            if checks.get("resolve"):
+                rtext = checks["resolve"]
+                print(f"  --- resolve: {rtext!r}")
+                for _ in range(50):  # 5 s
+                    await asyncio.sleep(0.1)
+                    await ws.send(silence)
+                    ms_ev = [e for e in events
+                             if e.get("type") == "mic_state"]
+                    if ms_ev and ms_ev[-1].get("listening"):
+                        break
+                t_start = time.monotonic()
+                await feed(ws, synth(rtext))
+                for _ in range(300):  # 30 s
+                    await asyncio.sleep(0.1)
+                    await ws.send(silence)
+                    got = [e["type"] for e in events]
+                    if (got.count("response_done") >= 2
+                            and "metrics" in got):
+                        break
             saw_tool_call = any(e.get("type") == "tool_call" for e in events)
             saw_vision_frame = any(e.get("type") == "vision_frame" for e in events)
             saw_think = any(e.get("type") == "think_delta" for e in events)
@@ -443,6 +490,37 @@ async def run() -> int:
                     failures.append(f"{want}: final transcript {fin!r} != "
                                     f"{checks['final_text']!r} "
                                     "(normalizer did not repair?)")
+            # transcript-safety turn-1 + resolve checks (protocol G2/G3)
+            if checks.get("confirm_reply") and \
+                    checks["confirm_reply"] not in (reply or "").lower():
+                failures.append(f"{want}: read-back missing "
+                                f"{checks['confirm_reply']!r}: "
+                                f"{(reply or '')[:80]!r}")
+            if checks.get("clarify") and \
+                    "did you mean" not in (reply or "").lower():
+                failures.append(f"{want}: no clarify proposal: "
+                                f"{(reply or '')[:80]!r}")
+            if checks.get("resolve"):
+                done = [e for e in events
+                        if e.get("type") == "response_done"]
+                reply2 = done[-1].get("text") if len(done) >= 2 else None
+                routes = [e.get("mode") for e in events
+                          if e.get("type") == "route"]
+                route2 = routes[-1] if routes else None
+                if not reply2:
+                    failures.append(f"{want}: resolve turn empty reply")
+                if checks.get("clarify") and (route2 == "clarify"
+                        or (reply2 and "did you mean" in reply2.lower())):
+                    failures.append(f"{want}: resolve re-clarified "
+                                    f"({route2})")
+                if checks.get("cancel_reply") and reply2 and \
+                        "cancel" not in reply2.lower():
+                    failures.append(f"{want}: decline did not cancel: "
+                                    f"{reply2[:80]!r}")
+                if checks.get("no_timer") and any(
+                        e.get("type") == "tool_event"
+                        and e.get("tool") == "timer" for e in events):
+                    failures.append(f"{want}: timer executed despite decline")
             await asyncio.sleep(1.5)
         rt.cancel()
     if FACE_MODE and lat_vals.get("off") and lat_vals.get("on"):

@@ -234,6 +234,40 @@ instrumented rather than extended. Hotword biasing was considered and
 rejected: the serve path has no knob, and a static "who" prior would
 endanger number-heavy utterances (timers).
 
+## Transcript safety (2026-10-05)
+
+Two mechanisms over one pending state machine
+(`docs/PROTOCOL-transcript-safety.md`, always-on, no config):
+
+**Clarify-on-uncertainty (M1).** Finals of ≤ 4 words that the normalizer
+did not already repair get a semantic judge: a 4-shot YES/NO sensibility
+call on a dedicated slot (slot 4, thinking off, 4-shot prompt frozen from
+a measured calibration — 1-token logprobs scored 23/30, zero-shot 33/36,
+few-shot 36/36 at ~115 ms). A NO verdict triggers a repair call, and the
+turn's reply becomes "Did you mean: {likely}?" — routing, TTS and the
+main LLM are skipped entirely, which makes clarify turns *faster* than
+the turns they replace (762-1208 ms e2e vs 1197-2554 ms). The next
+"Yes"/"no" resolves it; a "yes" re-runs the full pipeline on the proposed
+sentence. Fail-open everywhere: any exception, junk verdict, or unusable
+repair passes the turn through as before — the layer may only remove
+harm, never add it. Adjudicated: 0 false clarifications across every
+suite run, and one organic catch during latency probing (a truncated
+"Time is it?" flagged and clarified in ~800 ms).
+
+**High-risk tool read-back (M2).** `timer` and `reminder` (numeric args,
+timed real-world effects — a misheard "15 seconds" used to execute
+silently) never run on the first utterance. The turn replies with a
+deterministic read-back ("Just to confirm — a reminder to call Mom, in
+15 seconds?") and parks the call; "Yes." executes it (tool_call event +
+confirmation sentence), "No." cancels with nothing executed, anything
+else drops the pending and processes the turn normally. Accepted UX cost:
+every timer/reminder is one extra spoken turn.
+
+Known limits (registered): no judge over 4 words; fluent-but-wrong
+non-numeric transcripts pass; and after an unresolved read-back, a later
+tool-ish utterance can still be planned as a confirmation from history
+(state machine correct; planner-context hygiene deferred).
+
 ## Deep think (2026-10-05)
 
 Optional big-model route for the deep class, fully config-gated in

@@ -121,7 +121,7 @@ kill_pids() { # name pids...
 }
 endef
 
-.PHONY: start stop restart status canary logs detector test-omdet test-deep record-router eval-router eval-followup tree-probe test-voice test-normalizer help
+.PHONY: start stop restart status canary logs detector test-omdet test-deep record-router eval-router eval-followup tree-probe test-voice test-normalizer test-safety help
 
 start:
 	@$(HELPERS)
@@ -213,6 +213,9 @@ test-face:
 test-normalizer:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_normalizer.py
 
+test-safety:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_transcript_safety.py
+
 tree-probe:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/tree_probe.py
 
@@ -246,5 +249,6 @@ help:
 	@echo "  make test-omdet     detector sidecar: health + latency budget"
 	@echo "  make test-face      face gates: frozen-portrait geometry + opt-in contract"
 	@echo "  make test-normalizer  ASR transcript repair units (who/two family)"
+	@echo "  make test-safety     transcript-safety units (judge clarify + tool read-back)"
 	@echo "  (face e2e enabled run: face.enabled in web/config.json + restart, then WIRESENSE_TEST_FACE=1 make test-voice)"
 	@echo "  make test-deep      deep-think adapters: offline parser/config tests"

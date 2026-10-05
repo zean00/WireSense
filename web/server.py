@@ -118,6 +118,32 @@ REL_TIME = re.compile(r"\bin (\d+) (second|minute|hour)s?\b", re.I)
 ASR_NORMALIZERS = [(re.compile(r"^\s*(two|to|too|2)\s+am\s+i\s*[?!.]*\s*$",
                               re.I), "Who am I?")]
 
+# transcript-safety layer (docs/PROTOCOL-transcript-safety.md): M1 semantic
+# judge for short rule-missed finals, M2 read-back for high-risk tools.
+# Prompts are frozen verbatim from the protocol calibration (36/36 at a
+# 115 ms mean on the 36-item corpus).
+JUDGE_SLOT = 4  # dedicated: the main decode owns SLOT, embeddings own 6
+HIGH_RISK_TOOLS = {"timer", "reminder"}
+JUDGE_SYS = ("You judge transcripts from speech recognition. Grammatical "
+             "sentences can still be recognition errors. Answer with only "
+             "YES or NO.")
+JUDGE_USER = ('Examples:\n'
+              'Transcript: "The purple sleeps loudly" -> NO\n'
+              'Transcript: "What time is it?" -> YES\n'
+              'Transcript: "Yes, you are two." -> NO\n'
+              'Transcript: "Who is this?" -> YES\n'
+              'Transcript: "{t}"\n'
+              'Is this something a person would naturally say?')
+REPAIR_SYS = "You repair garbled speech-recognition transcripts."
+REPAIR_USER = ('Garbled transcript: "{t}"\nWhat did the person most likely '
+               'try to say? Answer with only the corrected sentence, '
+               'nothing else.')
+RESOLVE_YES = {"yes", "yeah", "yep", "yup", "sure", "ok", "okay", "right",
+               "correct", "confirm", "confirmed", "do it", "go ahead",
+               "yes please", "that's right", "sounds good", "please do"}
+RESOLVE_NO = {"no", "nope", "nah", "cancel", "stop", "wrong", "don't",
+              "dont", "no thanks", "that's wrong"}
+
 
 def normalize_transcript(text: str) -> str:
     for rx, replacement in ASR_NORMALIZERS:
@@ -215,6 +241,49 @@ def parse_relative_seconds(when: str):
     if not m:
         return None
     return int(m.group(1)) * {"second": 1, "minute": 60, "hour": 3600}[m.group(2)]
+
+
+def words_count(text) -> int:
+    return len(re.findall(r"[a-z0-9']+", text.lower()))
+
+
+def judge_eligible(text, norm_fired) -> bool:
+    """M1 trigger (protocol decision 2): short finals the normalizer did
+    not already repair. Longer utterances never see the judge."""
+    return (not norm_fired) and words_count(text) <= 4
+
+
+def classify_resolution(text):
+    """Pending-resolution vocabulary (protocol decision 6); exact match
+    after lowercase, punctuation-stripping and space-squeezing."""
+    k = re.sub(r"[^a-z' ]", " ", text.lower())
+    k = re.sub(r"\s+", " ", k).strip()
+    if k in RESOLVE_YES:
+        return "yes"
+    if k in RESOLVE_NO:
+        return "no"
+    return None
+
+
+def parse_verdict(text):
+    """Judge verdict parse; None means junk and fails open to sensible."""
+    v = (text or "").strip().upper().rstrip(".!").strip()
+    if v.startswith("YES"):
+        return True
+    if v.startswith("NO"):
+        return False
+    return None
+
+
+def readback_text(tool, args):
+    """M2 spoken read-back of the interpreted call (protocol decision 9)."""
+    if tool == "timer":
+        what = args.get("label") or f"{args.get('seconds')} seconds"
+        return f"Just to confirm — a timer for {what}?"
+    if tool == "reminder":
+        return (f"Just to confirm — a reminder to {args.get('text')}, "
+                f"{args.get('when')}?")
+    return None
 
 
 def append_memory(item):
@@ -542,6 +611,8 @@ class Session:
         self.face_meta = None    # face metrics for the current vision turn
         self.ambient = False     # per-session user toggle (ambient_state)
         self.ambient_meta = None  # ambient probe result for the current turn
+        self.pending = None      # transcript-safety pending resolution
+        self.norm_fired = False  # normalizer fired on this turn's final
         self._frame_evt = asyncio.Event()
 
     async def ambient_probe(self):
@@ -620,7 +691,9 @@ class Session:
                 elif t == "final":
                     # single repair point (protocol decision 2): routing,
                     # history, UI and the reply all see the normalized text
-                    text = normalize_transcript(m["text"])
+                    raw = m["text"]
+                    text = normalize_transcript(raw)
+                    self.norm_fired = text != raw
                     await self.send({"type": "final", "text": text})
                     await self.respond(text)
                     # turn over: close the ASR stream so idle room tone can
@@ -673,13 +746,58 @@ class Session:
                 return
             await self.tts(line, guard_turn=my_turn)
 
-    async def respond(self, utterance):
+    async def respond(self, utterance, _resolved=False):
         self.speaking = True
         self.t_final = time.perf_counter()
         self.turn_id += 1
         my_turn = self.turn_id
         await self.update_gate()
         await self.send({"type": "cancel_tts"})
+        # transcript-safety (protocol decisions 5-6): a pending resolution
+        # intercepts the turn before routing. YES on an intent re-runs the
+        # FULL pipeline on the proposed sentence; YES on a tool executes
+        # the parked call; NO cancels; anything else drops the pending and
+        # proceeds as a completely normal turn.
+        judge_meta = None
+        reply, route_mode = None, None
+        pend, self.pending = self.pending, None
+        if pend:
+            res = classify_resolution(utterance)
+            if res == "yes" and pend["kind"] == "intent":
+                return await self.respond(pend["likely"], _resolved=True)
+            if res == "yes" and pend["kind"] == "tool":
+                try:
+                    result = await self.run_tool(pend["tool"], pend["args"])
+                    reply = await self._confirm_tool(utterance, pend["tool"],
+                                                     pend["args"], result)
+                except Exception as e:
+                    await self.send({"type": "error",
+                                     "message": f"tool: {e}"[:120]})
+                    reply = "Sorry, the tool failed."
+                route_mode = "resolve"
+            elif res == "no":
+                reply = ("Okay — say it again." if pend["kind"] == "intent"
+                         else "Okay, cancelled.")
+                route_mode = "resolve"
+        # M1 (protocol decisions 2-5): semantic judge on eligible finals —
+        # short, not already repaired by the normalizer, not itself a
+        # resolution. Fail-open: only a NO verdict with a usable repair
+        # diverts the turn.
+        if reply is None and not _resolved \
+                and judge_eligible(utterance, self.norm_fired):
+            sensible, likely, jms = await self.judge_transcript(utterance)
+            judge_meta = {"ms": round(jms), "sensible": sensible}
+            if not sensible and likely:
+                reply = f"Did you mean: {likely}?"
+                self.pending = {"kind": "intent", "likely": likely}
+                route_mode = "clarify"
+        if reply is not None:
+            await self.send({"type": "route", "mode": route_mode,
+                             "conf": None, "rewrite": None,
+                             "rewrite_ms": None})
+            self.route_mode = route_mode
+            await self.finish_turn(utterance, reply, None, judge_meta, None)
+            return
         # route on a fresh raw-utterance embedding (~55 ms on slot 6;
         # refs are raw texts — prompt/history-shaped vectors measured
         # markedly worse). Non-direct turns speak a filler first so the
@@ -869,6 +987,17 @@ class Session:
                     await self.send({"type": "response_start",
                                      "ttft_ms": round(first, 1)})
                     await self.send({"type": "response_delta", "text": reply})
+        # fp4-fault signature check + the shared epilogue live in
+        # finish_turn (canned clarify/resolve turns end through it too)
+        await self.finish_turn(hist_utterance, reply, timings, judge_meta,
+                               round(first, 1) if first else None, deep_meta)
+
+    async def finish_turn(self, hist_utterance, reply, timings, judge_meta,
+                          ttft_ms, deep_meta=None):
+        """Shared turn epilogue: response_done, TTS, history, metrics, and
+        the post-turn gate floor (the browser reports actual playback end
+        via playback_state; the floor covers the race before the first
+        playing:true arrives)."""
         # fp4-fault signature: output is essentially all '?' (see
         # docs/INCIDENT-2026-10-04-GPU.md) — surfaced to the UI, never fatal
         corrupt = len(reply) >= 8 and reply.count("?") >= 0.9 * len(reply)
@@ -876,11 +1005,8 @@ class Session:
         await self.tts(reply)
         self.history.append((hist_utterance, reply))
         self.speaking = False
-        await self.send_metrics(timings, round(first, 1) if first else None,
-                                corrupt, deep=deep_meta)
-        # gate does NOT open here: the browser reports actual playback end
-        # (playback_state) — much later than synthesis on long replies.
-        # The floor covers the race before the first playing:true arrives.
+        await self.send_metrics(timings, ttft_ms, corrupt, deep=deep_meta,
+                                judge=judge_meta)
         self.gate_until = max(self.gate_until, time.monotonic() + 1.0)
         await self.update_gate()
         self.schedule_gate_release(1.0)
@@ -1046,8 +1172,50 @@ class Session:
             args = validate_tool(plan["tool"], plan["args"])
         except (ValueError, TypeError):
             return None
+        # M2 (protocol decisions 8-9): high-risk numeric tools never
+        # execute on the first utterance — park for a spoken read-back;
+        # the YES resolution runs the tool from respond()
+        if plan["tool"] in HIGH_RISK_TOOLS:
+            self.pending = {"kind": "tool", "tool": plan["tool"],
+                            "args": args}
+            return readback_text(plan["tool"], args)
         result = await self.run_tool(plan["tool"], args)
         return await self._confirm_tool(utterance, plan["tool"], args, result)
+
+    async def judge_transcript(self, text):
+        """M1 judge (protocol decisions 3-4): YES/NO sensibility on the
+        dedicated slot, then the likely sentence only on a NO. Fail-open:
+        any exception, junk verdict, or unusable repair reports sensible."""
+        t0 = time.perf_counter()
+
+        async def chat(sysmsg, user, mx):
+            loop = asyncio.get_event_loop()
+            r = await loop.run_in_executor(None, lambda: requests.post(
+                f"{LLAMA}/v1/chat/completions", json={
+                    "model": "wiresense-llm", "messages": [
+                        {"role": "system", "content": sysmsg},
+                        {"role": "user", "content": user}],
+                    "max_tokens": mx, "temperature": 0,
+                    "cache_prompt": True, "id_slot": JUDGE_SLOT,
+                    "chat_template_kwargs": {"enable_thinking": False}},
+                    timeout=8))
+            r.raise_for_status()
+            return r.json()["choices"][0]["message"]["content"]
+
+        def spent():
+            return (time.perf_counter() - t0) * 1000
+        try:
+            verdict = parse_verdict(await chat(
+                JUDGE_SYS, JUDGE_USER.format(t=text), 4))
+            if verdict is not False:
+                return True, None, spent()
+            likely = (await chat(REPAIR_SYS, REPAIR_USER.format(t=text),
+                                 24) or "").strip().strip('"').strip()
+            if not likely or len(likely) > 80:
+                return True, None, spent()
+            return False, likely, spent()
+        except Exception:
+            return True, None, spent()
 
     async def _confirm_tool(self, utterance, tool, args, result):
         """Record the tool_call event and generate (or fall back to) the
@@ -1196,7 +1364,8 @@ class Session:
             seq += 1
         await self.send({"type": "tts_done"})
 
-    async def send_metrics(self, timings, ttft_ms, corrupt=False, deep=None):
+    async def send_metrics(self, timings, ttft_ms, corrupt=False, deep=None,
+                           judge=None):
         ds = self.decide_stats
         llm = {}
         if timings:
@@ -1233,6 +1402,8 @@ class Session:
         }
         if deep is not None:
             metrics["deep"] = deep  # provider turn (or its honest fallback)
+        if judge is not None:
+            metrics["judge"] = judge  # M1 ran on this turn (protocol G5)
         if self.face_meta is not None:
             metrics["face"] = self.face_meta  # enabled vision turns only
         elif self.ambient_meta is not None:
