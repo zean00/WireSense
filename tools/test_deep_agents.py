@@ -728,6 +728,26 @@ async def da6_machinery():
               ans is not None and "39.95" in ans, repr(ans))
         check("D6-browse-task-cleared",
               s2.browser_task is None and not s2.pending)
+        # Rev G (decision 29): the plan-twice rule — a utility frame
+        # carrying the planted test_voice session history must end in
+        # the fallback contract (no spawn, no tool_call), never
+        # delegate on history bleed
+        s3 = S.Session(StubWS())
+        s3.history = [
+            ("What is the capital of France?",
+             "The capital of France is Paris."),
+            ("Set a timer for 10 minutes.",
+             "The timer is running — ten minutes, counting down."),
+            ("Make a note that the wifi password is falcon nimbus.",
+             "I've saved the Wi-Fi password as Falcon Nimbus."),
+        ]
+        r3 = await s3.tool_flow("What's the weather in Jakarta?")
+        check("D6-bleed-fallback",
+              r3 == (None, False) and s3.ir_task is None
+              and s3.browser_task is None
+              and not [e for e in s3.ws.events
+                       if e.get("type") == "tool_call"],
+              repr((r3, len(s3.ws.events))))
     finally:
         S.MEMORY_PATH = old_mem
         os.unlink(mem_path)

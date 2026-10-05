@@ -1773,18 +1773,23 @@ class Session:
         (PROTOCOL-deep-agents.md decisions 25-27): ir_research/browse
         DELEGATE — the tracks' own intake spawns (background task,
         out-of-turn completion through ir_done/browser_done, submit
-        guard inherited); the intake turn ends with the filler."""
+        guard inherited); the intake turn ends with the filler. Rev G
+        (decision 29): a delegate pick must stand on its own words —
+        one history-free re-plan, accepted only for the same tool."""
+        async def gen_plan(directive, history):
+            loop = asyncio.get_event_loop()
+            r = await loop.run_in_executor(None, lambda: requests.post(
+                f"{LLAMA}/v1/completions", json={
+                    "prompt": build_prompt(history, utterance, directive),
+                    "max_tokens": 80, "temperature": 0,
+                    "cache_prompt": True, "id_slot": SLOT}, timeout=60))
+            r.raise_for_status()
+            return parse_tool_json(r.json()["choices"][0]["text"])
+
         plan = None
         for directive in (tool_manifest_directive(), TOOL_RETRY_DIRECTIVE):
             try:
-                loop = asyncio.get_event_loop()
-                r = await loop.run_in_executor(None, lambda d=directive:
-                    requests.post(f"{LLAMA}/v1/completions", json={
-                        "prompt": build_prompt(self.history, utterance, d),
-                        "max_tokens": 80, "temperature": 0,
-                        "cache_prompt": True, "id_slot": SLOT}, timeout=60))
-                r.raise_for_status()
-                plan = parse_tool_json(r.json()["choices"][0]["text"])
+                plan = await gen_plan(directive, self.history)
             except Exception:
                 return None, False
             if plan is not None:
@@ -1803,8 +1808,26 @@ class Session:
                             "args": args}
             return readback_text(plan["tool"], args), False
         if plan["tool"] in DELEGATE_TOOLS:
+            # Rev G (decision 29): the bounded job must stand on its own
+            # words — re-plan history-free, accept only the same tool.
+            # History bleed into the plan prompt is measured (the
+            # battery caught it: weather -> ir_research 1/1 with session
+            # history, {"tool": null} 3/3 without; browser_flow went
+            # history-free for the same bleed). The four existing tools
+            # keep their single history-carrying plan call untouched.
+            try:
+                plan2 = await gen_plan(tool_manifest_directive(), [])
+            except Exception:
+                plan2 = None
+            if not (plan2 and plan2.get("tool") == plan["tool"]):
+                return None, False
+            try:
+                args = validate_tool(plan["tool"], plan2.get("args"))
+            except (ValueError, TypeError):
+                return None, False
             # decision 26: the code-owned credential refusal, same line
-            # as all three surfaces, before anything spawns
+            # as all three surfaces, before anything spawns (after
+            # acceptance per Rev G)
             target = str(args.get("question") or args.get("task") or "")
             if browser_use.CREDS_TASK_RE.search(target) or \
                     browser_use.CREDS_TASK_RE.search(utterance):
