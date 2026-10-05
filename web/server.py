@@ -205,6 +205,86 @@ def parse_tool_json(text):
     return {"tool": tool, "args": args}
 
 
+# --- deep-agents loop (PROTOCOL-deep-agents.md, stage 1) -----------------
+# A deep-think round may end with an IR_TOOL marker line; the parsed args
+# run as a detached IRTask leg and the findings ride a continuation note.
+# Text protocol, no server-side stop sequences: the marker is cut in the
+# stream consumer (holdback window), so it is endpoint-agnostic across
+# the provider dialects and the local open-think source alike.
+IR_TOOL_MARKER = "IR_TOOL"
+IR_TOOL_HOLD = 16        # chars of answer text withheld from the stream
+DEEP_MAX_LEGS = 3        # tool legs per deep turn (code-owned budget)
+DEEP_LEG_TIME = 180.0    # combined leg seconds per deep turn
+DEEP_MAX_ROUNDS = 6      # generation rounds incl. invalid/refused notes
+
+DEEP_TOOL_DIRECTIVE = (
+    "You can look facts up before answering. If the answer depends on "
+    "facts you are not sure of, or if the user names a source (a page, "
+    "a file, the archive, the web), never guess that source's contents "
+    "— look it up: keep the text to one short sentence, then end with "
+    "exactly this line and nothing after it, with the angle-bracket "
+    "fields filled in for the user's actual topic:\n"
+    "IR_TOOL {\"query\": <two to five content keywords>, "
+    "\"question\": <what to answer, one short clause>, "
+    "\"depth\": <1, 2, or 3>}\n"
+    "depth: 1 = a named page, 2 = quick search, 3 = deep research. "
+    "You will receive the findings, then finish the answer from them. "
+    "If you already know the answer with confidence and no source was "
+    "named, never write IR_TOOL.")
+
+IR_TOOL_CONT_DIRECTIVE = (
+    "Finish the answer using these research findings. Cite the "
+    "concrete facts you found; if the findings do not settle the "
+    "question, say what is missing instead of inventing facts. Call "
+    "IR_TOOL again only if a specific missing fact is still lookable.")
+
+IR_TOOL_REFUSED_NOTE = (
+    "[That lookup was refused: it asks for credentials or sign-in, "
+    "which the assistant never handles. Answer without it.]")
+IR_TOOL_INVALID_NOTE = (
+    "[Your IR_TOOL line could not be used (missing question or "
+    "keywords) — answer from what you know.]")
+IR_TOOL_BUDGET_NOTE = (
+    "[Research budget spent — answer with what you have now; do not "
+    "call IR_TOOL again.]")
+
+
+def split_tool_marker(text):
+    """-> (answer_before_marker, tool_json_text or None). The marker is
+    only a tool call when JSON follows it; a bare mention of IR_TOOL in
+    a normal sentence is left in the answer (the parse decides)."""
+    pos = text.find(IR_TOOL_MARKER)
+    if pos < 0:
+        return text, None
+    tail = text[pos + len(IR_TOOL_MARKER):]
+    if browser_use._extract_json(tail) is None:
+        return text, None
+    return text[:pos].rstrip(), tail
+
+
+def validate_leg_args(args):
+    """IR_TOOL args -> IRTask plan (protocol decision 3); None when
+    invalid — invalid calls are never retried (decision 3)."""
+    if not isinstance(args, dict):
+        return None
+    q = args.get("query")
+    if isinstance(q, (list, tuple)):
+        q = " ".join(str(x) for x in q if x)
+    q = str(q or "").strip()[:120]
+    url = str(args.get("url") or "").strip()[:200] or None
+    question = str(args.get("question") or "").strip()[:200]
+    if not question or (not q and not url):
+        return None
+    try:
+        depth = int(args.get("depth", 2))
+    except (TypeError, ValueError):
+        depth = 2
+    if depth not in (1, 2, 3):
+        depth = 2
+    return {"query": q or None, "url": url, "question": question,
+            "depth": depth}
+
+
 def validate_tool(name, args) -> dict:
     """Normalize + bound-check args; raises ValueError on any bad arg."""
     if name == "timer":
@@ -991,7 +1071,7 @@ class Session:
                 and spec.get("action") != "vision"):
             utterance = camera_line(self.ambient_meta["names"]) + utterance
         t0 = time.perf_counter()
-        first, chunks, timings = None, [], None
+        first, timings = None, None
         reply = None
         if spec.get("action") == "vision" and face_reply is not None:
             reply = face_reply
@@ -1011,67 +1091,32 @@ class Session:
         if reply is None and spec.get("action") == "ir":
             reply, skip_tts = await self.ir_flow(utterance, fb)
         deep_meta = None
-        if reply is None and spec.get("deep") and DEEP is not None:
-            # explicit-depth turn: try the configured big model first;
-            # any failure falls through to the local think path below
-            reply, deep_meta = await self.deep_reply(utterance, spec)
+        if reply is None and spec.get("deep"):
+            # deep-agents loop (PROTOCOL-deep-agents.md): provider first,
+            # local open-think fallback, bounded IR tool legs. Never falls
+            # through to the generic path below — deep_turn owns the
+            # fallback itself (a second generation would duplicate).
+            reply, deep_meta = await self.deep_turn(utterance, spec)
+            if reply is None:
+                # hard local failure: error event + gate already handled
+                return
         if reply is None:
             open_think = bool(spec.get("think"))
-            trace_sent = ans_sent = 0
+            out = {}
             try:
-                with requests.post(f"{LLAMA}/v1/completions", json={
-                        "prompt": build_prompt(self.history, utterance,
-                                               spec.get("directive"),
-                                               open_think=open_think),
-                        "max_tokens": spec.get("max_tokens", 96),
-                        "temperature": 0, "cache_prompt": True,
-                        "id_slot": SLOT, "stream": True}, stream=True,
-                        timeout=120) as r:
-                    r.raise_for_status()
-                    for line in r.iter_lines():
-                        if not line or not line.startswith(b"data: "):
-                            continue
-                        payload = line[len(b"data: "):]
-                        if payload == b"[DONE]":
-                            break
-                        j = json.loads(payload)
-                        delta = j["choices"][0].get("text", "")
-                        if j.get("timings"):
-                            timings = j["timings"]  # llama.cpp reports on chunks
-                        if not delta:
-                            continue
-                        chunks.append(delta)
-                        if not open_think:
-                            if first is None:
-                                first = (time.perf_counter() - t0) * 1000
-                                await self.send({"type": "response_start",
-                                                 "ttft_ms": round(first, 1)})
-                            await self.send({"type": "response_delta",
-                                             "text": delta})
-                            continue
-                        # open think: everything before </think> is the
-                        # trace (streamed to the UI, never spoken); deltas
-                        # can straddle the tag, so re-split the full text
-                        # and hold back a tag-length suffix of the trace
-                        full = "".join(chunks)
-                        if "</think>" in full:
-                            trace, ans = full.split("</think>", 1)
-                            show = len(trace)
-                        else:
-                            trace, ans = full, ""
-                            show = max(0, len(trace) - 8)
-                        if show > trace_sent:
-                            await self.send({"type": "think_delta",
-                                             "text": trace[trace_sent:show]})
-                            trace_sent = show
-                        if ans and first is None:
-                            first = (time.perf_counter() - t0) * 1000
-                            await self.send({"type": "response_start",
-                                             "ttft_ms": round(first, 1)})
-                        if len(ans) > ans_sent:
-                            await self.send({"type": "response_delta",
-                                             "text": ans[ans_sent:]})
-                            ans_sent = len(ans)
+                async for kind, payload in self.stream_local(
+                        self.history, utterance, spec.get("directive"),
+                        spec.get("max_tokens", 96), open_think, t0, out):
+                    if kind == "start":
+                        first = payload
+                        await self.send({"type": "response_start",
+                                         "ttft_ms": round(first, 1)})
+                    elif kind == "trace":
+                        await self.send({"type": "think_delta",
+                                         "text": payload})
+                    elif kind == "answer":
+                        await self.send({"type": "response_delta",
+                                         "text": payload})
             except Exception as e:
                 await self.send({"type": "error", "message": f"llm: {e}"})
                 self.speaking = False
@@ -1079,31 +1124,16 @@ class Session:
                 await self.update_gate()
                 self.schedule_gate_release(GATE_TAIL)
                 return
-            reply = "".join(chunks).strip()
+            timings = out.get("timings")
+            reply = out["raw"].strip()
             if open_think:
                 if "</think>" in reply:
                     reply = reply.split("</think>", 1)[1].strip()
                 else:
-                    # budget ran out mid-reasoning: force the close and read
-                    # the answer off the slot cache — same prompt prefix, so
-                    # the second call only prefills the ~4 closing tokens
-                    forced = None
-                    try:
-                        loop = asyncio.get_event_loop()
-                        r = await loop.run_in_executor(None, lambda rr=reply:
-                            requests.post(f"{LLAMA}/v1/completions", json={
-                                "prompt": build_prompt(
-                                    self.history, utterance,
-                                    spec.get("directive"), open_think=True)
-                                    + rr + "\n\n</think>\n\n",
-                                "max_tokens": 64, "temperature": 0,
-                                "cache_prompt": True, "id_slot": SLOT},
-                                timeout=60))
-                        r.raise_for_status()
-                        forced = r.json()["choices"][0]["text"].strip()
-                    except Exception:
-                        forced = None
-                    reply = forced or THINK_NOCLOSE_REPLY
+                    # budget ran out mid-reasoning: the generator already
+                    # read the forced-close answer off the slot cache —
+                    # fall back to the honest canned line if it couldn't
+                    reply = out.get("forced") or THINK_NOCLOSE_REPLY
                 if first is None and reply:
                     first = (time.perf_counter() - t0) * 1000
                     await self.send({"type": "response_start",
@@ -1235,40 +1265,269 @@ class Session:
             await self.send({"type": "error", "message": f"vision: {e}"[:120]})
             return None
 
-    async def deep_reply(self, utterance, spec):
-        """Big-model think turn through the configured provider
-        (docs/PROTOCOL-deep-think.md). Streams the same events as the
-        local think path — reasoning -> think_delta (UI only, never
-        spoken), answer -> response_start/response_delta. Returns
-        (reply, meta); on ANY failure reply is None and respond() falls
-        back to the local think path, with the fallback recorded in the
-        metrics event rather than spoken as an apology."""
-        t0 = time.perf_counter()
-        first = None
-        meta = {"model": f"{DEEP.provider}:{DEEP.model}", "fallback": False}
-        ans = []
-        try:
-            async for kind, delta in DEEP.stream(utterance,
-                                                 spec.get("directive"),
-                                                 self.history, SYS):
-                if kind == "reasoning":
-                    await self.send({"type": "think_delta", "text": delta})
+    async def stream_local(self, history, utterance, directive,
+                           max_tokens, open_think, t0, out):
+        """Slot-5 streaming completion, both think modes — the one local
+        generation source, shared by the generic think path and the
+        deep-agents loop (PROTOCOL-deep-agents.md decision 7; extracted
+        byte-equivalent from respond()'s inline loop). Yields
+        ("start", ttft_ms) | ("trace", delta) | ("answer", delta); the
+        CALLER sends every event. out (dict) fills with "raw" (the full
+        generation text), "timings", and "forced" (answer read off the
+        slot cache when the budget ran out before </think>). Raises on
+        any HTTP/parse failure — the caller owns the error contract."""
+        prompt = build_prompt(history, utterance, directive,
+                              open_think=open_think)
+        chunks, timings = [], None
+        trace_sent = ans_sent = 0
+        started = False
+        with requests.post(f"{LLAMA}/v1/completions", json={
+                "prompt": prompt, "max_tokens": max_tokens,
+                "temperature": 0, "cache_prompt": True,
+                "id_slot": SLOT, "stream": True}, stream=True,
+                timeout=120) as r:
+            r.raise_for_status()
+            for line in r.iter_lines():
+                if not line or not line.startswith(b"data: "):
                     continue
-                if first is None:
-                    first = (time.perf_counter() - t0) * 1000
-                    meta["ttft_ms"] = round(first, 1)
-                    await self.send({"type": "response_start",
-                                     "ttft_ms": meta["ttft_ms"]})
-                ans.append(delta)
-                await self.send({"type": "response_delta", "text": delta})
-            meta["ms"] = round((time.perf_counter() - t0) * 1000)
-            if not "".join(ans).strip():
-                raise RuntimeError("empty answer")
-        except Exception as e:
-            meta["fallback"] = True
-            meta["error"] = type(e).__name__
-            return None, meta
-        return "".join(ans).strip(), meta
+                payload = line[len(b"data: "):]
+                if payload == b"[DONE]":
+                    break
+                j = json.loads(payload)
+                delta = j["choices"][0].get("text", "")
+                if j.get("timings"):
+                    timings = j["timings"]  # llama.cpp reports on chunks
+                if not delta:
+                    continue
+                chunks.append(delta)
+                if not open_think:
+                    if not started:
+                        started = True
+                        yield "start", (time.perf_counter() - t0) * 1000
+                    yield "answer", delta
+                    continue
+                # open think: everything before </think> is the trace
+                # (streamed to the UI, never spoken); deltas can straddle
+                # the tag, so re-split the full text and hold back a
+                # tag-length suffix of the trace
+                full = "".join(chunks)
+                if "</think>" in full:
+                    trace, ans = full.split("</think>", 1)
+                    show = len(trace)
+                else:
+                    trace, ans = full, ""
+                    show = max(0, len(trace) - 8)
+                if show > trace_sent:
+                    yield "trace", trace[trace_sent:show]
+                    trace_sent = show
+                if ans and not started:
+                    started = True
+                    yield "start", (time.perf_counter() - t0) * 1000
+                if len(ans) > ans_sent:
+                    yield "answer", ans[ans_sent:]
+                    ans_sent = len(ans)
+        out["raw"] = "".join(chunks)
+        out["timings"] = timings
+        if open_think and "</think>" not in out["raw"]:
+            # budget ran out mid-reasoning: force the close and read the
+            # answer off the slot cache — same prompt prefix, so the
+            # second call only prefills the ~4 closing tokens
+            forced = None
+            try:
+                loop = asyncio.get_event_loop()
+                r2 = await loop.run_in_executor(None, lambda rr=out["raw"]:
+                    requests.post(f"{LLAMA}/v1/completions", json={
+                        "prompt": build_prompt(history, utterance,
+                                               directive, open_think=True)
+                                  + rr + "\n\n</think>\n\n",
+                        "max_tokens": 64, "temperature": 0,
+                        "cache_prompt": True, "id_slot": SLOT},
+                        timeout=60))
+                r2.raise_for_status()
+                forced = r2.json()["choices"][0]["text"].strip()
+            except Exception:
+                forced = None
+            if forced:
+                out["forced"] = forced
+                if not started:
+                    started = True
+                    yield "start", (time.perf_counter() - t0) * 1000
+                yield "answer", forced
+
+    async def run_leg(self, plan, utterance, meta):
+        """One detached IRTask tool leg (PROTOCOL-deep-agents.md
+        decision 5): full constructor rules, budgets, replay registry
+        and ir_event fetches; finish() returns to this loop instead of
+        speaking. Returns the continuation note for the findings."""
+        task = ir_use.IRTask(self, plan, utterance, detached=True)
+        self.ir_task = task
+        tl0 = time.perf_counter()
+        try:
+            task._handle = asyncio.create_task(task.run())
+            await asyncio.wait_for(
+                task._handle,
+                timeout=ir_use.MAX_SECONDS[task.depth] + 20.0)
+        except asyncio.TimeoutError:
+            # run() owns its budgets; this only fires on a hung goto —
+            # cancel through the shared stop contract
+            await task.cancel()
+        except asyncio.CancelledError:
+            self.ir_task = None
+            if task.outcome is None:
+                raise
+        except Exception:
+            pass
+        self.ir_task = None
+        ms = round((time.perf_counter() - tl0) * 1000)
+        meta["tool_calls"].append({"query": task.query, "depth": task.depth,
+                                   "outcome": task.outcome, "ms": ms})
+        meta["legs"] = len(meta["tool_calls"])
+        findings = task.findings or task.answer or ""
+        return (f"[Research findings for '{task.query or task.url}' "
+                f"(outcome: {task.outcome}): {findings}]")
+
+    async def deep_turn(self, utterance, spec):
+        """Deep think with bounded IR tool legs (PROTOCOL-deep-agents.md).
+        One handler for every deep turn: round 1 through the configured
+        provider; any provider failure flips the whole loop to the local
+        open-think source (meta.fallback; the measured refusal costs
+        69 ms). A round ending with an IR_TOOL {...} marker line runs its
+        args as a detached IRTask leg — budgets are code-owned (<= 3
+        legs, <= 180 s combined leg time, <= 6 rounds) — and the findings
+        ride a continuation note; the model continues the same answer,
+        so the final spoken reply is partial + continuation concatenated.
+        Returns (reply, meta); reply is None only on a hard local failure
+        (the error event and gate release are already done; the caller
+        returns without finish_turn)."""
+        t0 = time.perf_counter()
+        meta = {"model": f"{DEEP.provider}:{DEEP.model}" if DEEP
+                else "local:open-think",
+                "fallback": DEEP is None, "legs": 0, "tool_calls": []}
+        use_provider = DEEP is not None
+        d0 = spec.get("directive")
+        first_dir = (f"{d0} {DEEP_TOOL_DIRECTIVE}" if d0
+                     else DEEP_TOOL_DIRECTIVE)
+        round_hist = list(self.history)
+        round_utt, round_dir = utterance, first_dir
+        first_user = utterance
+        first = None            # ttft of the whole turn
+        partial = ""            # the final round's answer text (marker cut)
+        leg_time = 0.0
+        rounds = 0
+
+        async def round_stream(rhist, rutt, rdir):
+            """Yields ("reasoning"|"text"|"reset", delta): provider
+            first, local source on any provider failure. "reset" tells
+            the consumer to restart its round accumulators — the local
+            round regenerates from scratch (today's shipped fallback
+            shows the same visible duplication; recorded in meta)."""
+            nonlocal use_provider
+            if use_provider:
+                started = False
+                try:
+                    async for kind, delta in DEEP.stream(rutt, rdir,
+                                                         rhist, SYS):
+                        if kind == "text":
+                            started = True
+                        yield kind, delta
+                    if started:
+                        return
+                    use_provider = False   # empty provider round
+                    yield "reset", ""
+                except Exception:
+                    use_provider = False
+                    if started:
+                        yield "reset", ""
+            out = {}
+            async for kind, payload in self.stream_local(
+                    rhist, rutt, rdir, spec.get("max_tokens", 700),
+                    True, time.perf_counter(), out):
+                if kind == "start":
+                    continue    # deep_turn owns the turn's ttft
+                if kind == "trace":
+                    yield "reasoning", payload
+                elif kind == "answer":
+                    yield "text", payload
+
+        while rounds < DEEP_MAX_ROUNDS:
+            rounds += 1
+            round_text, emitted = "", 0
+            try:
+                async for kind, delta in round_stream(round_hist, round_utt,
+                                                      round_dir):
+                    if kind == "reset":
+                        round_text, emitted = "", 0
+                        continue
+                    if kind == "reasoning":
+                        await self.send({"type": "think_delta",
+                                         "text": delta})
+                        continue
+                    if first is None:
+                        first = (time.perf_counter() - t0) * 1000
+                        meta["ttft_ms"] = round(first, 1)
+                        await self.send({"type": "response_start",
+                                         "ttft_ms": meta["ttft_ms"]})
+                    round_text += delta
+                    # holdback: never stream the last HOLD chars unless a
+                    # marker already showed — the marker itself must not
+                    # reach the UI or TTS (protocol decision 2)
+                    pos = round_text.find(IR_TOOL_MARKER)
+                    limit = pos if pos >= 0 else \
+                        max(0, len(round_text) - IR_TOOL_HOLD)
+                    if limit > emitted:
+                        await self.send({"type": "response_delta",
+                                         "text": round_text[emitted:limit]})
+                        emitted = limit
+            except Exception as e:
+                # hard failure (provider failures were absorbed inside
+                # round_stream): the generic path's error contract
+                await self.send({"type": "error", "message": f"llm: {e}"})
+                self.speaking = False
+                self.gate_until = time.monotonic() + GATE_TAIL
+                await self.update_gate()
+                self.schedule_gate_release(GATE_TAIL)
+                return None, meta
+            answer, tail = split_tool_marker(round_text)
+            if tail is None:
+                # flush the holdback: it was ordinary answer text
+                if len(round_text) > emitted:
+                    await self.send({"type": "response_delta",
+                                     "text": round_text[emitted:]})
+                partial = answer.strip()
+                break
+            args = browser_use._extract_json(tail)
+            if isinstance(args, dict) and isinstance(args.get("args"), dict):
+                args = args["args"]     # wrapped form accepted (decision 3)
+            plan = validate_leg_args(args)
+            if plan is None:
+                note = IR_TOOL_INVALID_NOTE
+            elif browser_use.CREDS_TASK_RE.search(plan["question"]) or \
+                    browser_use.CREDS_TASK_RE.search(first_user):
+                note = IR_TOOL_REFUSED_NOTE
+            elif len(meta["tool_calls"]) >= DEEP_MAX_LEGS or \
+                    leg_time >= DEEP_LEG_TIME:
+                note = IR_TOOL_BUDGET_NOTE
+            else:
+                tl0 = time.perf_counter()
+                note = await self.run_leg(plan, first_user, meta)
+                leg_time += time.perf_counter() - tl0
+            # continuation (decision 8): the same answer continues after
+            # the findings note; only the final text enters history/TTS.
+            # The appended pair is THIS round's user turn + its answer,
+            # so two continuations render a proper conversation.
+            round_hist = round_hist + [(round_utt, answer.rstrip())]
+            round_utt = note
+            round_dir = IR_TOOL_CONT_DIRECTIVE
+        meta["ms"] = round((time.perf_counter() - t0) * 1000)
+        reply = partial.strip() or THINK_NOCLOSE_REPLY
+        if first is None:
+            first = (time.perf_counter() - t0) * 1000
+            meta["ttft_ms"] = round(first, 1)
+            await self.send({"type": "response_start",
+                             "ttft_ms": meta["ttft_ms"]})
+        if reply != partial.strip():
+            await self.send({"type": "response_delta", "text": reply})
+        return reply, meta
 
     async def tool_flow(self, utterance):
         """Manifest-JSON generation -> validate -> execute -> confirm.

@@ -301,8 +301,14 @@ def build_answer(findings, hedged):
 
 
 class IRTask:
-    def __init__(self, session, plan, utterance):
+    def __init__(self, session, plan, utterance, detached=False):
         self.session = session
+        # detached (PROTOCOL-deep-agents.md decision 5): the task is a
+        # tool leg inside a deep think — same constructor rules, budgets,
+        # replay registry, trace and ir_event fetches, but finish()
+        # returns to the think loop instead of speaking / entering
+        # history via session.ir_done
+        self.detached = detached
         try:
             self.depth = int(plan.get("depth"))
         except (TypeError, ValueError):
@@ -698,6 +704,9 @@ class IRTask:
                 asyncio.create_task(self.page.close())
             except Exception:
                 pass
+        if self.detached:
+            # the deep-agents loop reads findings/answer/outcome directly
+            return
         await self.session.ir_done(self)
 
     async def cancel(self):
