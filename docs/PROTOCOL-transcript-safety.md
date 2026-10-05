@@ -179,6 +179,54 @@ Measured during bring-up (all on the shipped code):
   audio while the gate is closed, so an immediate feed loses the whole
   confirmation utterance.
 
-## Results
+## Results — ADJUDICATED 2026-10-05, all gates green
 
-(filled after adjudication)
+- **G1 units 31/31** (`tools/test_transcript_safety.py`, `make
+  test-safety`): eligibility, resolution vocabulary, fail-open verdict
+  parse, read-back templates, high-risk scope; live judge spot-checks 6/6
+  with the frozen prompts ("The purple sleeps loudly." -> NO / "The
+  purple sheep sleeps loudly.", "Yes, you are two." -> NO / "Yes, you are
+  too."); unreachable-endpoint fail-open proven.
+- **G2 M2 e2e (default run, final):** "Set a timer for 10 minutes." ->
+  read-back "Just to confirm — a timer for 10 minutes?" -> "Yes." ->
+  tool_event seconds=600; "Remind me to call Mom in 15 seconds." ->
+  read-back -> "Yes." -> saved with due AND reminder_due fired; decline
+  control -> "No." -> "Okay, cancelled.", zero tool_events, nothing in
+  memory. Face tools unaffected (no read-back on enroll/forget — M2 scope
+  honored).
+- **G3 M1 e2e:** "The purple sleeps loudly." -> route `clarify` (conf
+  null) -> "Did you mean: The purple sheep sleeps loudly.?" -> "Yes." ->
+  full-pipeline reply, no second proposal. Clean short turn ("What time
+  is it?") routed direct 0.91 with judge present in metrics (100 ms,
+  sensible=true, no clarification). Repaired finals ("Who am I?") skip
+  the judge per decision 2 and answer identity ("You are Albert.").
+- **G4:** default run **14/14** (12 prior cases — timer/reminder
+  re-registered as two-turn flows per decision 13 — plus the decline
+  control and the clarify positive; passed twice consecutively on the
+  final runtime). FACE run **15/15** with ambient on (identity via probe
+  intact; ambient timer confirm+resolve works; G4 ambient pair 730.6 ->
+  807.0 ms, +10.5% <= +15%).
+- **G5 latency (Rev 1 budgets):** pass-through judge ms 54-108 (bar 200);
+  clarify judge chain 242-375 (bar 400); clarify turn e2e 762-1208 ms
+  across runs, final run 1057.2 (bar 1200) — clarify turns measured
+  FASTER than the ordinary LLM turns they replace (1197-2554 ms in the
+  same probes).
+- **G6 no regressions:** root 56/62, think 24/26, followup 6/8 — all
+  identical to the frozen bars; normalizer 22/22; face units ALL PASS.
+- **False clarifications: 0** across every suite run — the killing
+  metric held on the full corpus (all clean utterances, including short
+  ones the judge inspects, passed through).
+- **Bring-up flakes recorded honestly:** (1) the first harness attempt
+  fed resolve turns inside the 1 s gate floor and lost them all to the
+  half-duplex guard — fixed by the mic_state wait (Rev 1 harness note),
+  not by touching the server; (2) one suite run showed a resolve turn
+  time out with all wakes logged — not reproducible in isolation (the
+  same sequence passed deterministically); judge HTTP timeout tightened
+  30 s -> 8 s so a hung judge fails open in user-visible time; (3) the
+  clarify utterance was switched from "Yes, you are two." (Phonon itself
+  transcribed it "Yes, you are too." — sensible — and the judge
+  correctly passed it) to homophone-free nonsense per Rev 1.
+
+Runtime restored after adjudication: face recognition disabled, store
+empty, server restarted ("face recognition: disabled"), normalizer and
+transcript-safety layer always-on.
