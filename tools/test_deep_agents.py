@@ -651,6 +651,12 @@ async def wait_delegated(events, kind, timeout):
 
 async def da6_machinery():
     print("DA6 machinery (stage 3, in-process delegation):")
+    # the in-process legs must see exactly what the server process sees:
+    # server.py's model paths are relative to web/ (MODELS = "../models")
+    web_dir = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), "..", "web")
+    old_cwd = os.getcwd()
+    os.chdir(web_dir)
     if S.READOUT is None or S.WALKER is None:
         S.READOUT = S.DecideReadout()
         S.WALKER = S.TreeWalker(S.READOUT._project)
@@ -714,6 +720,7 @@ async def da6_machinery():
     finally:
         S.MEMORY_PATH = old_mem
         os.unlink(mem_path)
+        os.chdir(old_cwd)
 
 
 # ------------------------------------------------- DA7 spoken (stage 3)
