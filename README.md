@@ -21,6 +21,7 @@ mic 16kHz → VAD → streaming ASR (partials) → incremental LLM prefill
 | TTS     | hexgrad/Kokoro-82M (ONNX)          | 326MB  | Apache-2.0 | sentence-chunked streaming, 24kHz |
 | Vision  | Qwen3.5-4B mmproj-F16 (unsloth GGUF) | 672MB  | Apache-2.0 | same llama-server via `--mmproj`; frame per vision turn, ~1 GiB VRAM |
 | Detect  | OmDet-Turbo-Tiny (ONNX, CPU)        | ~780MB | Apache-2.0 | open-vocab detector sidecar :8011 (`web/omdet_sidecar.py`); split enc/dec graphs + numpy top-900 selection |
+| Face    | YuNet + SFace (OpenCV Zoo, CPU)     | ~39MB  | Apache-2.0 | opt-in face recognition (`web/faces.py`); embeddings only, local `web/faces.json` (gitignored); off by default |
 | Deep    | external provider (config)          | —      | —          | optional big-model think route (`web/deep_think.py`, `web/config.json`); openai-chat / openai-responses / anthropic dialects; off by default |
 
 **English-first** by design; other languages are a later extension (both ASR
@@ -85,8 +86,10 @@ trigger is length-gated), `rewrite_context` first rewrites it into one
 self-contained sentence — same slot, warm prefix, 48-token cap, 1.5 s hard
 timeout, raw-utterance fallback on any failure — and routes on the rewrite
 embedding; fillers pick from it too, and the rewrite shows in the router
-card. Frozen eval `make eval-followup`: rewrite **6/8 vs raw 3/8**, trigger
-recall 8/8 / precision 5/5, rewrites < 400 ms. Golds are mechanical — the
+card. Frozen eval `make eval-followup`: rewrite **6/8 vs raw 4/8**
+(2026-10-05 re-run; raw drifted +1 since adjudication — A/B-verified as
+serving drift, recorded in the face protocol Rev 1), trigger recall
+8/8 / precision 5/5, rewrites < 400 ms. Golds are mechanical — the
 route of the frozen standalone equivalent — so tree-config gaps stay out of
 scope; the two residual misses are such pool-coverage gaps (e.g. "Remind me
 to call the dentist on friday morning" standalone routes social), not
@@ -153,6 +156,46 @@ rewrite failures.
   the optional external provider instead of local open-think; cue+content
   compounds ("Think hard about this math problem…") stay local — content
   dominates the cue (measured; see **Deep think** below).
+- **face tools** — with the feature opted in, "Learn my face as Albert."
+  routes **think.tool** (manifest pick); "Forget my face." routes **vision**
+  at the root (the "my face" content pull, 0.795-0.867, beats any pool ref
+  — measured) and is intercepted inside the vision branch as the tool flow
+  (protocol Rev 1); mid-conversation the fragment rewrite re-routes it
+  through the manifest path instead. See **Face recognition** below.
+
+## Face recognition (2026-10-05)
+
+Phase-4 vision work, under the standing constraint: **local-only and
+opt-in, or not at all** (`docs/PROTOCOL-face-recognition.md`, committed
+before any wiring or gate data). YuNet detection + SFace embeddings
+(OpenCV Zoo, Apache-2.0, CPU only — the GPU budget stays with the LLM),
+~11 ms per frame offline.
+
+**Opt-in contract**: absent or false `face.enabled` in `web/config.json`
+means no face code runs at all — the tools vanish from the manifest,
+vision turns carry no `face` metrics, and the boot log says disabled;
+behavior is byte-identical to pre-face. Enabling adds `face_enroll` /
+`face_forget` to the tool manifest ("Learn my face as Albert." /
+"Forget my face."). Embeddings (128-d floats) and names live in
+`web/faces.json` (gitignored); raw frames are never persisted; nothing
+ever leaves the machine. "Forget my face." empties the store.
+
+**Measured geometry** (frozen public-domain portraits,
+`tools/face_eval/imgs/`): same-person cosine min **0.881**, different-person
+max **0.255** across flip/JPEG/crop/scale/cross-resolution — registered
+match threshold **0.50**, leaning toward stranger rejection. Recognition
+rides only frames the user's own request captured (vision turns,
+enrollment); context rides the volatile suffix as one line —
+`(Camera: Albert)` — never the frozen prefix. Out of scope, stated
+plainly: liveness/anti-spoofing (a photo of an enrolled person will be
+recognized), background processing, emotion/attribute inference.
+
+Gates (all passed, protocol Results): offline `make test-face` 464
+checks; default-run test-voice 12/12 (face denied = honest fallback);
+enabled run 7/7 (gate → enroll → recognize (`face.ms` 25-49 ms) →
+overwrite → forget → no trace); all frozen router bars identical to the
+v4 adjudication (root 56/62, think 24/26, followup 6/8, self-consistency
+135/135).
 
 ## Deep think (2026-10-05)
 

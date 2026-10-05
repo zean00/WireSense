@@ -1,6 +1,6 @@
 {
  "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py \u2014 re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating \u2014 cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
- "version": 4,
+ "version": 5,
  "nodes": {
   "root": {
    "classes": {
@@ -204,7 +204,10 @@
      "Order more coffee beans.",
      "Make a note that my gate is B22.",
      "Write down that the meeting is at three.",
-     "Keep a note that I lent Mark twenty bucks."
+     "Keep a note that I lent Mark twenty bucks.",
+     "Remember my face.",
+     "Forget my face.",
+     "Forget everything you know about my face."
     ],
     "deep": [
      "Think hard about this math problem and work out the exact answer.",

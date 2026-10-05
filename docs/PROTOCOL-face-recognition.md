@@ -163,6 +163,80 @@ Live (two registered runs of the existing harness):
 - **G9 latency**: `face.ms` p95 < 50 ms across enabled-run vision
   turns (budget against ~11 ms measured).
 
+## Revision 1 (2026-10-05, during adjudication — documented, not silent)
+
+The routing plan's pool top-up was measured through the full gate loop
+and did not survive intact. Recorded so the next face/routing work
+starts from evidence:
+
+1. **4-ref think.tool top-up FAILED eval-followup** (rewrite 5/8 vs bar
+   ≥ 6/8): the added refs rotated the tool centroid enough to flip
+   "Update the parking location from level two to level three." from
+   tool to long_think. A **minimal 3-ref top-up** ("Remember my face." /
+   "Forget my face." / "Forget everything you know about my face.") holds
+   every frozen bar and is what shipped.
+2. **Root-pool top-up measured and rejected.** Adding "Remember my
+   face." to the root think pool: the ref itself scored nearest
+   **vision** (the "my face" content pull, 0.867, beat its own class),
+   and the perturbed think centroid broke root direct ("Repeat that."
+   crossed to think). Same lesson as the deep-think work: content beats
+   cues; refs cannot overcome it at root without collateral damage.
+3. **Design consequence — vision-branch intent gate.** Face-management
+   phrasings route to **vision** at the root (arguably correct
+   semantics: the user is talking about what the camera sees). When the
+   feature is opted in, the vision branch intercepts them
+   (FACE_INTENT_RE: remember/learn/save + face, forget/delete/erase +
+   face) and runs the tool flow (face_intent) instead of a VLM query —
+   same validate → run_tool → tool_call → confirmation plumbing as the
+   manifest path. The gate is a fallback: mid-conversation, the fragment
+   rewrite (≤4 words + non-empty history) rewrites "Forget my face."
+   using context and the manifest path picks face_forget (measured,
+   conf 0.611-0.631). The gate deterministically fires only with empty
+   history — that is the e2e-tested path; both paths share all tool
+   plumbing.
+4. **Names are LLM/ASR-extracted and keep their casing** ("Learn my
+   face as Albert." stores key `Albert`). Store and harness comparisons
+   fold case; the confirmation sentence uses the extracted name.
+5. **The eval-followup "coffee beans" miss (case 8) exists under the
+   v4 refs too** — verified by A/B re-record. It is serving-numerics
+   drift since the deep-think adjudication hours earlier, not a face
+   change; recorded here because it surfaced in this gate loop. v4 refs
+   today: followup 6/8 PASS (misses: dentist pool-coverage gap +
+   coffee-beans drift). v5 = v4 + 3 subtree refs: same 6/8.
+
 ## Results
 
-(adjudication numbers land in the next commit; none claimed yet)
+All gates as registered (G1-G9); adjudicated 2026-10-05.
+
+- **G1 detection**: 6/6 frozen renditions detect a face (full + cam).
+- **G2/G3 geometry** (production path, b64 frames): same-person min
+  **0.881**, different-person max **0.255**, margin **0.626**, all 461
+  threshold checks pass. (Diff max moved 0.221 → 0.255 vs the probe:
+  the production path re-encodes JPEG; margin remains wide.)
+- **G4 decision/persistence/opt-in**: 464 offline checks PASS
+  (`make test-face`), incl. gate regex positives/negatives and the
+  disabled contract (manifest omits face tools; validate refuses).
+- **G5 default run**: test-voice **12/12** (11 pre-existing + the new
+  "Learn my face as Albert." case → honest no-tool fallback, no
+  face metrics, no tool_call).
+- **G6 enabled run**: WIRESENSE_TEST_FACE=1 sequence **7/7** —
+  first-utterance "Forget my face." fires the vision gate (honest
+  refusal on empty store); named enroll stores `Albert` and overwrites
+  on re-enroll; enrolled vision turn carries metrics
+  `face={'n': 1, 'names': ['Albert'], ms 25.3-49.0}`; forget empties
+  the store; post-forget vision turn carries **no** face key and the
+  reply names Einstein from pixels alone (famous portrait — correct
+  vision, not a context leak).
+- **G7 router gates**: record-router self-consistency **135/135**;
+  ROOT_EVAL **56/62** (frozen-56 subset 50/56 ≥ 49, deep held-out 6/6);
+  THINK_EVAL **24/26** (original 19/20 ≥ 18, deep 5/6); eval-followup
+  **6/8** PASS (≥ 6, strictly > raw 4/8); trigger recall 8/8
+  precision 5/5 — identical to the v4 adjudication.
+- **G8 no-regression**: default test-voice 12/12 (bar was 11/11).
+- **G9 latency**: face.ms readings across enabled-run vision turns
+  **25.3 / 49.0 / 43.1 ms**, all < 50 ms p95 bar (the 49.0 reading is
+  under full stack load; offline steady-state ~11 ms).
+
+Shipped state: feature **off by default** (`face.enabled` absent →
+disabled, byte-identical pre-face behavior); `web/faces.json`
+gitignored; no frames or embeddings leave the machine.
