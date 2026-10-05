@@ -625,3 +625,74 @@ fallback.
   non-detached paths must stay byte-identical).
 - **VERDICT:** PASS iff DA4 all, DA5 C and D, DA3 all bars; any fail
   is adjudicated here — including honest failure.
+
+## Results (stage 2, adjudicated, 2026-10-05)
+
+Commits: stage-2 pre-registration `631eb2e`, implementation + Revs A-F
+`43132d1` (all revisions registered BEFORE any stage-2 gate run; canaries
+are non-gate evidence), adjudication in the final commit. Gate harness:
+tools/test_deep_agents.py, extended; DA1/DA2 stage-1 checks untouched.
+
+**DA1 unit: 16/16 PASS; DA4 unit (stage 2): 22/22 PASS** — dual-marker
+cut (earliest JSON-backed wins, 2-tuple signature kept), malformed/prose
+rounds pass through as ordinary text (stage-1 contract), browse args
+validation x5 (bare-name repairs: "local file" prefix, pseudo-URL,
+separator form), rescope IR->browse x3, deep-intake ASR repair x3 (Rev
+C), holdback covers the longer marker, directive v2 + verb clause (Rev
+D), continuation + budget notes name both tools.
+
+**DA2 spoken e2e: PASS (both gate runs).** Case A: route deep, 1 IR leg,
+4 fetches all snapped, cites the archive ratio fact (`1:2`), leg/time
+budgets held. Case B: route think.long_think, zero legs, exact math.
+
+**DA5 spoken e2e (stage 2): PASS via the registered variance clause,
+both gate runs — and the same first-attempt failure both times, now
+characterized.** Case C (read-only browse leg): green on the first
+attempt in every run and canary (3/3 + 2/2): route deep, 1 BROWSE leg to
+shop.html, 1 step (3.4 s), cites "$39.95", nothing submit-class, no
+errors. Case D (guard-yield): first attempts in BOTH gate runs emitted
+the BROWSE_TOOL line with the task value UNQUOTED (`"task": read the
+file}`) — malformed JSON, so by the frozen stage-1 contract the marker
+is ordinary text: no leg, no park, the raw marker line reached the
+spoken reply. The registered variance clause (exactly one case failed
+-> one bounded rerun, final) resolved both runs to fully green reruns:
+park at "Submit feedback" in 3 steps (~7.5 s), partial-first yield,
+read-back, YES, confirmed click, done, receipt answer. Frequency across
+all first attempts at temp 0: canaries 3/3 green (D8-D10), gate runs
+0/2 — 3/5 overall, prompt-identical rounds, so the divergence is
+serving-numerics nondeterminism (batch-composition logits), the same
+family the frozen-substring frequency counts measured at stage 1. The
+reruns' valid-JSON emission (2/2) shows the behavior is bimodal, not
+degraded. **Known wart, recorded not fixed:** the malformed-marker
+contract (pass through as ordinary text) can put a raw marker line in
+the spoken reply (2/5 case-D first attempts). A strip-at-reply rule is
+a candidate stage-3 revision; it was NOT added now — the gate is frozen
+and passed by its registered rule.
+
+**Guard-yield chain, measured end to end (canaries D7-D10 + both gate
+reruns):** deep round -> BROWSE leg parks with NOTHING clicked -> the
+deep loop stops generating, the turn's reply is the partial -> the
+read-back rides browser_done after finish_turn, mic reopens -> YES:
+confirmed click, done, the receipt answer spoken, history entry; the
+handoff clears the detached flag (Rev E) so the post-park task speaks
+exactly like a track task. The completion answer quotes the page's
+receipt (Rev F): 'The page confirms: "Thanks! Your feedback was
+received."' — before Rev F the model echoed its own typed note
+("ready to send" after having sent), reproduced offline at both the
+step-done and synth composers.
+
+**DA3 battery (unchanged bars): ALL GREEN.** Router root 56/62 (bar
+56); eval-ir E1 13/14 (bar 13); eval-browser G1 PASS (bar 12/14; G2
+20/20; G3 9/20 is the registered D7 failure state — the readout
+watcher shipped as the D7 LLM-judge fallback, not in this battery);
+test_voice 14/14; test_transcript_safety 31/31; test_normalizer 22/22;
+test_deep_think ALL PASS; test_browser PASS (run 2; run 1 tripped the
+D11 hold-line flake, registered as 2/3 FLAKY in PROTOCOL-browser-use.md
+— the fastest fixture task finished before the mid-task final landed;
+mechanism confirmed, no code involved).
+
+**VERDICT: PASS.** Stage 2 ships: deep think can open pages (read-only
+legs fold their findings into the answer) and can act with a spoken
+guard (submit-class clicks park, the turn yields, YES executes). Stage
+3 (manifest dual-exposure) stays registered and unstarted.
+

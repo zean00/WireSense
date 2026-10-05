@@ -392,9 +392,40 @@ gate-caught): a password-flavored deep ask is refused in code before
 any generation, like browser and IR intake. Gates: unit 16/16, spoken
 e2e green twice (leg fires on the archive case, zero legs on the math
 control, every fetch fixture-snapped), full regression battery at its
-registered bars (root 56/62 unchanged). Stages 2 (browser legs with
-guard-yield) and 3 (manifest dual-exposure of `ir_research`/`browse`)
-are registered, not built.
+registered bars (root 56/62 unchanged).
+
+## Deep agents, stage 2 (2026-10-05)
+
+Deep think can now also open pages — and act on them with a spoken
+guard (docs/PROTOCOL-deep-agents.md, stage-2 pre-registration +
+Revs A-F, every revision registered before any gate data). A deep round
+may end with `BROWSE_TOOL {site, query, task}`; a named local file is
+unambiguous browser intent even when the model picked the research
+marker (measured misfire, code-rescoped). The leg runs as a DETACHED
+BrowserTask — the think loop is the planner, step prompts gain the
+deep utterance as `User request:` (measured task-clause lossiness) —
+and when it reaches a submit-class click it PARKS with nothing
+clicked: the deep loop stops generating mid-answer, the turn yields
+with the partial reply, then the read-back rides the existing pending
+machinery ("Just to confirm — click "Submit feedback"?"). YES
+executes; NO cancels with nothing clicked. From the handoff on, the
+task speaks exactly like a track task (measured: the detached flag
+must clear, or the post-YES click is mute), and a confirmed submit's
+spoken answer is the page's receipt, not the model's echo of its own
+typed note (both failure modes reproduced offline before the fix).
+
+Gates: unit 16/16 + 22/22 (dual-marker, args repairs, ASR repair,
+verb clause), spoken e2e green via the registered variance clause in
+both gate runs — case C (read-only: shop chain, cites $39.95) green
+on every first attempt; case D's first attempts hit a
+serving-numerics bimodality (unquoted JSON in the marker args, 2/5 —
+the malformed-marker contract then passes the raw marker as text,
+recorded as a known wart for stage 3), reruns fully green 2/2.
+Battery all green (root 56/62, voice 14/14, safety 31/31, browser
+PASS — its D11 hold-line flake re-manifested once, registered 2/3).
+All measurements on the local 4B fallback; the Mirai 27B provider
+was unreachable the whole cycle. Stage 3 (manifest dual-exposure)
+stays registered and unstarted.
 
 ## Status
 
