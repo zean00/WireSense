@@ -158,6 +158,8 @@ async def deep_case(ws, runs, failures, name, utt):
     await wait_metrics(runs, s)
     since = runs.since(s)
     route = H.route_of(runs, s)
+    route_e = next((e for e in runs.since(s)
+                    if e.get("type") == "route"), None)
     fetches = [e for e in since if e.get("type") == "ir_event"
                and e.get("event") == "fetch"]
     reply = next((e.get("text") for e in since
@@ -167,7 +169,8 @@ async def deep_case(ws, runs, failures, name, utt):
     calls = deep.get("tool_calls") or []
     errs = [e for e in since if e.get("type") == "error"]
     total_s = time.monotonic() - t0
-    print(f"  route={route} fetches={len(fetches)} "
+    print(f"  route={route} conf={route_e and route_e.get('conf')} "
+          f"fetches={len(fetches)} "
           f"legs={deep.get('legs')} total={total_s:.1f}s")
     for f in fetches:
         print(f"    fetch {str(f.get('url'))[-44:]} "
@@ -216,15 +219,23 @@ async def da2():
             rt.cancel()
     # registered spoken-variance clause: one bounded rerun of a FAILED
     # case while the other passed (input variance, not code) — the rerun
-    # result is final and recorded
+    # result is final and recorded. (Amendment after gate run 1: the
+    # clause had never fired — it matched the case NAME prefix "DA2a"
+    # but deep_case's check names carry the bare letter prefix
+    # "A-"/"B-"; D's twin clause matches "D-" and did fire. Matcher
+    # fix only; the checks are untouched.)
     if FAILS:
-        a_failed = any(f.startswith("DA2a") for f in FAILS)
-        b_failed = any(f.startswith("DA2b") for f in FAILS)
+        a_failed = any(f.startswith("DA2a") or f.startswith("A-")
+                       for f in FAILS)
+        b_failed = any(f.startswith("DA2b") or f.startswith("B-")
+                       for f in FAILS)
         if a_failed != b_failed:      # exactly one side failed
             print("\n  [variance rerun: exactly one case failed]")
             FAILS[:] = [f for f in FAILS
-                        if not (f.startswith("DA2a") if a_failed
-                                else f.startswith("DA2b"))]
+                        if not ((f.startswith("DA2a") or f.startswith("A-"))
+                                if a_failed
+                                else (f.startswith("DA2b")
+                                      or f.startswith("B-")))]
             async with H.websockets.connect(H.WS, max_size=2 ** 22) as ws:
                 await ws.send(json.dumps({"type": "hello",
                                           "ctx_rate": 16000}))
