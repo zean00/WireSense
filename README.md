@@ -424,8 +424,48 @@ recorded as a known wart for stage 3), reruns fully green 2/2.
 Battery all green (root 56/62, voice 14/14, safety 31/31, browser
 PASS — its D11 hold-line flake re-manifested once, registered 2/3).
 All measurements on the local 4B fallback; the Mirai 27B provider
-was unreachable the whole cycle. Stage 3 (manifest dual-exposure)
-stays registered and unstarted.
+was unreachable the whole cycle.
+
+## Deep agents, stage 3 (2026-10-06)
+
+The tool manifest now also exposes `ir_research` and `browse` — the
+delegation contract ("a node earns a tool form when another agent
+could delegate a bounded job to it"). The voice router never sends a
+research or page frame to the tool class (16 phrasings probed, zero —
+intercepts stay authoritative), so the manifest entries are
+agent-facing plumbing gated in-process: a stub-socket Session runs
+real `tool_flow` calls, the delegation spawns the track's OWN intake
+task (budgets, replay registry, traces, out-of-turn completion and
+the submit guard all inherited, not re-implemented), a `tool_call`
+event records "delegated", and the intake turn ends with the tracks'
+filler. Code-owned rules ride along: the credential refusal (same
+line as all three surfaces) and — the battery-caught rule — a
+delegate pick must STAND ON ITS OWN WORDS: one history-free re-plan,
+accepted only for the same tool. The battery earned its keep on this
+one: test_voice's weather case (routes tool, fits no tool, honest
+fallback) started delegating via history bleed — with session
+history the planner picked ir_research 1/1, history-free it returns
+null every time; the old four-tool manifest had immunized the
+fallback region by accident because a bled plan still had to fit
+timer/reminder/note/detect. Rev G (registered before the fix's data)
+restored the fallback; no prompt text changed, the four tools keep
+their single history-carrying plan call byte-for-byte.
+
+Gates: unit 17/17 + machinery 15/15 (both delegation legs, the bleed
+fallback, and the four existing tools' replies byte-identical),
+spoken G (research frames still route ir and cite the archive fact)
++ H (timer still parks on the high-risk read-back; YES arms). Gate
+run 1 FAILed on serving variance (DA2-A answered the previous case's
+math — the deep prompt is untouched by this stage) and exposed a
+stage-1 runner bug: the DA2 variance clause could never fire (name
+matcher, dead code, first exercise); fixed as a disclosed amendment,
+full rerun final. DA5-D's malformed-marker bimodality hit its first
+attempt in all three gate runs (5/5 lifetime in gate runs; reruns
+3/3 green). Battery all bars (root 56/62, voice 14/14 post-Rev G,
+safety 31/31, normalizer 22/22, ir PASS, browser PASS on its
+deciding run — the D11 hold flake re-manifested, registered 2/3).
+All measurements on the local 4B fallback; the Mirai 27B provider
+was unreachable the whole cycle.
 
 ## Status
 

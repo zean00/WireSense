@@ -852,3 +852,92 @@ manifest. The registered battery bar did its job.
       battery suites stand from battery run 1 (Rev G touches only
       tool_flow's delegate branch — no IR, browser, judge, or ASR
       code path), and the re-run list names them.
+
+## Results (stage 3, adjudicated, 2026-10-06)
+
+Commits: pre-registration `7248c4d`; implementation + gate extension
+`177b26a` (frozen pre-data); cwd amendment `f7a66ac` (pre-data, test
+infra only — da6_machinery chdirs to web/ for the in-process
+READOUT/leg construction); clause-matcher amendment `3a3b71b` (post
+run 1: matcher fix only, checks untouched); Rev G registration
+`9824cd9`; Rev G implementation `4aedd7d`. Every measurement on the
+local slot-5 4B fallback; the Mirai 27B provider was unreachable the
+whole cycle (restart remains the user's call).
+
+**Gate runs (full tools/test_deep_agents.py each time):**
+
+- **Run 1: FAIL (3)** — all DA2 case A: route think.deep (not deep),
+  0 legs, and the reply answered the PREVIOUS case's math ("17 times
+  23 equals 391."). Everything else green: DA1, DA4, DA6 unit +
+  machinery, DA5 C, DA7 G+H; DA5 D hit the malformed-marker
+  bimodality and passed its registered rerun. Adjudicated
+  serving-variance (the deep prompt is unchanged by stage 3; routing
+  never sees the manifest), same family as the stage-2 DA5d modes.
+  Run 1 also surfaced a real RUNNER bug: the DA2 variance clause
+  could never fire — it matched case-name prefix "DA2a" while
+  deep_case's check names carry bare "A-"/"B-" (dead since stage 1;
+  D's twin clause always worked). Matcher fixed; the full rerun was
+  declared final in advance.
+- **Run 2: PASS** (106 checks) — superseded not by a rerun but by the
+  battery finding below.
+- **Run 3 (final, post-Rev G): PASS** (107 checks). DA2 A (route deep
+  conf 0.864, 4 fetches, 1 leg, cites 1:2) + B (think.long_think
+  0.761, zero legs, "391"); DA6 unit 17/17 + machinery 15/15 (the
+  delegation spawns the tracks' own IRTask/BrowserTask; ir_event/
+  browser_event done; out-of-turn answers cite the archive fact /
+  $39.95; D6-bleed-fallback green); DA7 G (route ir — the manifest
+  never sees the frame — IR turn cites the ratio fact) + H (think.tool
+  -> high-risk read-back park -> YES arms the 600 s timer). DA5: C
+  green on every attempt; D's FIRST attempt hit the malformed-marker
+  bimodality in ALL THREE gate runs (identical unquoted
+  `"task": read the file"` signature; lifetime gate first-attempts now
+  5/5 failed — stage-2 2/2, stage-3 3/3 — while canaries pass often:
+  the failure is mode-concentrated in the gate environment; the
+  registered rerun is the working answer, reruns now 3/3 green). The
+  stage-1 wart stands: the malformed marker reaches the spoken reply
+  as ordinary text on the failed mode.
+
+**DA3 battery (bars unchanged):**
+
+| suite | result | bar |
+|---|---|---|
+| eval-router root | 56/62 (same misses as the IR cycle) | >= 56 |
+| eval-ir E1 route | 13/14 (the registered timer miss) | >= 12 |
+| eval-browser G1 / G2 | 12/14 at bar; 20/20 | 12 / 18 |
+| eval-browser G3 | 9/20 — the registered D7 failure state, not a bar | — |
+| test_ir | VERDICT PASS | PASS |
+| test_voice | run 1: 10/14 — **the battery caught a real stage-3 regression**; Rev G re-run: **14/14** | 14/14 |
+| test_transcript_safety | 31/31 | 31/31 |
+| test_normalizer | 22/22 | 22/22 |
+| test_deep_think | ALL PASS | PASS |
+| test_browser | run 1 FAIL (the registered D11 hold-line flake plus a clarify-family decline wart — both adjudicated flake families); deciding run VERDICT PASS | PASS |
+
+Unaffected suites stand from battery run 1: Rev G touches only
+tool_flow's delegate branch — no IR, browser, judge, or ASR code path
+— and test_voice (the affected bar) re-ran post-Rev G.
+
+**The caught regression and Rev G.** Battery run 1's weather case
+("What's the weather in Jakarta?" — routes think.tool 0.801, fits no
+pre-stage-3 tool, honest fallback) FIRED a tool_call: with the
+session history test_voice builds, the plan prompt bled and the
+planner delegated to ir_research (reproduced offline 1/1 first
+attempt; history-free the same utterance returns {"tool": null} on
+every probe — the Rev G text above says 3/3, the explicit probes were
+2/2, correction recorded here). The four-tool manifest had
+immunized the fallback region by accident: a bled plan still had to
+fit timer/reminder/note/detect, none fit weather, the plan fell
+through to null. Decision 24's registration table probed only
+DELEGATION phrasings ("ZERO route tool") — utility frames route tool
+BY DESIGN (the honest-fallback cases) and were never probed against
+the grown manifest. Rev G (decision 29) makes a delegate pick
+re-plan ONCE history-free and accepts only the same tool: the
+bounded job must stand on its own words (browser_flow's measured
+history-free precedent; the job is fully specified by its validated
+args). The four existing tools keep their single history-carrying
+plan call byte-identically; no prompt text changed (decision 28
+holds); cost is one extra slot-5 plan call on delegate picks only.
+
+**VERDICT: PASS** (gate run 3 final; DA6 all, DA7 both, DA3 all
+bars). Known warts carried: the malformed-marker bimodality above;
+DA2-A's one serving-variance failure (run 1) recorded and cleared on
+both post-amendment runs.

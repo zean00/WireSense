@@ -1812,7 +1812,7 @@ class Session:
             # words — re-plan history-free, accept only the same tool.
             # History bleed into the plan prompt is measured (the
             # battery caught it: weather -> ir_research 1/1 with session
-            # history, {"tool": null} 3/3 without; browser_flow went
+            # history, {"tool": null} 2/2 without; browser_flow went
             # history-free for the same bleed). The four existing tools
             # keep their single history-carrying plan call untouched.
             try:
