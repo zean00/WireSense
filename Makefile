@@ -207,6 +207,9 @@ eval-router:
 eval-followup:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/eval_followup.py
 
+test-face:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_face.py
+
 tree-probe:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/tree_probe.py
 
@@ -238,4 +241,6 @@ help:
 	@echo "  make tree-probe     subtree feasibility probe (think/vision nodes)"
 	@echo "  make test-voice     e2e: synthesized speech -> route/reply assertions"
 	@echo "  make test-omdet     detector sidecar: health + latency budget"
+	@echo "  make test-face      face gates: frozen-portrait geometry + opt-in contract"
+	@echo "  (face e2e enabled run: face.enabled in web/config.json + restart, then WIRESENSE_TEST_FACE=1 make test-voice)"
 	@echo "  make test-deep      deep-think adapters: offline parser/config tests"

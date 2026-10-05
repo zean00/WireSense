@@ -13,6 +13,7 @@ error event. Vision/weather honesty is printed as a warning rather than
 asserted (the phrasing is the LLM's, not a protocol constant).
 """
 import asyncio
+import base64
 import json
 import os
 import sys
@@ -49,7 +50,36 @@ UTTERANCES = [
      {"note": "falcon nimbus"}),
     ("think.tool", "What's the weather in Jakarta?", {"honest": True}),
     ("vision", "What do you see right now?", {"frame": True}),
+    # face opt-in contract, default (disabled) server: the tools are not
+    # in the manifest, so the turn falls to the honest no-tool answer and
+    # metrics carry no face key
+    ("think.tool", "Learn my face as Albert.", {"face_denied": True}),
 ]
+
+# WIRESENSE_TEST_FACE=1: server started with face enabled. The enroll/
+# recognize/forget sequence against a real frozen portrait (einstein)
+# served as the camera frame; the timer control checks the grown
+# manifest still picks known tools (docs/PROTOCOL-face-recognition.md G6).
+# Named enroll routes think.tool via the manifest. "Forget my face." is
+# the FIRST utterance (empty history -> raw route vision 0.795) so the
+# vision-branch face gate fires (Rev 1); mid-conversation the fragment
+# rewrite re-routes it through the manifest path instead (measured).
+# Names are LLM/ASR-extracted ("Albert") — all comparisons fold case.
+FACE_UTTERANCES = [
+    ("vision", "Forget my face.", {"face_gate": True}),
+    ("think.tool", "Set a timer for 10 minutes.", {"timer": 600}),
+    ("think.tool", "Learn my face as Albert.",
+     {"face_enroll": True, "frame_face": True, "store_adds": ["albert"]}),
+    ("vision", "What do you see right now?",
+     {"frame_face": True, "face_names": ["albert"]}),
+    ("think.tool", "Learn my face as Albert.",
+     {"face_enroll": True, "frame_face": True, "store_exact": ["albert"]}),
+    ("think.tool", "Forget my face.", {"face_forget": True}),
+    ("vision", "What do you see right now?",
+     {"frame_face": True, "no_face": True}),
+]
+
+FACE_MODE = os.environ.get("WIRESENSE_TEST_FACE") == "1"
 
 HONEST_MARKERS = ("can't", "cannot", "can not", "not able", "no camera",
                   "don't see", "do not see", "unable", "don't have",
@@ -107,13 +137,37 @@ async def feed(ws, pcm):
         await asyncio.sleep(0.1)
 
 
+def face_einstein_b64() -> str:
+    """Frozen portrait as the camera frame (448 px JPEG, production
+    budget) for the face-enabled run. cv2 is only needed here."""
+    import cv2
+    img = cv2.imread(f"{ROOT}/tools/face_eval/imgs/einstein.jpg")
+    h, w = img.shape[:2]
+    s = 448 / max(h, w)
+    img = cv2.resize(img, (round(w * s), round(h * s)),
+                     interpolation=cv2.INTER_AREA)
+    ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 80])
+    assert ok
+    return base64.b64encode(buf).decode()
+
+
+def faces_store() -> dict:
+    try:
+        with open(f"{ROOT}/web/faces.json") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
 async def run() -> int:
+    utterances = FACE_UTTERANCES if FACE_MODE else UTTERANCES
     events = []
     all_events = []  # never cleared: catches async fires (reminder_due)
     failures = []
     T0 = time.monotonic()
     want_frame = [False]
-    frame_b64 = red_circle_b64()
+    frame_b64 = face_einstein_b64() if FACE_MODE else red_circle_b64()
+    print(f"face mode: {'ENABLED (WIRESENSE_TEST_FACE=1)' if FACE_MODE else 'disabled'}")
     async with websockets.connect(WS, max_size=2 ** 22) as ws:
         await ws.send(json.dumps({"type": "hello", "ctx_rate": 16000}))
 
@@ -135,11 +189,11 @@ async def run() -> int:
         rt = asyncio.create_task(reader())
         await asyncio.sleep(0.5)
         silence = b"\x00\x00" * FRAME
-        for want, text, checks in UTTERANCES:
+        for want, text, checks in utterances:
             t_start = time.monotonic()
             print(f"\n--- expect {want}: {text!r}")
             events.clear()
-            want_frame[0] = bool(checks.get("frame"))
+            want_frame[0] = bool(checks.get("frame") or checks.get("frame_face"))
             if want_frame[0]:
                 await ws.send(json.dumps({"type": "camera_state", "on": True}))
             await feed(ws, synth(text))
@@ -154,6 +208,7 @@ async def run() -> int:
                         and ("metrics" in got or "error" in got)):
                     break
             reply, route = None, None
+            face_metrics = []
             for e in events:
                 t = e["type"]
                 at = f"[{e.get('_arr', 0) - round((t_start - T0) * 1000):>6}ms]"
@@ -172,9 +227,13 @@ async def run() -> int:
                     print(f"  {at} reply: {reply[:110]!r}")
                 elif t == "metrics":
                     llm = e.get("llm", {})
+                    face = e.get("face")
                     print(f"  {at} metrics: e2e={e['e2e_ms']}ms "
                           f"ttft={llm.get('ttft_ms')}ms "
-                          f"decode={llm.get('decode_tps')}tps")
+                          f"decode={llm.get('decode_tps')}tps"
+                          + (f" face={face}" if face is not None else ""))
+                    if "face" in e:
+                        face_metrics.append(e["face"])
                 elif t == "error":
                     print(f"  {at} ERROR: {e['message']}")
                     failures.append(f"{want}: server error {e['message'][:80]}")
@@ -201,6 +260,57 @@ async def run() -> int:
                                     "blindness — frame did not reach the VLM")
                 if not saw_vision_frame:
                     failures.append(f"{want}: no vision_frame event")
+            if checks.get("frame_face"):
+                # vision_frame rides the VLM path only; manifest/gate
+                # enrollments grab frames without broadcasting it
+                vlm_path = ("face_names" in checks or "no_face" in checks)
+                if vlm_path and not saw_vision_frame:
+                    failures.append(f"{want}: no vision_frame event")
+                got = face_metrics[0] if face_metrics else None
+                if checks.get("face_names") is not None:
+                    names = [n.lower() for n in ((got or {}).get("names") or [])]
+                    if names != [n.lower() for n in checks["face_names"]]:
+                        failures.append(f"{want}: face names {names} != "
+                                        f"{checks['face_names']}")
+                if checks.get("no_face"):
+                    if got is not None:
+                        failures.append(f"{want}: face metrics present on "
+                                        "empty store, expected none")
+                    # no reply-content check: the frozen portrait is a
+                    # public figure — the VLM names Einstein from pixels
+                    # alone, which is correct vision, not a context leak
+            if checks.get("face_denied"):
+                if saw_tool_call:
+                    failures.append(f"{want}: face tool fired while disabled")
+                if face_metrics:
+                    failures.append(f"{want}: face metrics present while "
+                                    "disabled")
+                if not any(m in reply.lower() for m in HONEST_MARKERS):
+                    print("  WARN: reply not recognizably honest "
+                          "(fallback may have answered as if able)")
+            if checks.get("face_enroll"):
+                calls = [e for e in events if e.get("type") == "tool_call"
+                         and e.get("tool") == "face_enroll"]
+                if not calls:
+                    failures.append(f"{want}: no face_enroll tool_call")
+                store = {k.lower() for k in faces_store()}
+                for name in checks.get("store_adds", []):
+                    if name.lower() not in store:
+                        failures.append(f"{want}: {name!r} not in faces.json")
+                if (checks.get("store_exact")
+                        and store != {n.lower() for n in checks["store_exact"]}):
+                    failures.append(f"{want}: expected store exactly "
+                                    f"{checks['store_exact']}, got "
+                                    f"{sorted(store)}")
+            if checks.get("face_gate") or checks.get("face_forget"):
+                calls = [e for e in events if e.get("type") == "tool_call"
+                         and e.get("tool") == "face_forget"]
+                if not calls:
+                    failures.append(f"{want}: no face_forget tool_call "
+                                    "(vision-branch gate did not fire)")
+                if checks.get("face_forget") and faces_store():
+                    failures.append(f"{want}: faces.json not empty after "
+                                    f"forget: {list(faces_store())}")
             if want == "think.long_think" and not saw_think:
                 failures.append(f"{want}: no think trace (open-think generation off?)")
             if ("timer" in checks or "reminder" in checks or "note" in checks) \
@@ -253,7 +363,7 @@ async def run() -> int:
         for f in failures:
             print(f"  - {f}")
         return 1
-    print(f"\nPASS: {len(UTTERANCES)}/{len(UTTERANCES)} routes correct, "
+    print(f"\nPASS: {len(utterances)}/{len(utterances)} routes correct, "
           "all replies non-empty, tool checks OK")
     return 0
 

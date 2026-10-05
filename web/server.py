@@ -31,6 +31,7 @@ from PIL import Image
 from kokoro_onnx import Kokoro
 
 import deep_think
+import faces
 
 LLAMA = "http://127.0.0.1:8998"
 PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
@@ -74,6 +75,21 @@ MEMORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            "memory.json")
 TREE_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                          "tools", "decision_tree.json")
+# face recognition (docs/PROTOCOL-face-recognition.md): opt-in, off by
+# default; disabled = the tools vanish from the manifest, no face code
+# runs, no `face` key in metrics — byte-identical pre-face behavior
+FACE_ENABLED = False
+FACE_TOOLS = {
+    "face_enroll": "learn who a face belongs to; args: name (who is in front of the camera)",
+    "face_forget": "delete saved faces; args: name (optional — omit to forget everyone)",
+}
+# vision-routed face-management phrasings ("remember/forget my face"):
+# the router sends face talk to vision (content pull measured 0.795-0.867;
+# pool refs cannot beat it at root without breaking direct), so when the
+# feature is opted in these are intercepted as the tool flow (Rev 1)
+FACE_INTENT_RE = re.compile(
+    r"\b(remember|learn|save)\b.{0,40}\bface\b"
+    r"|\b(forget|delete|erase)\b.{0,40}\bface\b", re.I)
 REL_TIME = re.compile(r"\bin (\d+) (second|minute|hour)s?\b", re.I)
 
 TOOL_FALLBACK_DIRECTIVE = ("No available tool fits this request. Answer briefly; "
@@ -87,7 +103,10 @@ THINK_NOCLOSE_REPLY = ("I thought it through, but ran out of room for a "
 
 
 def tool_manifest_directive() -> str:
-    lines = "\n".join(f"- {name}: {desc}" for name, desc in TOOL_MANIFEST.items())
+    tools = dict(TOOL_MANIFEST)
+    if FACE_ENABLED:
+        tools.update(FACE_TOOLS)
+    lines = "\n".join(f"- {name}: {desc}" for name, desc in tools.items())
     return ("Choose a tool for this request. Available tools:\n" + lines +
             '\nReply with ONLY a JSON object: {"tool": "<name>", "args": {...}} '
             'or {"tool": null} if no tool fits. No other text.')
@@ -141,6 +160,17 @@ def validate_tool(name, args) -> dict:
         seen = set()
         labels = [x for x in labels if not (x in seen or seen.add(x))]
         return {"labels": labels}
+    if name == "face_enroll":
+        if not FACE_ENABLED:
+            raise ValueError("face recognition is disabled")
+        face_name = str(args.get("name") or "").strip()[:40]
+        if not face_name:
+            raise ValueError("face_enroll needs a name (1-40 chars)")
+        return {"name": face_name}
+    if name == "face_forget":
+        if not FACE_ENABLED:
+            raise ValueError("face recognition is disabled")
+        return {"name": str(args.get("name") or "").strip()[:40]}
     raise ValueError(f"unknown tool {name}")
 
 
@@ -473,6 +503,7 @@ class Session:
         self.camera = False
         self.frame_b64 = None
         self.detect_last = None  # last detect tool result (labels/dets/ms)
+        self.face_meta = None    # face metrics for the current vision turn
         self._frame_evt = asyncio.Event()
 
     def gate_active(self) -> bool:
@@ -596,6 +627,7 @@ class Session:
         # LLM work happens behind speech instead of dead air.
         cls, spec = "direct", {"action": "llm", "max_tokens": 96}
         rewrite, rewrite_ms = None, None
+        face_reply = None
         try:
             loop = asyncio.get_event_loop()
             emb, _ = await loop.run_in_executor(None, READOUT.embed,
@@ -633,14 +665,23 @@ class Session:
                 # act-then-decide: grab a frame first; with one, the turn
                 # becomes a VLM query, without one the honesty directive
                 # keeps the answer honest (never asks twice)
-                frame_b64 = await self.request_frame()
-                if frame_b64:
-                    # the captured frame is part of the turn's record —
-                    # the UI shows it in conversation history
-                    await self.send({"type": "vision_frame", "b64": frame_b64})
-                else:
-                    spec = dict(spec, directive=spec.get(
-                        "fallback_directive", spec.get("directive")))
+                # Face-management talk routes vision at the root (measured
+                # content pull 0.795-0.867; refs cannot beat it without
+                # breaking direct — protocol Rev 1): when the feature is
+                # opted in, intercept it as the tool flow instead of a
+                # VLM query. Falls through to the normal vision path on
+                # any None.
+                if FACE_ENABLED and FACE_INTENT_RE.search(utterance):
+                    face_reply = await self.face_intent(utterance)
+                if face_reply is None:
+                    frame_b64 = await self.request_frame()
+                    if frame_b64:
+                        # the captured frame is part of the turn's record —
+                        # the UI shows it in conversation history
+                        await self.send({"type": "vision_frame", "b64": frame_b64})
+                    else:
+                        spec = dict(spec, directive=spec.get(
+                            "fallback_directive", spec.get("directive")))
             if spec.get("filler"):
                 fb = WALKER.feedback(emb, spec.get("feedback") or cls)
                 await self.send({"type": "feedback", "text": fb})
@@ -651,7 +692,9 @@ class Session:
         t0 = time.perf_counter()
         first, chunks, timings = None, [], None
         reply = None
-        if spec.get("action") == "vision" and frame_b64:
+        if spec.get("action") == "vision" and face_reply is not None:
+            reply = face_reply
+        if reply is None and spec.get("action") == "vision" and frame_b64:
             reply = await self.vision_reply(utterance, frame_b64, spec)
         if reply is None and spec.get("action") == "tool":
             reply = await self.tool_flow(utterance)
@@ -826,7 +869,18 @@ class Session:
         """VLM turn through /v1/chat/completions (mtmd images only work
         on the chat endpoint, not raw completions). The Qwen template
         renders the same ChatML as our raw prompts, so the KV prefix of
-        system+history stays warm. Thinking is disabled per-request."""
+        system+history stays warm. Thinking is disabled per-request.
+        Face context (docs/PROTOCOL-face-recognition.md) rides the same
+        volatile-suffix text: enabled + at least one enrollment, else
+        nothing happens at all."""
+        face_line = ""
+        if FACE_ENABLED and faces.load_store():
+            self.face_meta = await asyncio.to_thread(
+                faces.recognize, frame_b64)
+            if self.face_meta.get("names"):
+                face_line = ("(Camera: "
+                             + " and ".join(self.face_meta["names"])
+                             + ")\n")
         msgs = [{"role": "system", "content": SYS}]
         for hu, ha in self.history:
             msgs += [{"role": "user", "content": hu},
@@ -834,7 +888,7 @@ class Session:
         msgs.append({"role": "user", "content": [
             {"type": "image_url",
              "image_url": {"url": f"data:image/jpeg;base64,{frame_b64}"}},
-            {"type": "text", "text": f"{utterance}\n({spec.get('directive')})"}]})
+            {"type": "text", "text": f"{face_line}{utterance}\n({spec.get('directive')})"}]})
 
         def gen():
             with requests.post(f"{LLAMA}/v1/chat/completions", json={
@@ -928,8 +982,14 @@ class Session:
         except (ValueError, TypeError):
             return None
         result = await self.run_tool(plan["tool"], args)
+        return await self._confirm_tool(utterance, plan["tool"], args, result)
+
+    async def _confirm_tool(self, utterance, tool, args, result):
+        """Record the tool_call event and generate (or fall back to) the
+        confirmation sentence. Shared by the manifest flow and the
+        vision-branch face gate."""
         # the call itself is part of the turn's record (args + result)
-        await self.send({"type": "tool_call", "tool": plan["tool"],
+        await self.send({"type": "tool_call", "tool": tool,
                          "args": args, "result": result})
         confirm_d = (f"Tool result: {result}. Confirm to the user in one "
                      "short sentence.")
@@ -945,6 +1005,31 @@ class Session:
         except Exception:
             reply = result  # the tool DID run; speak the plain result
         return reply or result
+
+    async def face_intent(self, utterance):
+        """Vision-routed face-management turn (opt-in, FACE_ENABLED only):
+        enroll/forget via the same tool plumbing as the manifest flow,
+        with the name parsed from the utterance ("learn my face as albert"
+        -> albert; unnamed enroll -> 'me'; 'forget albert's face' ->
+        albert; bare 'forget my face' -> everything). Returns the
+        confirmation reply, or None to fall through to the VLM path."""
+        if re.search(r"\b(remember|learn|save)\b", utterance, re.I):
+            m = re.search(r"\bas\s+([A-Za-z][A-Za-z]{0,20})\b", utterance)
+            tool, args = "face_enroll", {"name": m.group(1) if m else "me"}
+        else:
+            m = re.search(r"\bforget\s+([a-z]+)\b.{0,10}\bface\b",
+                          utterance, re.I)
+            stop = {"my", "the", "a", "his", "her", "their", "everything",
+                    "all", "it"}
+            name = (m.group(1).lower()
+                    if m and m.group(1).lower() not in stop else None)
+            tool, args = "face_forget", {"name": name or ""}
+        try:
+            args = validate_tool(tool, args)
+        except (ValueError, TypeError):
+            return None
+        result = await self.run_tool(tool, args)
+        return await self._confirm_tool(utterance, tool, args, result)
 
     async def run_tool(self, name, args):
         """Execute a validated tool; returns a short result note for the
@@ -971,6 +1056,20 @@ class Session:
             return f"note saved: {args['text']}"
         if name == "detect":
             return await self.run_detect(args["labels"])
+        if name == "face_enroll":
+            frames = []
+            for _ in range(3):
+                frame = await self.request_frame()
+                if frame:
+                    frames.append(frame)
+                await asyncio.sleep(0.35)
+            ok, detail = await asyncio.to_thread(
+                faces.enroll, args["name"], frames)
+            return detail
+        if name == "face_forget":
+            ok, detail = await asyncio.to_thread(
+                faces.forget, args["name"] or None)
+            return detail
         raise ValueError(name)  # validate_tool guards every caller
 
     async def run_detect(self, labels):
@@ -1069,6 +1168,8 @@ class Session:
         }
         if deep is not None:
             metrics["deep"] = deep  # provider turn (or its honest fallback)
+        if self.face_meta is not None:
+            metrics["face"] = self.face_meta  # enabled vision turns only
         await self.send(metrics)
         # reset per-turn accumulators (t_final too: a pre-final TTS chunk
         # like a backchannel must not measure against the previous turn)
@@ -1083,6 +1184,7 @@ class Session:
         self.tts_n = 0
         self.route_mode = "direct"
         self.bc_count = 0
+        self.face_meta = None
         self.bc_last_t = 0.0
 
 
@@ -1203,7 +1305,7 @@ async def http_page(connection, request):
 
 
 async def main():
-    global KOKORO, READOUT, WALKER, DEEP
+    global KOKORO, READOUT, WALKER, DEEP, FACE_ENABLED
     t0 = time.perf_counter()
     KOKORO = Kokoro(f"{MODELS}/kokoro-v1.0.onnx", f"{MODELS}/voices.npz")
     READOUT = DecideReadout()
@@ -1212,6 +1314,10 @@ async def main():
     if DEEP is not None:
         print(f"deep think: {DEEP.provider} {DEEP.model} @ {DEEP.base_url}",
               flush=True)
+    FACE_ENABLED = bool(
+        (deep_think.load_config().get("face") or {}).get("enabled", False))
+    print(f"face recognition: {'ENABLED' if FACE_ENABLED else 'disabled'} "
+          f"(opt-in, web/config.json 'face')", flush=True)
     print(f"kokoro + readout + decision tree loaded in "
           f"{time.perf_counter() - t0:.1f}s", flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=http_page,
