@@ -1,6 +1,6 @@
 {
  "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py \u2014 re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating \u2014 cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
- "version": 5,
+ "version": 6,
  "nodes": {
   "root": {
    "classes": {
@@ -38,6 +38,11 @@
      "max_tokens": 700,
      "feedback": "think",
      "directive": "Think this through carefully and give a thorough, correct answer."
+    },
+    "browser": {
+     "action": "browser",
+     "filler": true,
+     "feedback": "browser"
     }
    },
    "pools": {
@@ -84,7 +89,9 @@
      "Make a note that my gate is B22.",
      "Note down that the meeting moved to three.",
      "Remember that I parked on level two.",
-     "Convert the measurements in this recipe to grams."
+     "Convert the measurements in this recipe to grams.",
+     "Explain the difference between TCP and UDP.",
+     "Plan tomorrow around two appointments."
     ],
     "decide": [
      "Should I take the bus or walk?",
@@ -151,6 +158,40 @@
      "Walk me through why the experiment failed.",
      "Summarize this article for me.",
      "Turn this paragraph into bullet points."
+    ],
+    "browser": [
+     "Look up who designed the Eiffel Tower on Wikipedia.",
+     "Look up the cast of Blade Runner on IMDb.",
+     "Check wikipedia for the timeline of the Apollo program.",
+     "Show me what's trending on github.",
+     "Open the local news page and tell me what's in the science section.",
+     "Find the price of the hand grinder on the BrewMart page.",
+     "Open the local shop page and check the price of the travel press.",
+     "Look up the latest headlines on the news site.",
+     "Open the backup guide and find when backups run.",
+     "Look up today's menu on the trattoria's site.",
+     "Open the travel site and find which museums offer free entry.",
+     "Go to the store page and read me the shipping cost.",
+     "Open the python docs page and look up decorators.",
+     "Look up the Great Wall on Wikipedia and find its total length.",
+     "Open the docs page and find the exact flag name for verbose output.",
+     "Open the baking page and read me the oven temperature.",
+     "Check the return policy on the store's site.",
+     "Read the review score on the product page.",
+     "Check tonight's showtimes on the cinema site.",
+     "Open the museum page and tell me the ticket price.",
+     "Check the faq page for the refund window.",
+     "Look up the changelog on the project page.",
+     "Look up the lyrics on the lyrics site.",
+     "Open the blog and read the latest post.",
+     "Look up the Volga on Wikipedia and find its total length.",
+     "Check the price of the coffee machine on the shop's product page.",
+     "Open the local file invoice.html and read me the total.",
+     "Open the local file news.html and tell me the headline of the second article.",
+     "Open the local file shop.html and find the price of the AeroPress Go.",
+     "Open the local file docs.html and find out when backups run.",
+     "Open form.html and fill in the feedback form and submit it.",
+     "Open login.html and log me in."
     ]
    }
   },
@@ -239,6 +280,11 @@
    "On it, give me a second.",
    "Working on that now.",
    "One moment, I'll take care of that."
+  ],
+  "browser": [
+   "Let me look that up.",
+   "Opening the page.",
+   "Checking on that now."
   ]
  },
  "backchannel": [

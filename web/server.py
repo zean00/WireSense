@@ -16,6 +16,7 @@ import json
 import os
 import re
 import time
+import traceback
 import uuid
 import wave
 from collections import deque
@@ -32,6 +33,7 @@ from kokoro_onnx import Kokoro
 
 import deep_think
 import faces
+import browser_use
 
 LLAMA = "http://127.0.0.1:8998"
 PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
@@ -152,6 +154,15 @@ def normalize_transcript(text: str) -> str:
             if fixed != text:
                 print(f"[asr-normalizer] {text!r} -> {fixed!r}", flush=True)
             return fixed
+    # Phonon glues digits to the preceding word ("for10 minutes",
+    # "in15 seconds") — measured: 'Set a timer for10 minutes.' pulled
+    # the root centroid think->browser (0.83 vs 0.82) while the spaced
+    # text routes think. Split letter-digit joins (decision 2: the
+    # single repair point every turn passes through).
+    fixed = re.sub(r"(?<=[a-z])(?=\d)", " ", text, flags=re.I)
+    if fixed != text:
+        print(f"[asr-normalizer] {text!r} -> {fixed!r}", flush=True)
+        return fixed
     return text
 
 TOOL_FALLBACK_DIRECTIVE = ("No available tool fits this request. Answer briefly; "
@@ -613,6 +624,8 @@ class Session:
         self.ambient_meta = None  # ambient probe result for the current turn
         self.pending = None      # transcript-safety pending resolution
         self.norm_fired = False  # normalizer fired on this turn's final
+        self._stop_swallow_until = 0.0  # late-final absorber (D11 partial)
+        self.browser_task = None  # active BrowserTask (PROTOCOL-browser-use)
         self._frame_evt = asyncio.Event()
 
     async def ambient_probe(self):
@@ -688,6 +701,17 @@ class Session:
                         self.first_partial_t = time.perf_counter()
                     await self.send({"type": "partial", "text": m["text"]})
                     asyncio.create_task(self.decide(m["text"]))
+                    # D11 barge-in on the PARTIAL: during an active task
+                    # the loop owns the GPU and Phonon decode lags, so a
+                    # final-based stop loses the race (measured: finals
+                    # land after the task already completed). A bare stop
+                    # phrase (>= 2 words, full pool match) cancels now;
+                    # the late final is absorbed by the swallow window.
+                    p = m["text"].strip()
+                    if self.browser_task and self.browser_task.active() \
+                            and len(p.split()) >= 2 \
+                            and browser_use.BARE_STOP_RE.match(p):
+                        asyncio.create_task(self.partial_stop(p))
                 elif t == "final":
                     # single repair point (protocol decision 2): routing,
                     # history, UI and the reply all see the normalized text
@@ -695,7 +719,20 @@ class Session:
                     text = normalize_transcript(raw)
                     self.norm_fired = text != raw
                     await self.send({"type": "final", "text": text})
-                    await self.respond(text)
+                    # one dead turn must not kill the reader (measured: an
+                    # exception here left the stream open and every later
+                    # turn reply-less); the failure prints, the session
+                    # recovers, the stream still closes
+                    try:
+                        await self.respond(text)
+                    except Exception:
+                        traceback.print_exc()
+                        # respond() set speaking=True on entry and only
+                        # finish_turn clears it — a dead turn would
+                        # otherwise hold the half-duplex gate shut
+                        # forever (session deaf)
+                        self.speaking = False
+                        await self.update_gate()
                     # turn over: close the ASR stream so idle room tone can
                     # never reach a primed decoder (hallucination source)
                     await self.phonon.close()
@@ -747,6 +784,13 @@ class Session:
             await self.tts(line, guard_turn=my_turn)
 
     async def respond(self, utterance, _resolved=False):
+        # D11 partial-stop absorption: the late final of a clip whose
+        # bare stop phrase already cancelled the task must not double-
+        # speak ("Nothing is running right now") after the fact
+        if time.monotonic() < self._stop_swallow_until \
+                and browser_use.BARE_STOP_RE.match(utterance.strip()):
+            self._stop_swallow_until = 0.0
+            return
         self.speaking = True
         self.t_final = time.perf_counter()
         self.turn_id += 1
@@ -775,10 +819,38 @@ class Session:
                                      "message": f"tool: {e}"[:120]})
                     reply = "Sorry, the tool failed."
                 route_mode = "resolve"
+            elif res == "yes" and pend["kind"] == "browser":
+                # parked submit-click read-back: YES executes the click
+                # and the loop continues out-of-turn (protocol decision 10b)
+                reply = await pend["task"].confirm_resume()
+                self.browser_task = pend["task"] \
+                    if pend["task"].outcome is None else None
+                route_mode = "resolve"
             elif res == "no":
+                if pend["kind"] == "browser":
+                    pend["task"].abort()
+                    self.browser_task = None
                 reply = ("Okay — say it again." if pend["kind"] == "intent"
                          else "Okay, cancelled.")
                 route_mode = "resolve"
+            elif pend["kind"] == "browser":
+                # dropped pending: the parked click dies quietly (M2
+                # drop semantics; the turn proceeds normally)
+                pend["task"].abort()
+                self.browser_task = None
+        # mid-task voice control (protocol decision 11): while a browser
+        # task runs, the stop pool decides cancel vs hold; other finals
+        # are NOT processed (slot-5 stays owned by the loop — registered
+        # v1 UX cost). Canned replies: the M1 judge never sees these.
+        if reply is None and self.browser_task and \
+                self.browser_task.active():
+            if await self.browser_stop_check(utterance):
+                await self.browser_task.cancel()
+                reply, route_mode = "Stopped.", "browser_ctrl"
+            else:
+                reply, route_mode = ("I'm still working on the page — "
+                                     "say stop to cancel.",
+                                     "browser_ctrl")
         # M1 (protocol decisions 2-5): semantic judge on eligible finals —
         # short, not already repaired by the normalizer, not itself a
         # resolution. Fail-open: only a NO verdict with a usable repair
@@ -805,6 +877,8 @@ class Session:
         cls, spec = "direct", {"action": "llm", "max_tokens": 96}
         rewrite, rewrite_ms = None, None
         face_reply = None
+        fb = None
+        skip_tts = False
         try:
             loop = asyncio.get_event_loop()
             emb, _ = await loop.run_in_executor(None, READOUT.embed,
@@ -825,6 +899,20 @@ class Session:
                     except Exception:
                         rewrite = None
             cls, spec, conf = WALKER.route(emb)
+            note = None
+            if spec.get("action") != "browser" and \
+                    browser_use.LOCAL_PAGE_RE.search(utterance):
+                # measured (production geometry, root centroids): 'open
+                # shop.html and find the price of the Aero Presco' (ASR
+                # garbles the brand) lands think 0.714 vs browser 0.701;
+                # routing is punctuation-invariant (norm_router_text),
+                # so no text repair can fix it. A local .html reference
+                # is unambiguous browser intent — code wins over the
+                # centroid, same intercept class as BARE_STOP_RE.
+                spec = dict(
+                    WALKER.cfg["nodes"]["root"]["classes"]["browser"])
+                cls, spec["_class"] = "browser", "browser"
+                note = "local-page intercept"
             if spec.get("action") == "subtree":
                 # the same embedding walks the child node (numpy only);
                 # the child's action params win, its feedback key refines
@@ -832,12 +920,13 @@ class Session:
                 sub_cls, sub_spec, sub_conf = WALKER.route(emb, spec["node"])
                 await self.send({"type": "route", "mode": f"{cls}.{sub_cls}",
                                  "conf": sub_conf, "rewrite": rewrite,
-                                 "rewrite_ms": rewrite_ms})
+                                 "rewrite_ms": rewrite_ms, "note": note})
                 spec = {**spec, **sub_spec}
                 cls = f"{cls}.{sub_cls}"
             else:
                 await self.send({"type": "route", "mode": cls, "conf": conf,
-                                 "rewrite": rewrite, "rewrite_ms": rewrite_ms})
+                                 "rewrite": rewrite, "rewrite_ms": rewrite_ms,
+                                 "note": note})
             if spec.get("action") == "vision":
                 # act-then-decide: grab a frame first; with one, the turn
                 # becomes a VLM query, without one the honesty directive
@@ -888,6 +977,10 @@ class Session:
                 # brief answer instead of pretending
                 spec = dict(spec, action="llm", max_tokens=96,
                             directive=TOOL_FALLBACK_DIRECTIVE)
+        if reply is None and spec.get("action") == "browser":
+            # intake turn: the filler was already spoken above, so the
+            # turn ends with it (skip_tts) and the loop runs out-of-turn
+            reply, skip_tts = await self.browser_flow(utterance, fb)
         deep_meta = None
         if reply is None and spec.get("deep") and DEEP is not None:
             # explicit-depth turn: try the configured big model first;
@@ -990,19 +1083,22 @@ class Session:
         # fp4-fault signature check + the shared epilogue live in
         # finish_turn (canned clarify/resolve turns end through it too)
         await self.finish_turn(hist_utterance, reply, timings, judge_meta,
-                               round(first, 1) if first else None, deep_meta)
+                               round(first, 1) if first else None, deep_meta,
+                               skip_tts=skip_tts)
 
     async def finish_turn(self, hist_utterance, reply, timings, judge_meta,
-                          ttft_ms, deep_meta=None):
+                          ttft_ms, deep_meta=None, skip_tts=False):
         """Shared turn epilogue: response_done, TTS, history, metrics, and
         the post-turn gate floor (the browser reports actual playback end
         via playback_state; the floor covers the race before the first
-        playing:true arrives)."""
+        playing:true arrives). skip_tts: the browser intake turn's reply
+        is the filler, already spoken when the loop started."""
         # fp4-fault signature: output is essentially all '?' (see
         # docs/INCIDENT-2026-10-04-GPU.md) — surfaced to the UI, never fatal
         corrupt = len(reply) >= 8 and reply.count("?") >= 0.9 * len(reply)
         await self.send({"type": "response_done", "text": reply})
-        await self.tts(reply)
+        if not skip_tts:
+            await self.tts(reply)
         self.history.append((hist_utterance, reply))
         self.speaking = False
         await self.send_metrics(timings, ttft_ms, corrupt, deep=deep_meta,
@@ -1181,6 +1277,120 @@ class Session:
             return readback_text(plan["tool"], args)
         result = await self.run_tool(plan["tool"], args)
         return await self._confirm_tool(utterance, plan["tool"], args, result)
+
+    async def browser_flow(self, utterance, fb_text):
+        """Browser intake (PROTOCOL-browser-use.md decision 3): one
+        slot-5 JSON call parses the task, then the loop runs as a
+        background task. Returns (reply, skip_tts) — the already-spoken
+        filler ends the intake turn; parse failure gets an honest
+        spoken reply and no task. The plan call is HISTORY-FREE: with
+        history in the prompt the model bled earlier tasks into the
+        parse (measured: a login task opened form.html; "Stop the
+        search." invented "find the capital"). A bare stop/cancel
+        phrase here means no task was active (active ones are
+        intercepted earlier, decision 11) — honest canned line, never a
+        spawned task."""
+        if browser_use.BARE_STOP_RE.match(utterance.strip()):
+            return ("Nothing is running right now — nothing to stop.",
+                    False)
+        # Phonon renders "news.html" as "news, HTML" / "form. HTML" and
+        # the planner then refuses or emits junk sites (measured);
+        # repair to a real filename, and snap near-miss fixture stems to
+        # the committed page ("docks.html" -> "docs.html"). "the local
+        # file" is also dropped: that phrase deterministically triggers a
+        # planner refusal ("I cannot open local files", measured), while
+        # the same text as "Open docs.html and ..." parses clean.
+        plan_text = re.sub(r"\b([\w-]+)\.?,?\s+html\b,?\s*", r"\1.html ",
+                           utterance, flags=re.I)
+        plan_text = re.sub(r"\bthe local file\b\s*", "", plan_text,
+                           flags=re.I)
+        m = re.search(r"\b([\w-]+)\.html\b", plan_text)
+        if m:
+            fixed = browser_use._fixture_match(m.group(1) + ".html")
+            plan_text = plan_text[:m.start()] + fixed + plan_text[m.end():]
+        u = f"{plan_text}\n({browser_use.BROWSER_PLAN_DIRECTIVE})"
+        prompt0 = (f"<|im_start|>system\n{SYS}<|im_end|>\n"
+                   f"<|im_start|>user\n{u}<|im_end|>\n{EMPTY_THINK}")
+        plan = None
+        for prompt in (prompt0, prompt0 + browser_use.BROWSER_PLAN_RETRY):
+            try:
+                loop = asyncio.get_event_loop()
+                r = await loop.run_in_executor(None, lambda p=prompt:
+                    requests.post(f"{LLAMA}/v1/completions", json={
+                        "prompt": p, "max_tokens": 90, "temperature": 0,
+                        "cache_prompt": True, "id_slot": SLOT}, timeout=60))
+                r.raise_for_status()
+                plan = browser_use._extract_json(
+                    r.json()["choices"][0]["text"])
+            except Exception:
+                plan = None
+            if isinstance(plan, dict) and \
+                    str(plan.get("task") or "").strip():
+                break
+            plan = None
+        if plan is None:
+            return ("I couldn't work out which page to open — name a "
+                    "site and what to look for.", False)
+        if browser_use.CREDS_TASK_RE.search(str(plan.get("task") or "")) \
+                or browser_use.CREDS_TASK_RE.search(plan_text):
+            # decision 10 at intake: login requires typing a secret, so
+            # the task is refused before any page opens (the step-level
+            # guard measured the model never attempts it — it would
+            # otherwise stick typing the username until the stuck watch)
+            return ("I can't enter passwords or sign in for you — that "
+                    "has to stay in your hands.", False)
+        task = browser_use.BrowserTask(self, plan, utterance)
+        self.browser_task = task
+        task._handle = asyncio.create_task(task.run())
+        return (fb_text or "On it.", True)
+
+    async def partial_stop(self, partial_text):
+        """D11 barge-in on a bare stop partial (see phonon_reader): the
+        cancel fires while the clip is still being spoken; the late
+        final lands in the swallow window and says nothing (it was
+        already obeyed)."""
+        if not (self.browser_task and self.browser_task.active()):
+            return  # task finished meanwhile: the final path handles it
+        await self.browser_task.cancel()
+        self._stop_swallow_until = time.monotonic() + 5.0
+        await self.send({"type": "route", "mode": "browser_ctrl",
+                         "conf": None, "rewrite": None})
+        await self.finish_turn(partial_text, "Stopped.", None, None, None)
+
+    async def browser_stop_check(self, text):
+        """Frozen stop pool 1-NN (decision 11); embeds its pools lazily
+        on the first mid-task final. Gate G2 failure demotes this to the
+        exact resolution vocabulary — recorded in the Results."""
+        try:
+            loop = asyncio.get_event_loop()
+            stop, _ys, _ns, _ms = await loop.run_in_executor(
+                None, lambda: browser_use.stop_scorer().score(text))
+            return stop
+        except Exception:
+            return classify_resolution(text) == "no"
+
+    async def browser_done(self, task, text=None):
+        """Out-of-turn completion (reminder-fire precedent): the answer
+        lands in the intake turn's reply box via response_done, is
+        spoken, and enters history. Parked read-backs come through here
+        too (text override, browser_task stays for the pending)."""
+        text = text or task.answer or ""
+        await self.send({"type": "browser_event", "id": task.id,
+                         "event": task.outcome, "steps": task.steps,
+                         "answer": text})
+        await self.send({"type": "response_done", "text": text})
+        await self.tts(text)
+        self.history.append((task.utterance, text))
+        if task.parked:
+            # the read-back IS a pending resolution: YES executes the
+            # parked click, NO aborts, anything else drops it (M2
+            # machinery, generalized — decision 10b)
+            self.pending = {"kind": "browser", "task": task}
+        else:
+            self.browser_task = None
+        self.gate_until = max(self.gate_until, time.monotonic() + 1.0)
+        await self.update_gate()
+        self.schedule_gate_release(1.0)
 
     async def judge_transcript(self, text):
         """M1 judge (protocol decisions 3-4): YES/NO sensibility on the

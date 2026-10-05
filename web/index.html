@@ -382,6 +382,14 @@ function onMessage(ev) {
     audioQueue = []; if (playing) { stopPlayback(); }
   } else if (m.type === "tool_event") {
     handleToolEvent(m);
+  } else if (m.type === "browser_event") {
+    // voice browser task (PROTOCOL-browser-use): step visibility; the
+    // final answer itself arrives via response_done
+    const last = m.steps && m.steps.length ? m.steps[m.steps.length - 1] : null;
+    const b = turnPart("brow");
+    b.innerHTML = `\ud83c\udf10 ${esc(m.event)} \u2014 ${m.steps.length} step(s)` +
+      (last && last.action ? `; last: ${esc(last.action)}` : "");
+    scrollFeed();
   } else if (m.type === "need_frame") {
     const b64 = grabFrame();
     if (b64) ws.send(JSON.stringify({type: "camera_frame", b64}));
