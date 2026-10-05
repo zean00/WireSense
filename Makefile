@@ -121,7 +121,7 @@ kill_pids() { # name pids...
 }
 endef
 
-.PHONY: start stop restart status canary logs detector test-omdet test-deep record-router eval-router eval-followup tree-probe test-voice test-normalizer test-safety eval-browser test-browser help
+.PHONY: start stop restart status canary logs detector test-omdet test-deep record-router eval-router eval-followup tree-probe test-voice test-normalizer test-safety eval-browser test-browser eval-ir test-ir help
 
 start:
 	@$(HELPERS)
@@ -210,6 +210,12 @@ eval-browser:
 test-browser:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_browser.py
 
+eval-ir:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/eval_ir.py
+
+test-ir:
+	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/test_ir.py
+
 eval-followup:
 	@$(WS_ROOT)/.venv/bin/python $(WS_ROOT)/tools/eval_followup.py
 
@@ -258,5 +264,7 @@ help:
 	@echo "  make test-safety     transcript-safety units (judge clarify + tool read-back)"
 	@echo "  make eval-browser    browser route/stop/goal pool gates (G1-G3)"
 	@echo "  make test-browser    e2e voice browser tasks on fixture pages (G4-G6)"
+	@echo "  make eval-ir         IR route gate (E1)"
+	@echo "  make test-ir         e2e IR fetch/search/research on replay fixtures (E2-E6)"
 	@echo "  (face e2e enabled run: face.enabled in web/config.json + restart, then WIRESENSE_TEST_FACE=1 make test-voice)"
 	@echo "  make test-deep      deep-think adapters: offline parser/config tests"

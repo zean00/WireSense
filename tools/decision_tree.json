@@ -1,6 +1,6 @@
 {
  "_comment": "Decision tree: routes each turn to the component that handles it. Each node is a CLM readout (head-projected class centroids over the slot-6 embedding of the raw utterance); refs live in models/router_embeddings.npz keyed <node>.<class>, recorded from the serving model by tools/record_router.py \u2014 re-record on any serving-numerics change, same rule as decide sigs. Both refs and live text pass norm_router_text (ASR style) or margins collapse. Per the tree-probe experiment (commit 1b72777): no confidence gating \u2014 cosine conf is miscalibrated as an error signal. Actions are resolved in web/server.py: llm = direct generation, subtree = walk the named node with the same embedding, tool = tool flow (manifest-JSON generation, validate, execute, confirm; one retry then honest fallback), vision_generic = honesty guard until capture lands. Directives ride the user turn (not the system block) so the frozen prefix stays byte-stable across modes.",
- "version": 6,
+ "version": 7,
  "nodes": {
   "root": {
    "classes": {
@@ -43,6 +43,11 @@
      "action": "browser",
      "filler": true,
      "feedback": "browser"
+    },
+    "ir": {
+     "action": "ir",
+     "filler": true,
+     "feedback": "ir"
     }
    },
    "pools": {
@@ -192,6 +197,32 @@
      "Open the local file docs.html and find out when backups run.",
      "Open form.html and fill in the feedback form and submit it.",
      "Open login.html and log me in."
+    ],
+    "ir": [
+     "What does the local page archive say about solar panels?",
+     "What does the changelog page say about the last release?",
+     "What does the local page kitchen say about proofing dough?",
+     "What's on the travel page about visa-free entry?",
+     "What does the faq page say about refunds?",
+     "What does the local notes page say about the meeting?",
+     "According to the local budget page, how much is budgeted for tools?",
+     "What does the manual page say about winterizing?",
+     "Search the web for the population of Osaka.",
+     "Search online for when the next solar eclipse is visible.",
+     "Look up online how penicillin was discovered and tell me the story.",
+     "Search the web for the tallest building in the world.",
+     "Find out online whether honey ever goes bad.",
+     "Search the web for reviews of that espresso machine.",
+     "Look online for hiking trails near Bali.",
+     "Can you search the web for the ingredients of a Negroni?",
+     "Research espresso brewing ratios and tell me the recommended one.",
+     "Dig into how composting works and give me a thorough answer.",
+     "Research the history of the Great Library of Alexandria in depth.",
+     "Find out everything I should know before buying a used EV.",
+     "Research sleep hygiene online and summarize what works.",
+     "Dig deep into why the Roman republic fell and tell me the main theories.",
+     "Search the archive for espresso grind settings.",
+     "What do the local pages say about the moon drifting?"
     ]
    }
   },
@@ -285,6 +316,11 @@
    "Let me look that up.",
    "Opening the page.",
    "Checking on that now."
+  ],
+  "ir": [
+   "Let me search for that.",
+   "Digging into that now.",
+   "On it."
   ]
  },
  "backchannel": [
