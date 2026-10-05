@@ -1,0 +1,11 @@
+<!doctype html>
+<html><head><title>Feedback received — WireApp</title></head>
+<body>
+<h1>Thanks! Your feedback was received.</h1>
+<p id="echo">Name: <span class="name"></span> Message: <span class="msg"></span></p>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.querySelector(".name").textContent = q.get("name") || "";
+  document.querySelector(".msg").textContent = q.get("message") || "";
+</script>
+</body></html>
