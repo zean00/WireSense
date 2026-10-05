@@ -57,17 +57,17 @@ a shipping requirement, not an optimization.
    calls (judge slot 4 unused in v1 — the digest's `answered` field
    carries the verdict).
 4. **Routing.** New root class `ir` (action "ir", filler true, feedback
-   "ir"), pool of 24 utterances spanning the three depths. Held-out
-   ROUTE_EVAL_IR (14, with 6 cross-class negatives aimed at the
-   confusion pairs: think/tool "search for flights", browser
-   "look up on Wikipedia", direct, decide) must score >= 12/14 AND the
-   frozen root eval (tools/eval_router.py) must stay >= 56/62 after
-   refs are re-recorded (adding a class changes the argmax set).
-   Ship-if-fail rule: if the routed class breaks either bar, IR does
-   not ship as a routed class; a code intercept (SEARCH_INTENT_RE,
-   same class as browser's LOCAL_PAGE_RE) ships instead, and the
-   failure is recorded. Pool rewrites are protocol revisions, made
-   only before a re-run and recorded.
+   "ir"). Held-out ROUTE_EVAL_IR (14, with 6 cross-class negatives
+   aimed at the confusion pairs: think/tool "search for flights",
+   browser "look up on Wikipedia", direct, decide) must score
+   >= 12/14 AND the frozen root eval (tools/eval_router.py) must stay
+   >= 56/62 AND frozen eval-browser G1 >= 12/14 after refs are
+   re-recorded (adding a class changes the argmax set). Ship-if-fail
+   rule: if the routed class breaks any bar, IR does not ship as a
+   routed class where it failed; a code intercept (SEARCH_INTENT_RE /
+   PAGE_QUESTION_RE, same class as browser's LOCAL_PAGE_RE) ships
+   instead, and the failure is recorded. Pool rewrites are protocol
+   revisions, made only before a re-run and recorded.
 5. **Phrasing contract (registered UX).** "Open X.html ..." stays
    browser intent (LOCAL_PAGE_RE intercept wins over ir routing, by
    design). IR fetch utterances ask a question about a named page
@@ -129,11 +129,61 @@ a shipping requirement, not an optimization.
     finals get the same hold line as browser tasks. Traces:
     /tmp/wiresense_ir/<id>/trace.json.
 
+## Revision log (all before any gate run)
+
+The root.ir pool was revised four times during ref recording (the
+recorder's self-consistency check — every pool sig nearest its own
+centroid — is a recording gate, not a data gate; no eval was scored in
+any of these rounds):
+
+- v1 (24 mixed utterances: page-questions, bare web-search,
+  research): 184/193 — nine cross-hits, ir stealing from
+  think/decide/browser (including browser's own local-file items).
+- v2 (web-anchored rewording): 187/193 — six cross-hits.
+- v3 (weak anchors reworded onto read-up frames): 187/193 — the fixes
+  held, but browser's "Look up the Great Wall/Volga on Wikipedia"
+  flipped to ir: the "look up … online" anchors created an attraction
+  basin poaching a shipping class.
+- v4 (clean frames only): 189/193, and the diagnostic that decided the
+  architecture: "Search the web for reviews of that espresso machine."
+  is a POOL MEMBER and still scored nearest browser (0.8357 vs 0.839)
+  — its own nearest pool match was itself at 1.0. A class whose own
+  members do not return to it is not separable; the fact-lookup
+  subtype and the research subtype pull the centroid between them.
+
+**Registered outcome (decision 4's ship-if-fail rule, invoked at
+recording time):** root.ir narrows to the subtype that separates
+cleanly — research/dig/read-up frames, 12 anchors, records 181/181
+with zero cross-hits and no poaching. Search-intent and page-question
+utterances (the fact-lookup subtype and depth-1 fetch phrasings) ship
+behind code intercepts instead of the centroid, same class as the
+browser track's LOCAL_PAGE_RE:
+
+- `SEARCH_INTENT_RE` — explicit web token near a search verb
+  ("search the web/online/archive", "find out online", "look it up
+  online"). Must NOT fire on "search for flights to Bali" (tool) or
+  "look up X on Wikipedia/IMDb" (browser) — no web token.
+- `PAGE_QUESTION_RE` — a question/read trigger with the page as
+  content source ("what does the faq page say", "read the local
+  kitchen page"). The bare-page branch requires a content verb
+  (say/about/recommend/…) so "can you read the text on this page I'm
+  showing?" stays vision; the local-page branch is exact.
+
+Intake order (registered): LOCAL_PAGE_RE (browser, wins where it
+applies) → SEARCH_INTENT_RE / PAGE_QUESTION_RE (force ir) → centroid.
+The pools themselves are unchanged for every other class; refs were
+re-recorded after each revision.
+
 ## Gates (bars registered before any run)
 
-- **E1 routing.** ROUTE_EVAL_IR >= 12/14 AND frozen root eval
-  (eval-router) >= 56/62 after `make record-router`. Fail -> decision
-  rule in decision 4.
+- **E1 routing (revised to measure the shipped intake rule).**
+  ROUTE_EVAL_IR passes iff every positive routes ir under the shipped
+  intake rule (intercept or centroid) and every negative keeps its
+  expected class under the same rule; >= 12/14. Plus the two
+  regression bars: frozen root eval (eval-router) >= 56/62 AND frozen
+  browser route eval (eval-browser G1) >= 12/14 after the final
+  `make record-router`. Fail -> recorded; a further class narrowing or
+  intercept tightening is a protocol revision before a re-run.
 - **E2 fetch (depth 1).** 4 frozen fixture cases, each answer must
   contain the expected substring, <= 20 s each. Bar >= 3/4 (ASR
   variance precedent from browser G4's 5/6); misses adjudicated.

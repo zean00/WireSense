@@ -133,6 +133,12 @@ def norm(x):
 
 
 def gate_route():
+    """E1 measures the SHIPPED intake rule (PROTOCOL-ir.md revision
+    log): intercepts first (browser LOCAL_PAGE_RE, then SEARCH_INTENT_RE
+    / PAGE_QUESTION_RE), then the root centroid. The intercept regexes
+    are imported from web/ir_use.py — the exact code that ships."""
+    sys.path.insert(0, "web")
+    import ir_use
     cfg = json.load(open(TREE))
     z = np.load(REFS)
     if "root.ir" not in z:
@@ -143,13 +149,20 @@ def gate_route():
         [norm(project(z[f"root.{c}"])).mean(0) for c in classes]))
     ok, misses = 0, []
     for text, want in ROUTE_EVAL_IR:
-        v = norm(project(emb(text)[None, :]))[0]
-        got = classes[int(np.argmax(cents @ v))]
+        if ir_use.LOCAL_PAGE_RE.search(text):
+            got = "browser"            # browser intercept wins first
+        elif ir_use.SEARCH_INTENT_RE.search(text) \
+                or ir_use.PAGE_QUESTION_RE.search(text):
+            got = "ir"                 # ir intercept
+        else:
+            v = norm(project(emb(text)[None, :]))
+            got = classes[int(np.argmax(cents @ v))]
         if got == want:
             ok += 1
         else:
             misses.append((text, want, got))
-    print(f"\nE1 route: {ok}/{len(ROUTE_EVAL_IR)} (bar {E1_BAR})")
+    print(f"\nE1 route (intake rule): {ok}/{len(ROUTE_EVAL_IR)} "
+          f"(bar {E1_BAR})")
     for t, w, g in misses:
         print(f"  MISS want={w} got={g}: {t!r}")
     return ok >= E1_BAR
