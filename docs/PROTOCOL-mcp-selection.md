@@ -875,3 +875,61 @@ retrieval (0.51 target-in-top8, MS-15) with zero generation cost, and the
 0.60 Jaccard confirms shortlists genuinely differ mid-loop (re-keying on
 state is necessary, not optional). The open question MS-18 would answer:
 does an index built from both text kinds close the −0.08?
+
+## MS-17b (registered before any generation): the need-check readout — {tool, continue, done} over model-state text
+
+Design context: the System-1 loop's first classifier decides, at a round
+boundary, what the model's just-produced text means: a tool is needed
+(tool), reasoning is mid-flight (continue), or the answer is complete
+(done). This entry measures whether the DEPLOYED tree mechanism can make
+that call — before any loop wiring exists.
+
+Classes and data:
+- tool: MS-17a's frozen RECIPE_C texts (968, tools/mcp_loop/
+  continuations.json) — reused verbatim, NOT regenerated.
+- continue: RECIPE_D (verbatim): 'Write 8 different short things an
+  assistant might say or think MID-ANSWER while reasoning from what it
+  already knows, where it does NOT need any tool, lookup, or outside
+  information. It is working on this tool's topic but should NOT use the
+  tool or mention it. One or two sentences; never the tool name; max 24
+  words each. Reply with ONLY JSON: {"utterances": ["...", ...]}'
+- done: RECIPE_E (verbatim): 'Write 8 different short COMPLETE final
+  answers (1-2 sentences) an assistant might give a user on this tool's
+  topic, fully resolving the question from known information WITHOUT
+  calling this tool or any other; never mention the tool. Max 30 words
+  each. Reply with ONLY JSON: {"utterances": ["...", ...]}'
+- RECIPE_D/E: per-tool conditioning over all 121 corpus tools (domain-
+  matched hard negatives), card/generation mechanics identical to
+  MS-17a (build_prompt, 220 max_tokens, temp 0.8, id_slot 5); continue
+  seed 5, done seed 7, ONE retry at seed+1 each (MS-16c rule), >=5
+  utterances per call, frozen to tools/mcp_loop/state_texts.json
+  ({"continue": {...}, "done": {...}}), generator refuses overwrite.
+
+Split rule (registered, no-leak): per key, list order as generated —
+pool = texts[:n//2], eval = texts[n//2:]. Same split for the reused
+RECIPE_C texts (0-3 pool / 4-7 eval).
+
+Readout: the deployed tree mechanics VERBATIM (TreeWalker/DecideReadout):
+embed norm_router_text(text) slot 6 -> arm-C head _project -> norm_rows;
+per-class centroid = mean of pool vectors -> norm_rows; classify =
+cosine argmax. No projection/training changes; no confidence gating
+(tree-probe rule).
+
+Eval: held-out halves only (484/class), balanced. Report confusion
+matrix, per-class recall, overall accuracy. Known limitation, disclosed:
+texts are synthetic approximations of the 4B model's in-loop register;
+MS-19's canaries (2 live rounds per class, diagnostic-not-scored, the
+MS-10 precedent) would catch register mismatch before any scored run.
+
+Bars (set BEFORE data):
+- overall accuracy >= 0.75;
+- tool-class recall >= 0.80;
+- false-tool rate (continue or done classified tool) <= 0.15.
+All three pass -> MS-19 loop wiring is justified. tool recall passes but
+false-tool fails -> candidate remedy is a two-stage readout (binary
+tool/no-tool, then done/continue) = MS-17c, separately registered. tool
+recall fails -> the need-check is dead; the loop keeps model-driven
+markers only.
+
+Files: tools/mcp_loop/{gen_state.py, state_texts.json, run_17b.py,
+results_17b.jsonl, summary_17b.json}. Runner committed before data.
