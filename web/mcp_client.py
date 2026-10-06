@@ -111,6 +111,7 @@ class MCPServer:
             self.proc = None
         self.down = True
         self.tools = []
+        self._last_start = 0.0  # a deliberate kill clears the respawn cooldown
 
     def start(self, timeout=90.0):
         """Spawn + handshake + tools/list. Raises MCPError; on any failure
