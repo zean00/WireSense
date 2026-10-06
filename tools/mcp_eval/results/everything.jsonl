@@ -1,0 +1,88 @@
+{"case_id": "pos_everything__echo__direct_0", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Echo what I just said back to me."}}, "prompt_tokens": 1470, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__direct_2", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Say back the string I send."}}, "prompt_tokens": 1468, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__direct_4", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Repeat the message I just gave."}}, "prompt_tokens": 1468, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__direct_7", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Repeat back what I just said."}}, "prompt_tokens": 1468, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__indirect_9", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Give me a copy of my input."}}, "prompt_tokens": 888, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__indirect_11", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Repeat back what I just said."}}, "prompt_tokens": 1468, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__indirect_13", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Echo the string I just entered."}}, "prompt_tokens": 1468, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-annotated-message__direct_16", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 888, "got": null, "ok": false}
+{"case_id": "pos_everything__get-annotated-message__direct_18", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "This message asks you to identify the correct tool and arguments to read a file's contents."}}, "prompt_tokens": 886, "got": "echo", "ok": false}
+{"case_id": "pos_everything__get-annotated-message__direct_20", "kind": "pos", "plan": {"tool": "filesystem__get_file_info", "args": {"path": "message_metadata.json"}}, "prompt_tokens": 1466, "got": "get_file_info", "ok": false}
+{"case_id": "pos_everything__get-annotated-message__indirect_22", "kind": "pos", "plan": {"tool": "note", "args": {"text": "Show me the info for this note."}}, "prompt_tokens": 888, "got": "note", "ok": false}
+{"case_id": "pos_everything__get-annotated-message__indirect_24", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "message description"}}, "prompt_tokens": 889, "got": "read_text_file", "ok": false}
+{"case_id": "pos_everything__get-env__direct_27", "kind": "pos", "plan": {"tool": "everything__get-env", "args": {}}, "prompt_tokens": 1469, "got": "get-env", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-env__direct_29", "kind": "pos", "plan": {"tool": "everything__get-env", "args": {}}, "prompt_tokens": 1469, "got": "get-env", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-env__indirect_31", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1471, "got": null, "ok": false}
+{"case_id": "pos_everything__get-env__indirect_33", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1468, "got": null, "ok": false}
+{"case_id": "pos_everything__get-resource-links__direct_36", "kind": "pos", "plan": {"tool": "everything__get-resource-links", "args": {}}, "prompt_tokens": 1467, "got": "get-resource-links", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-resource-links__direct_38", "kind": "pos", "plan": {"tool": "everything__get-resource-links", "args": {}}, "prompt_tokens": 887, "got": "get-resource-links", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-resource-links__direct_40", "kind": "pos", "plan": {"tool": "everything__get-resource-links", "args": {}}, "prompt_tokens": 1467, "got": "get-resource-links", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-resource-links__indirect_42", "kind": "pos", "plan": {"tool": "filesystem__list_allowed_directories", "args": {}}, "prompt_tokens": 1467, "got": "list_allowed_directories", "ok": false}
+{"case_id": "pos_everything__get-resource-links__indirect_44", "kind": "pos", "plan": {"tool": "list_allowed_directories", "args": {}}, "prompt_tokens": 1469, "got": "list_allowed_directories", "ok": false}
+{"case_id": "pos_everything__get-resource-reference__direct_47", "kind": "pos", "plan": {"tool": "everything__get-resource-reference", "args": {}}, "prompt_tokens": 886, "got": "get-resource-reference", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-resource-reference__direct_49", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1467, "got": null, "ok": false}
+{"case_id": "pos_everything__get-resource-reference__indirect_51", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1468, "got": null, "ok": false}
+{"case_id": "pos_everything__get-resource-reference__indirect_53", "kind": "pos", "plan": {"tool": "everything__get-resource-links", "args": {}}, "prompt_tokens": 888, "got": "get-resource-links", "ok": false}
+{"case_id": "pos_everything__get-resource-reference__indirect_55", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 888, "got": null, "ok": false}
+{"case_id": "pos_everything__get-structured-content__direct_58", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1469, "got": null, "ok": false}
+{"case_id": "pos_everything__get-structured-content__indirect_60", "kind": "pos", "plan": {"tool": "everything__get-structured-content", "args": {"location": "client data path"}}, "prompt_tokens": 890, "got": "get-structured-content", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-structured-content__indirect_62", "kind": "pos", "plan": {"tool": "filesystem__get_file_info", "args": {"path": "location"}}, "prompt_tokens": 890, "got": "get_file_info", "ok": false}
+{"case_id": "pos_everything__get-sum__direct_64", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 1, "b": 2}}, "prompt_tokens": 987, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__direct_67", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 2, "b": 2}}, "prompt_tokens": 832, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__direct_69", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": null, "b": null}}, "prompt_tokens": 831, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__direct_71", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 1, "b": 2}}, "prompt_tokens": 985, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__indirect_73", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": null, "b": null}}, "prompt_tokens": 832, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__indirect_75", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 0, "b": 0}}, "prompt_tokens": 833, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__indirect_78", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 1, "b": 2}}, "prompt_tokens": 987, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-tiny-image__direct_80", "kind": "pos", "plan": {"tool": "everything__get-tiny-image", "args": {}}, "prompt_tokens": 1469, "got": "get-tiny-image", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-tiny-image__direct_82", "kind": "pos", "plan": {"tool": "everything__get-tiny-image", "args": {}}, "prompt_tokens": 887, "got": "get-tiny-image", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-tiny-image__direct_84", "kind": "pos", "plan": {"tool": "everything__get-tiny-image", "args": {}}, "prompt_tokens": 1468, "got": "get-tiny-image", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-tiny-image__indirect_87", "kind": "pos", "plan": {"tool": "everything__get-tiny-image", "args": {}}, "prompt_tokens": 1471, "got": "get-tiny-image", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-tiny-image__indirect_89", "kind": "pos", "plan": {"tool": "everything__get-tiny-image", "args": {}}, "prompt_tokens": 1470, "got": "get-tiny-image", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__direct_91", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1469, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__direct_93", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1468, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__direct_95", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1468, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__indirect_98", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1469, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__indirect_100", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 888, "got": null, "ok": false}
+{"case_id": "pos_everything__toggle-simulated-logging__direct_102", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {}}, "prompt_tokens": 1467, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-simulated-logging__direct_104", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {}}, "prompt_tokens": 1467, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-simulated-logging__indirect_106", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {"enabled": false}}, "prompt_tokens": 1472, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-simulated-logging__indirect_109", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {}}, "prompt_tokens": 1471, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-subscriber-updates__direct_111", "kind": "pos", "plan": {"tool": "everything__toggle-subscriber-updates", "args": {"enabled": true}}, "prompt_tokens": 1466, "got": "toggle-subscriber-updates", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-subscriber-updates__direct_113", "kind": "pos", "plan": {"tool": "everything__toggle-subscriber-updates", "args": {"enabled": false}}, "prompt_tokens": 1465, "got": "toggle-subscriber-updates", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-subscriber-updates__direct_115", "kind": "pos", "plan": {"tool": "everything__toggle-subscriber-updates", "args": {"enabled": false}}, "prompt_tokens": 1465, "got": "toggle-subscriber-updates", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-subscriber-updates__indirect_118", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 886, "got": null, "ok": false}
+{"case_id": "pos_everything__toggle-subscriber-updates__indirect_120", "kind": "pos", "plan": {"tool": "everything__get-resource-links", "args": {}}, "prompt_tokens": 887, "got": "get-resource-links", "ok": false}
+{"case_id": "pos_everything__toggle-subscriber-updates__indirect_122", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1466, "got": null, "ok": false}
+{"case_id": "pos_everything__toggle-subscriber-updates__indirect_124", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1466, "got": null, "ok": false}
+{"case_id": "pos_everything__trigger-long-running-operation__direct_126", "kind": "pos", "plan": {"tool": "trigger-long-running-operation", "args": {}}, "prompt_tokens": 1471, "got": "trigger-long-running-operation", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__trigger-long-running-operation__direct_129", "kind": "pos", "plan": {"tool": "everything__trigger-long-running-operation", "args": {}}, "prompt_tokens": 1470, "got": "trigger-long-running-operation", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__trigger-long-running-operation__indirect_131", "kind": "pos", "plan": {"tool": "everything__trigger-long-running-operation", "args": {}}, "prompt_tokens": 892, "got": "trigger-long-running-operation", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__trigger-long-running-operation__indirect_133", "kind": "pos", "plan": {"tool": "everything__trigger-long-running-operation", "args": {}}, "prompt_tokens": 1476, "got": "trigger-long-running-operation", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__trigger-long-running-operation__indirect_135", "kind": "pos", "plan": {"tool": "everything__trigger-long-running-operation", "args": {}}, "prompt_tokens": 891, "got": "trigger-long-running-operation", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__simulate-research-query__direct_138", "kind": "pos", "plan": {"tool": "ir_research", "args": {"query": ["wiresense", "voice assistant", "concise"], "question": "What is wiresense?", "depth": 1}}, "prompt_tokens": 1467, "got": "ir_research", "ok": false}
+{"case_id": "pos_everything__simulate-research-query__indirect_140", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1469, "got": null, "ok": false}
+{"case_id": "neg_00", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 886, "got": null, "ok": true}
+{"case_id": "neg_01", "kind": "neg", "plan": {"tool": "timer", "args": {"seconds": 1200, "label": "20 minutes"}}, "prompt_tokens": 1469, "got": "timer", "ok": false}
+{"case_id": "neg_02", "kind": "neg", "plan": {"tool": "reminder", "args": {"when": "Friday", "text": "Dentist appointment"}}, "prompt_tokens": 855, "got": "reminder", "ok": false}
+{"case_id": "neg_03", "kind": "neg", "plan": {"tool": "note", "args": {"text": "The wifi password is on the fridge."}}, "prompt_tokens": 1472, "got": "note", "ok": false}
+{"case_id": "neg_04", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 425, "got": null, "ok": true}
+{"case_id": "neg_05", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 853, "got": null, "ok": true}
+{"case_id": "neg_06", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 834, "got": null, "ok": true}
+{"case_id": "neg_07", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_08", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 426, "got": null, "ok": true}
+{"case_id": "neg_09", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 422, "got": null, "ok": true}
+{"case_id": "neg_10", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_11", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 881, "got": null, "ok": true}
+{"case_id": "neg_12", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 883, "got": null, "ok": true}
+{"case_id": "neg_13", "kind": "neg", "plan": {"tool": "everything__echo", "args": {"message": "Say that again louder"}}, "prompt_tokens": 884, "got": "echo", "ok": false}
+{"case_id": "neg_14", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_15", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 883, "got": null, "ok": true}
+{"case_id": "neg_16", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 882, "got": null, "ok": true}
+{"case_id": "neg_17", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_18", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1466, "got": null, "ok": true}
+{"case_id": "neg_19", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_20", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 882, "got": null, "ok": true}
+{"case_id": "neg_21", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_22", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_23", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}

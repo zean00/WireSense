@@ -133,9 +133,10 @@ def adjudicate(name, res_path):
           f"(bar {BAR_NEG}/24)  schema={sch_ok}/{sch_n}")
     print(f"VERDICT {name}: {'PASS' if passed else 'FAIL'} "
           f"(pos_acc>={BAR_POS} and neg>={BAR_NEG}/24)")
+    verdict = {"pos": round(pa, 4), "neg": neg_ok, "neg_n": neg_n,
+               "passed": passed}
     with open(os.path.join(HERE, "results", f"{name}.verdict"), "a") as f:
-        f.write(f"{json.dumps({'pos': pa, 'neg': neg_ok, 'neg_n': neg_n, "
-                               f"'passed': passed})}\n")
+        f.write(json.dumps(verdict) + "\n")
 
 
 if __name__ == "__main__":

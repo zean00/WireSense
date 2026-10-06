@@ -1,0 +1,88 @@
+{"case_id": "pos_git__git_status__direct_0", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1466, "got": "git_status", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_status__direct_3", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 886, "got": null, "ok": false}
+{"case_id": "pos_git__git_status__direct_5", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1466, "got": "git_status", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_status__indirect_8", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1467, "got": "git_status", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_status__indirect_11", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1468, "got": "git_status", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_status__indirect_13", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1466, "got": "git_status", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff_unstaged__direct_16", "kind": "pos", "plan": {"tool": "git__git_diff_unstaged", "args": {"repo_path": "."}}, "prompt_tokens": 1469, "got": "git_diff_unstaged", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff_unstaged__direct_19", "kind": "pos", "plan": {"tool": "git__git_diff_unstaged", "args": {"repo_path": "."}}, "prompt_tokens": 1468, "got": "git_diff_unstaged", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff_unstaged__indirect_21", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1470, "got": "git_status", "ok": false}
+{"case_id": "pos_git__git_diff_unstaged__indirect_24", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 891, "got": null, "ok": false}
+{"case_id": "pos_git__git_diff_staged__direct_27", "kind": "pos", "plan": {"tool": "git__git_diff_staged", "args": {"repo_path": "."}}, "prompt_tokens": 1467, "got": "git_diff_staged", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff_staged__direct_29", "kind": "pos", "plan": {"tool": "git__git_diff_staged", "args": {"repo_path": "."}}, "prompt_tokens": 1467, "got": "git_diff_staged", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff_staged__direct_32", "kind": "pos", "plan": {"tool": "git__git_diff_staged", "args": {"repo_path": "."}}, "prompt_tokens": 1468, "got": "git_diff_staged", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff_staged__indirect_35", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 887, "got": null, "ok": false}
+{"case_id": "pos_git__git_diff_staged__indirect_37", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 889, "got": null, "ok": false}
+{"case_id": "pos_git__git_diff_staged__indirect_40", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1468, "got": "git_status", "ok": false}
+{"case_id": "pos_git__git_diff__direct_42", "kind": "pos", "plan": {"tool": "git__git_diff", "args": {"repo_path": ".", "target": "HEAD~1"}}, "prompt_tokens": 1465, "got": "git_diff", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff__direct_45", "kind": "pos", "plan": {"tool": "git__git_diff", "args": {"repo_path": "."}}, "prompt_tokens": 1466, "got": "git_diff", "ok": true, "schema_ok": false}
+{"case_id": "pos_git__git_diff__direct_48", "kind": "pos", "plan": {"tool": "git__git_diff", "args": {"repo_path": ".", "target": "HEAD"}}, "prompt_tokens": 1464, "got": "git_diff", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff__indirect_50", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 886, "got": null, "ok": false}
+{"case_id": "pos_git__git_diff__indirect_53", "kind": "pos", "plan": {"tool": "git__git_diff", "args": {"repo_path": ".", "target": "HEAD~1"}}, "prompt_tokens": 1467, "got": "git_diff", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_diff__indirect_56", "kind": "pos", "plan": {"tool": "git__git_diff", "args": {"repo_path": "."}}, "prompt_tokens": 1466, "got": "git_diff", "ok": true, "schema_ok": false}
+{"case_id": "pos_git__git_commit__direct_58", "kind": "pos", "plan": {"tool": "git__git_commit", "args": {"repo_path": ".", "message": "commit the changes to the repo"}}, "prompt_tokens": 1467, "got": "git_commit", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_commit__direct_61", "kind": "pos", "plan": {"tool": "note", "args": {"text": "Changes recorded."}}, "prompt_tokens": 1465, "got": "note", "ok": false}
+{"case_id": "pos_git__git_commit__indirect_64", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1465, "got": null, "ok": false}
+{"case_id": "pos_git__git_commit__indirect_66", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1467, "got": null, "ok": false}
+{"case_id": "pos_git__git_add__direct_69", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1465, "got": "git_status", "ok": false}
+{"case_id": "pos_git__git_add__direct_72", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1465, "got": "git_status", "ok": false}
+{"case_id": "pos_git__git_add__direct_74", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1465, "got": "git_status", "ok": false}
+{"case_id": "pos_git__git_add__indirect_77", "kind": "pos", "plan": {"tool": "git__git_add", "args": {"repo_path": ".", "files": "."}}, "prompt_tokens": 1467, "got": "git_add", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_add__indirect_80", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1468, "got": "git_status", "ok": false}
+{"case_id": "pos_git__git_add__indirect_82", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1468, "got": "git_status", "ok": false}
+{"case_id": "pos_git__git_reset__direct_85", "kind": "pos", "plan": {"tool": "git__git_reset", "args": {"repo_path": "."}}, "prompt_tokens": 1468, "got": "git_reset", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_reset__indirect_88", "kind": "pos", "plan": {"tool": "git__git_reset", "args": {"repo_path": "."}}, "prompt_tokens": 1472, "got": "git_reset", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_log__direct_90", "kind": "pos", "plan": {"tool": "git__git_log", "args": {"repo_path": "."}}, "prompt_tokens": 1467, "got": "git_log", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_log__direct_93", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1467, "got": null, "ok": false}
+{"case_id": "pos_git__git_log__direct_96", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1466, "got": null, "ok": false}
+{"case_id": "pos_git__git_log__indirect_98", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 888, "got": null, "ok": false}
+{"case_id": "pos_git__git_log__indirect_101", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1467, "got": null, "ok": false}
+{"case_id": "pos_git__git_log__indirect_104", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1467, "got": null, "ok": false}
+{"case_id": "pos_git__git_create_branch__direct_106", "kind": "pos", "plan": {"tool": "git__git_create_branch", "args": {"repo_path": ".", "branch_name": "new-branch"}}, "prompt_tokens": 1468, "got": "git_create_branch", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_create_branch__direct_109", "kind": "pos", "plan": {"tool": "git__git_create_branch", "args": {"repo_path": ".", "branch_name": "hotfix"}}, "prompt_tokens": 1467, "got": "git_create_branch", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_create_branch__direct_112", "kind": "pos", "plan": {"tool": "git__git_create_branch", "args": {"repo_path": ".", "branch_name": "new-branch"}}, "prompt_tokens": 1466, "got": "git_create_branch", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_create_branch__indirect_114", "kind": "pos", "plan": {"tool": "git__git_create_branch", "args": {"repo_path": ".", "branch_name": "feature-branch"}}, "prompt_tokens": 1470, "got": "git_create_branch", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_create_branch__indirect_117", "kind": "pos", "plan": {"tool": "git__git_create_branch", "args": {"repo_path": ".", "branch_name": "task-branch"}}, "prompt_tokens": 1471, "got": "git_create_branch", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_create_branch__indirect_120", "kind": "pos", "plan": {"tool": "git__git_create_branch", "args": {"repo_path": ".", "branch_name": "your-branch-name"}}, "prompt_tokens": 1471, "got": "git_create_branch", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_checkout__direct_122", "kind": "pos", "plan": {"tool": "git__git_branch", "args": {"repo_path": "."}}, "prompt_tokens": 1466, "got": "git_branch", "ok": false}
+{"case_id": "pos_git__git_checkout__direct_125", "kind": "pos", "plan": {"tool": "git__git_checkout", "args": {"repo_path": ".", "branch_name": "release"}}, "prompt_tokens": 1466, "got": "git_checkout", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_checkout__direct_128", "kind": "pos", "plan": {"tool": "git__git_checkout", "args": {"repo_path": ".", "branch_name": "master"}}, "prompt_tokens": 1464, "got": "git_checkout", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_checkout__indirect_130", "kind": "pos", "plan": {"tool": "git__git_checkout", "args": {"repo_path": ".", "branch_name": "feature"}}, "prompt_tokens": 1470, "got": "git_checkout", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_checkout__indirect_133", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 887, "got": null, "ok": false}
+{"case_id": "pos_git__git_checkout__indirect_135", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1469, "got": null, "ok": false}
+{"case_id": "pos_git__git_show__direct_138", "kind": "pos", "plan": {"tool": "git__git_diff", "args": {"repo_path": ".", "target": "HEAD~1"}}, "prompt_tokens": 1468, "got": "git_diff", "ok": false}
+{"case_id": "pos_git__git_show__direct_141", "kind": "pos", "plan": {"tool": "git__git_show", "args": {"repo_path": ".", "revision": "HEAD"}}, "prompt_tokens": 1468, "got": "git_show", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_show__direct_143", "kind": "pos", "plan": {"tool": "git__git_log", "args": {"repo_path": "."}}, "prompt_tokens": 1468, "got": "git_log", "ok": false}
+{"case_id": "pos_git__git_show__indirect_146", "kind": "pos", "plan": {"tool": "git__git_diff", "args": {"repo_path": ".", "target": "HEAD~1"}}, "prompt_tokens": 1471, "got": "git_diff", "ok": false}
+{"case_id": "pos_git__git_show__indirect_149", "kind": "pos", "plan": {"tool": "git__git_log", "args": {"repo_path": "."}}, "prompt_tokens": 1469, "got": "git_log", "ok": false}
+{"case_id": "pos_git__git_show__indirect_151", "kind": "pos", "plan": {"tool": "git__git_diff", "args": {"repo_path": ".", "target": "HEAD~1"}}, "prompt_tokens": 1469, "got": "git_diff", "ok": false}
+{"case_id": "pos_git__git_branch__direct_154", "kind": "pos", "plan": {"tool": "git__git_branch", "args": {"repo_path": ".", "branch_type": "all"}}, "prompt_tokens": 1468, "got": "git_branch", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_branch__direct_157", "kind": "pos", "plan": {"tool": "git__git_branch", "args": {"repo_path": ".", "branch_type": "all"}}, "prompt_tokens": 1467, "got": "git_branch", "ok": true, "schema_ok": true}
+{"case_id": "pos_git__git_branch__direct_159", "kind": "pos", "plan": {"tool": "git__git_branch", "args": {"repo_path": "."}}, "prompt_tokens": 1466, "got": "git_branch", "ok": true, "schema_ok": false}
+{"case_id": "pos_git__git_branch__indirect_162", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1468, "got": null, "ok": false}
+{"case_id": "pos_git__git_branch__indirect_165", "kind": "pos", "plan": {"tool": "git__git_branch", "args": {"repo_path": "."}}, "prompt_tokens": 1469, "got": "git_branch", "ok": true, "schema_ok": false}
+{"case_id": "pos_git__git_branch__indirect_167", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 886, "got": null, "ok": false}
+{"case_id": "neg_00", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 886, "got": null, "ok": true}
+{"case_id": "neg_01", "kind": "neg", "plan": {"tool": "timer", "args": {"seconds": 1200, "label": "20 minutes"}}, "prompt_tokens": 1469, "got": "timer", "ok": false}
+{"case_id": "neg_02", "kind": "neg", "plan": {"tool": "reminder", "args": {"when": "Friday", "text": "Dentist appointment"}}, "prompt_tokens": 855, "got": "reminder", "ok": false}
+{"case_id": "neg_03", "kind": "neg", "plan": {"tool": "note", "args": {"text": "The wifi password is on the fridge."}}, "prompt_tokens": 1472, "got": "note", "ok": false}
+{"case_id": "neg_04", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 425, "got": null, "ok": true}
+{"case_id": "neg_05", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 853, "got": null, "ok": true}
+{"case_id": "neg_06", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 834, "got": null, "ok": true}
+{"case_id": "neg_07", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_08", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 426, "got": null, "ok": true}
+{"case_id": "neg_09", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 422, "got": null, "ok": true}
+{"case_id": "neg_10", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_11", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 881, "got": null, "ok": true}
+{"case_id": "neg_12", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 883, "got": null, "ok": true}
+{"case_id": "neg_13", "kind": "neg", "plan": {"tool": "everything__echo", "args": {"message": "Say that again louder"}}, "prompt_tokens": 884, "got": "echo", "ok": false}
+{"case_id": "neg_14", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_15", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 883, "got": null, "ok": true}
+{"case_id": "neg_16", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 882, "got": null, "ok": true}
+{"case_id": "neg_17", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_18", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1466, "got": null, "ok": true}
+{"case_id": "neg_19", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_20", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 882, "got": null, "ok": true}
+{"case_id": "neg_21", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_22", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_23", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
