@@ -229,7 +229,10 @@ def main():
                 v = l2(embed(c["utterance"]))
                 sims = space["cents"] @ v
                 order = np.argsort(-sims)[:topn]
-                members = [i for i in np.argsort(-sims) if space["assign"][i] in set(order)]
+                top = set(int(x) for x in order)
+                # MS-11: union of the top-N clusters' TOOLS (run 1 indexed
+                # per-tool assign with centroid indices — invalid, archived)
+                members = [i for i, a in enumerate(space["assign"]) if a in top]
                 short = [tools[i] for i in members]
                 route = {"clusters": [int(x) for x in order],
                          "shortlist": len(short)}

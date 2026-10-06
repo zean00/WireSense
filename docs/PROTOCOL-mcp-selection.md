@@ -140,3 +140,19 @@ failures recorded as failures.
 ## Results
 
 (appended post-run)
+
+## Amendment MS-11 (registered post-run-1, pre-any-hier-rerun-data): routing union bug
+
+Run 1 (2026-10-06): canary green mechanically (budget C=200, flat prompt 3738
+tokens; parse/scoring/resume all exercised), full 5-arm pass completed — but the
+hier arms are INVALID. run_eval.py's shortlist union indexed the per-tool cluster
+assignment with centroid indices (`np.argsort(-sims)` iterates k centroids, used
+as tool indices), so hier shortlists were 2–4 arbitrary tools from the corpus head
+(mean hier prompts 130–196 tokens vs an expected ~700–2500). Diagnosed from the
+route records: positives answered null at ~80%, pos_acc 3.5–6.7% ≈ random over
+tiny wrong shortlists. Flat arm is unaffected by the bug (no routing) and is
+CARRIED OVER byte-identical from run 1 (278 records). Decision: fix the union to
+`members = [i for i, a in enumerate(assign) if a in top_clusters]`; archive run-1
+hier records verbatim as results_run1_invalid_hier.jsonl (committed); rerun the
+four hier arms in full under the same rules. No arm definition, eval case, budget,
+or metric changes.
