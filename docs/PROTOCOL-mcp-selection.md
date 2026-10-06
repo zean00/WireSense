@@ -406,3 +406,64 @@ hier-synth-esc/top2@k5 arm never enters that branch (arm equality check) — its
 278 records and all decomposition numbers stand as valid. Search-trigger stats
 from the invalid run (91.4% search rate on the tightened contract) remain
 descriptive evidence about the contract, not scores.
+
+## MS-15 Results (runs of 2026-10-06; primary rerun under MS-15c)
+
+Reference rows from run 2 / MS-12 sweep, same 278-case frozen eval:
+
+| arm | acc | pos | neg(null) | schema | search rate | calls | pt | ms |
+|---|---|---|---|---|---|---|---|---|
+| flat (ref) | 0.6835 | 0.6654 | 21/24 | — | 0 | 1.00 | 3739 | 2205 |
+| gate synth/top2 k5 (ref) | 0.7014 | 0.681 | 22/24 | — | 0 | 1.00 | 2124 | 1440 |
+| search-primary | 0.4928 | 116/254=0.457 | 21/24 | 112/116 | 0.914 | 1.91 | 474 | 928 |
+| hier-synth-esc/top2@k5 | 0.6583 | 164/254=0.646 | 19/24 | 159/164 | 0.219 | 1.22 | 2246 | 1563 |
+
+Process note: three canary passes before data caught (a) a prime contract that
+nulled 6/6 (MS-15a), (b) a dead search branch (MS-15b), and (c) a scorer that
+invalidated the primary arm post-run (MS-15c, archived + rerun). Decomposition
+numbers below come from the valid records.
+
+Search-primary decomposition — the loss is retrieval, not picking:
+- 246/254 positives searched (the tightened contract fixed triggering at scale;
+  canary n=6 had suggested inversion — it was noise).
+- Model-written queries surface the target in the returned top-8 only 51%
+  (125/246). ok|target-in-top8 = 113/125 = 0.904; ok|target-missing = 3/121.
+  The same model picking from the gate's ~67-tool shortlist scores 0.776; from
+  an 8-candidate list, 0.904 — smaller menus pick better, consistently with
+  the run-2 thesis. The arm dies because 2-4-word queries lose ~37 points of
+  retrieval recall vs embedding the utterance itself (87.8%).
+- Null discipline: 21/24; the 3 failures are all search-then-pick on chat.
+
+Escape-arm decomposition — the option itself is not free:
+- Escape fired on 61/278 turns (21.9%): 45 times on routing-hits (target
+  already shortlisted; trigger miscalibrated) and only 15/31 on true routing
+  misses (48% trigger recall on exactly the dead mass it exists for).
+- Recovery on the 31 dead-mass positives: 5/31 = 0.161 overall (run-2 baseline
+  0.000); per fired true miss 5/15 = 0.33. Real but small.
+- When the search result DID contain the target, pick quality was unchanged
+  (20/26 = 0.77 = gate's planner-given-hit) — the pick stage is not the loss.
+- Contract tax: on the 217 paired turns where NEITHER arm searched, plain k5
+  was right on 11 turns the escape variant lost and lost 3 it gained. Merely
+  offering the escape (one extra manifest line + 3-way contract) costs ~4
+  accuracy points on turns that never use it. Overall paired vs k5: 26 vs 14,
+  McNemar p = 0.0807 (negative direction, not significant at 0.05).
+
+### P1/P2 adjudication
+- P1 (primary below flat and gate on accuracy): CONFIRMED — 0.4928 vs
+  0.6835/0.7014. Null discipline worse than gate: CONFIRMED (0.875 vs 0.917).
+  "Roughly 2x gate latency": REFUTED — it is the fastest arm (928 ms; tiny
+  prompts), just inaccurate.
+- P2 (escape recovers >0.3 of dead mass, finishes >= gate k5, <= 1.2 calls):
+  FAILED on all three — 0.161 recovered, 0.6583 < 0.7014, 1.22 calls.
+
+### VERDICT
+Neither search arm joins the implementation spec. Search-as-primary is
+rejected at this model scale: the planner writes lossy queries, and the
+retrieval recall it needs (87.8%) is exactly what the utterance embedding
+already delivers — the k5 gate IS the search, keyed on the best available
+query (the utterance). The escape hatch is rejected as a default: per-fire
+recovery on true misses (0.33) is real but the trigger fires on the wrong
+turns (45 hits vs 15 misses) and the standing option tax (~4 pts on
+non-escape turns) outweighs the recovered mass. If routing recall is ever the
+binding constraint again, the lever is a better utterance-side retriever, not
+model-mediated search.
