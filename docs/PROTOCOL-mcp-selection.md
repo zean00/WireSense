@@ -714,3 +714,19 @@ the $ENV_NAME rule; read-only tool subset; snapshot to local file, not
 MinIO; PTZ behind the confirm park with per-server "confirm": true, since
 "handle_ptz_control" does not match RISKY_RE by name). Wrapper would be a
 separate registered entry.
+
+## Entry BF (registered before actuation): user-authorized PTZ/focus attempt
+
+User explicitly asked to test camera control. Sequence, gentlest first:
+1. handle_ptz_control(direction="Left", speed=5) — if PTZ existed, the tool
+   itself auto-stops after 3 s at 5% speed; expected per the null PTZ node
+   in get_rtsp: server raises "device does not support PTZ control".
+2. focus_move(speed=0.2) → wait ~2.5 s → focus_move(speed=0.0) to halt.
+   DISCLOSED BUG: the tool's documented stop (speed=None) is unreachable
+   through MCP — the schema type is strict float, so None fails validation;
+   speed=0 (motor commanded to zero) is the only in-protocol stop. If the
+   camera lacks an imaging service, OnvifClient construction fails first
+   and nothing actuates.
+Both calls go through the same client path as entry BE (whitelist extended
+by this registration only). Every outcome recorded honestly, including
+"camera moved" if it does.
