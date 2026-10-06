@@ -1,0 +1,1212 @@
+{
+ "everything__echo": [
+  "I need to confirm the exact message you want sent back.",
+  "Let me grab the specific input string you provided.",
+  "I'll use this tool to return the text you just typed.",
+  "Here is the input string that needs to be echoed.",
+  "I am ready to repeat the message you sent.",
+  "This tool will give you back the exact input string.",
+  "I'll call echo with the message you specified.",
+  "Just one more step to send your message back to you."
+ ],
+ "everything__get-annotated-message": [
+  "I need to check the metadata for that specific message type.",
+  "Let me retrieve the annotated details using everything.",
+  "The system requires the message type to fetch annotations.",
+  "I will query the server for this metadata now.",
+  "Getting the annotations requires a direct tool call.",
+  "This information comes from the annotated message endpoint.",
+  "I'll use the tool to get the message type details.",
+  "Now I need to call the annotation retrieval tool."
+ ],
+ "everything__get-env": [
+  "I need to check the server's environment settings to understand the current configuration state.",
+  "Accessing these variables will help me verify how the system is currently set up.",
+  "Let me retrieve the full list of environment variables from the everything server.",
+  "Debugging the MCP setup requires knowing all active environment parameters right now.",
+  "I should fetch the environment details to ensure my next steps are correct.",
+  "Checking the server's environment variables is the first logical step here.",
+  "I'll pull the environment data to confirm the server is behaving as expected.",
+  "Retrieving these variables will give me the context I need for this query."
+ ],
+ "everything__get-resource-links": [
+  "I need to find all the files related to that project.",
+  "Let me check what resources are connected here.",
+  "There should be several links pointing to the data.",
+  "I'll retrieve the available resource connections now.",
+  "This will show me the different types of links.",
+  "I want to see up to ten of these connections.",
+  "Okay, getting the resource links from the server.",
+  "Now I have the list of referenced resources."
+ ],
+ "everything__get-resource-reference": [
+  "I need to locate the specific file path for the database configuration.",
+  "The client requires a direct link to access the resource securely.",
+  "Let me retrieve the reference so the integration can proceed smoothly.",
+  "Without this pointer, the MCP client cannot establish a connection.",
+  "I'll grab the resource reference to ensure the tool runs correctly.",
+  "This reference is the key the client needs to unlock the data.",
+  "Fetching the reference now will resolve the missing connection issue.",
+  "I have the path; time to provide the necessary resource link."
+ ],
+ "everything__get-structured-content": [
+  "I need to fetch the structured content for the specified location.",
+  "Let me retrieve the details about this address from the database.",
+  "I'll pull the structured data now to ensure it matches the schema.",
+  "The location details are ready, so I can get the structured content.",
+  "I must validate this information using the output schema before responding.",
+  "Accessing the location data will provide the exact structured output needed.",
+  "I'll query the system for the structured content of this specific spot.",
+  "Now I will retrieve the location's structured content for the client."
+ ],
+ "everything__get-sum": [
+  "I need to add these two numbers together for you.",
+  "Let me calculate the total for the final sum.",
+  "Here is the result of adding the first values.",
+  "I'll get the sum of the requested numbers now.",
+  "Adding the inputs together gives me the answer.",
+  "I'm ready to provide the sum of both numbers.",
+  "Calculating the total will finish this request.",
+  "The final sum is ready to be returned."
+ ],
+ "everything__get-tiny-image": [
+  "I need to show you the tiny MCP logo now.",
+  "Let me fetch that small image from everything for you.",
+  "Here is the miniature logo you requested.",
+  "I'll grab that tiny image to complete my response.",
+  "My next step is retrieving the logo asset.",
+  "I should display the small icon I found.",
+  "Fetching the tiny MCP logo image now.",
+  "Here is the small image I was looking for."
+ ],
+ "everything__gzip-file-as-resource": [
+  "I need to shrink this large file to save space.",
+  "The user wants the content ready for immediate download.",
+  "Let me compress this document before sending it over.",
+  "This will reduce the file size significantly.",
+  "I'll apply gzip compression to the resource now.",
+  "The compressed version is ready for the next request.",
+  "This format allows the client to retrieve the file easily.",
+  "I'm generating a resource link for the compressed data."
+ ],
+ "everything__toggle-simulated-logging": [
+  "The user wants to see random log levels.",
+  "I should enable the simulated logging feature.",
+  "Time to activate the random logging toggle.",
+  "I'll switch the simulation mode to on.",
+  "Enabling random logging levels now.",
+  "The tool will generate varied log levels.",
+  "I'm turning on simulated logging.",
+  "Let's activate the random log generator."
+ ],
+ "everything__toggle-subscriber-updates": [
+  "I need to check if the user is subscribed to updates.",
+  "The system state requires this toggle to be applied.",
+  "My internal log shows the subscription status is currently active.",
+  "To proceed, I must switch the subscriber update flag.",
+  "I will now simulate the update event for this resource.",
+  "The tool call is necessary to reflect the current status.",
+  "Activating the toggle will trigger the simulated refresh.",
+  "This action ensures the client receives the latest data."
+ ],
+ "everything__trigger-long-running-operation": [
+  "I need to check the status of that pending request.",
+  "Let me initiate the long process to generate the report.",
+  "Starting the operation now to calculate the final results.",
+  "I'll trigger the background task to update the database.",
+  "Need to run the extended query to fetch all data.",
+  "Time to start the heavy computation for the user.",
+  "I will begin the long-running operation sequence now.",
+  "Initiating the process to handle the large dataset."
+ ],
+ "everything__simulate-research-query": [
+  "I need to gather comprehensive data on this specific topic.",
+  "Let me analyze the available resources and current trends.",
+  "Synthesizing the key findings into a clear summary now.",
+  "Verifying the accuracy of the collected research materials.",
+  "Checking for any gaps in the information I've gathered.",
+  "Preparing the final synthesized report for you.",
+  "Confirming all sources are credible and up-to-date.",
+  "Ready to present the complete research overview."
+ ],
+ "fetch__fetch": [
+  "I need the latest news on that topic for you.",
+  "Let me check the current weather report in your area.",
+  "Here is the recent price update you were asking about.",
+  "I'll retrieve the latest research paper you requested.",
+  "What is the current status of that flight for you?",
+  "I'll fetch the latest exchange rates you need.",
+  "Let me get the most recent stock market summary.",
+  "I'll retrieve the latest news headline you're looking for."
+ ],
+ "filesystem__read_file": [
+  "I need to see what's inside this document first.",
+  "Let me grab the full text from that path.",
+  "Here's the content of the file I requested.",
+  "I'll retrieve the text now since it's deprecated.",
+  "Okay, fetching the file contents for the user.",
+  "I have the data I need to proceed.",
+  "This will show me the exact text required.",
+  "Let's get the file read so we can continue."
+ ],
+ "filesystem__read_text_file": [
+  "I need to check the contents of that log file to understand the error.",
+  "The user's message seems hidden inside a text file I haven't looked at yet.",
+  "I should verify the file path before attempting to read the configuration details.",
+  "This script file might contain the exact logic I need to debug the issue.",
+  "Let me read the user profile file to see if there's any relevant personal data.",
+  "I'll grab the first few lines of the data dump to get a quick overview.",
+  "The system settings are probably stored in that directory, so I'll read the main config.",
+  "I need to confirm the file exists and isn't empty before proceeding with the next step."
+ ],
+ "filesystem__read_media_file": [
+  "I need to retrieve the image data for this specific file path.",
+  "Let me fetch the file contents so I can display it.",
+  "I'll read the media file to extract its base64 content.",
+  "Accessing the filesystem to get the audio or image data.",
+  "I need the file content to include it in my response.",
+  "Retrieving the specified file path from the allowed directory.",
+  "Converting the file to a content block for the user.",
+  "I must read this file before I can analyze its type."
+ ],
+ "filesystem__read_multiple_files": [
+  "I need to check the latest sales reports from the three regional offices.",
+  "Let's retrieve these three files at once to compare the data quickly.",
+  "Fetching the quarterly summaries now to analyze the trends side-by-side.",
+  "I'll read all three documents simultaneously to ensure no data is missed.",
+  "Getting the contents of the project specs, budget, and timeline files now.",
+  "I should pull these three configuration files together for a quick review.",
+  "Let's access the database logs, error reports, and server status files together.",
+  "I'm gathering the contents of these three documents to compare their timestamps."
+ ],
+ "filesystem__write_file": [
+  "I need to save this summary to the notes file.",
+  "The user asked for the project timeline details.",
+  "I'll write the updated schedule to the main log.",
+  "This report needs to be stored immediately.",
+  "Let me create the new document for the team.",
+  "I will overwrite the old draft with the latest info.",
+  "Here is the content for the configuration file.",
+  "Saving the extracted data to the designated path now."
+ ],
+ "filesystem__edit_file": [
+  "I need to update the configuration file with these new settings.",
+  "The user wants to remove the outdated comment lines from the script.",
+  "I will replace the old API endpoint with the new one.",
+  "Let me insert the missing function definition into the code.",
+  "I need to delete the commented-out test block from the file.",
+  "The user requested a specific format change in the data rows.",
+  "I will append the new summary section to the bottom of the log.",
+  "Now I will apply these edits to the target text file."
+ ],
+ "filesystem__create_directory": [
+  "I need to set up the folder structure for this new project.",
+  "The user wants to ensure a specific directory exists on the server.",
+  "I should create the path 'logs' to store the output files.",
+  "Let me call create_directory to make sure the path is ready.",
+  "This tool will silently succeed even if the folder already exists.",
+  "I am constructing the nested path for the application's data directory.",
+  "Now I will execute the filesystem tool to prepare the directory.",
+  "The path argument is required and ready for the call."
+ ],
+ "filesystem__list_directory": [
+  "I need to see what files are in that folder to proceed.",
+  "Let me check the directory contents to verify the file exists.",
+  "I'll list the directory to find the specific resource I'm looking for.",
+  "To continue, I must first inspect the structure of this path.",
+  "Listing the directory will help me locate the exact file needed.",
+  "I need to see all entries in this path to narrow my search.",
+  "Let's get a clear view of what's inside this directory.",
+  "I'll retrieve the file list to confirm the path is valid."
+ ],
+ "filesystem__list_directory_with_sizes": [
+  "I need to see the file sizes to help you find the large logs.",
+  "Let me check the contents of your home directory to see what's there.",
+  "The list of items in /var/log should show me which files are biggest.",
+  "I'll retrieve the directory listing to understand the folder structure better.",
+  "Checking /tmp might reveal temporary files that are taking up too much space.",
+  "I need to know exactly what files exist in the /data folder.",
+  "Let's list the files in the uploads directory to identify the largest ones.",
+  "I will get a detailed breakdown of the /root directory contents now."
+ ],
+ "filesystem__directory_tree": [
+  "I need to show you the full structure of that folder.",
+  "Let me generate a detailed tree view for clarity.",
+  "The recursive listing will help visualize the hierarchy perfectly.",
+  "I'll map out all files and subdirectories now.",
+  "This JSON structure will display every item in order.",
+  "Checking the path to ensure it's within allowed directories.",
+  "Formatting the output with indentation makes it much easier to read.",
+  "Here is the complete directory tree you requested."
+ ],
+ "filesystem__move_file": [
+  "I need to relocate this document to the new folder.",
+  "The file path requires moving to the archive directory.",
+  "Renaming this project file will update its location.",
+  "Both source and destination are within the allowed workspace.",
+  "I should move this backup file to the secure folder.",
+  "This directory structure change requires a file move operation.",
+  "The destination folder is empty, so I can proceed.",
+  "Finalizing the move to complete this task."
+ ],
+ "filesystem__search_files": [
+  "I need to find all Python scripts in the project folder.",
+  "The user asked for code files, so I will search the current directory.",
+  "Let me look for files matching the .py pattern.",
+  "I'll check if there are any configuration files in subdirectories.",
+  "Searching for any text documents to see what we have.",
+  "I will locate the specific image files mentioned in the request.",
+  "Need to verify if the database backup files exist yet.",
+  "Finalizing the search for all log files generated today."
+ ],
+ "filesystem__get_file_info": [
+  "I need to check the size of this document for you.",
+  "Let me verify the creation date on that file.",
+  "I'll look up the permissions to see who can access it.",
+  "Checking the file type to confirm it's a text file.",
+  "I need to get the exact location of the folder.",
+  "Let me retrieve the last modified time for your report.",
+  "I'll fetch the detailed metadata from the filesystem.",
+  "Now I have all the information about that file."
+ ],
+ "filesystem__list_allowed_directories": [
+  "I need to know where I can look for that file.",
+  "Let me check what folders this tool grants me access to.",
+  "Before searching, I must verify the allowed directory paths.",
+  "I'll retrieve the list of directories I'm permitted to access.",
+  "First, I need to see which directories are available for reading.",
+  "To find the file, I must first check the allowed directories.",
+  "I'll query the server to get the list of accessible folders.",
+  "Knowing the allowed directories will help me locate the target file."
+ ],
+ "git__git_status": [
+  "I need to check if there are any uncommitted changes in the repository.",
+  "Let me see what files have been modified recently.",
+  "I'll run the status command to verify the current state.",
+  "This will tell me if the working tree is clean or dirty.",
+  "I'm about to execute the git status tool now.",
+  "Checking the repo path will give me the exact status details.",
+  "I'll display the output to show the user the current changes.",
+  "Ready to query the git server for the latest status."
+ ],
+ "git__git_diff_unstaged": [
+  "I need to check what files have been modified but not added to the index yet.",
+  "Let me inspect the current changes in the working directory for this repository.",
+  "To see the unstaged diffs, I'll run the git_diff_unstaged command on the repo path.",
+  "First, I must identify the specific repository path containing the pending changes.",
+  "Now I will list the differences between the working directory and the last commit.",
+  "I need to show you the uncommitted modifications in the local branch.",
+  "Executing git_diff_unstaged to reveal the messy edits currently sitting in your folder.",
+  "This tool will highlight exactly which files have changed but not yet staged."
+ ],
+ "git__git_diff_staged": [
+  "I need to see what changes are ready to be committed in this repository.",
+  "Let me check the staging area for new modifications.",
+  "The user wants to know which files are about to be pushed.",
+  "I'll query the git server for staged differences now.",
+  "This tool will show me exactly what's in the index.",
+  "I need to list all files currently staged for commit.",
+  "Running the diff command will reveal the pending changes.",
+  "Fetching the staged state is the next logical step here."
+ ],
+ "git__git_diff": [
+  "I need to see what changed in the staging area before committing.",
+  "Let me compare the latest branch against the main line.",
+  "Showing the diff between these two commit hashes will clarify the changes.",
+  "I should check the differences in the working directory now.",
+  "This will help me understand why the test is failing.",
+  "Let's visualize the branch divergence to spot the issue quickly.",
+  "I need to review the line-by-line changes in the repository.",
+  "Comparing the two targets will highlight the specific modifications made."
+ ],
+ "git__git_commit": [
+  "I need to save these changes to the local repository.",
+  "The commit message should briefly summarize the latest update.",
+  "I will record the changes using the standard git protocol.",
+  "This action ensures the history of the project stays accurate.",
+  "I have the necessary path and message ready for submission.",
+  "Committing now will lock in this specific set of modifications.",
+  "The repository path is clear, so I can proceed with the commit.",
+  "Recording the change will update the branch history immediately."
+ ],
+ "git__git_add": [
+  "I need to stage the modified files before committing them.",
+  "The user wants to add changes to the staging area.",
+  "I will call the tool to stage these specific files.",
+  "Adding files to the staging area is the next step.",
+  "This action prepares the changes for the upcoming commit.",
+  "I have identified the correct path and files to stage.",
+  "Now I will invoke the git add tool with the arguments.",
+  "Staging these files ensures they are ready for the commit."
+ ],
+ "git__git_reset": [
+  "I need to revert the staged changes in the repository.",
+  "The user wants to undo their most recent commit.",
+  "I will reset the staging area to remove these changes.",
+  "Executing git reset to clear the staging index now.",
+  "This will undo the staged modifications in the repo.",
+  "I'll use git reset to complete this staging task.",
+  "The command will unstall all the changes currently staged.",
+  "Proceeding with the reset on the specified repository path."
+ ],
+ "git__git_log": [
+  "I need to see the recent changes in this repository.",
+  "Let me check the commit history for repo_path.",
+  "The log will show me exactly what changed.",
+  "Running the log command now for the specified path.",
+  "I'll display the full history of this project.",
+  "Checking out the logs to understand the timeline.",
+  "The git log will reveal all the commits here.",
+  "Time to pull the commit data for the repo."
+ ],
+ "git__git_create_branch": [
+  "I need to create a new branch for this repository.",
+  "The user wants to split off the main branch.",
+  "Let me set up the branch creation request now.",
+  "I'll generate a new branch from the current HEAD.",
+  "Creating a fresh branch will help isolate the changes.",
+  "The repository path and branch name are ready.",
+  "Time to execute the branch creation command.",
+  "This tool will handle the branch setup efficiently."
+ ],
+ "git__git_checkout": [
+  "I need to switch the repository to the latest release branch.",
+  "The current branch is outdated for this pull request.",
+  "Let me move the working directory to main.",
+  "This update requires checking out the feature branch.",
+  "I'll change the context to the staging area.",
+  "Time to align the code with the target branch.",
+  "Switching to the production branch now.",
+  "Updating the branch reference for consistency."
+ ],
+ "git__git_show": [
+  "I need to display the commit history for this repository.",
+  "The user wants to see what changed in that specific version.",
+  "I must check the repository path to locate the commit.",
+  "Running this tool will reveal the exact changes in the revision.",
+  "I will execute the command to show the requested commit details.",
+  "This action provides the detailed view the user is asking for.",
+  "Now I can present the contents of the specified git commit.",
+  "I have all the necessary arguments to run the git show command."
+ ],
+ "git__git_branch": [
+  "I need to see all available branches in the repository first.",
+  "Let me check the branch names before deciding which one to switch to.",
+  "Listing the branches will help me understand the current state of the project.",
+  "I'll query the Git server to retrieve the full branch list now.",
+  "This tool will show me the local and remote branches for the repo.",
+  "I should list the branches to ensure I'm working on the correct one.",
+  "Fetching the branch information will clarify the project's structure for me.",
+  "Now I'll use the Git tool to list all current branches."
+ ],
+ "github__actions_get": [
+  "I need to check the status of that specific workflow run.",
+  "Let me pull the details using the run ID provided.",
+  "This tool will give me the job artifacts I'm looking for.",
+  "I'll query the GitHub server to fetch that workflow info.",
+  "The resource ID should help me locate the exact artifact.",
+  "Calling the actions_get tool now to retrieve the workflow data.",
+  "I have all the required owner and repo names ready.",
+  "Time to execute the request and see the job status."
+ ],
+ "github__actions_list": [
+  "I need to fetch the available workflows for this repository.",
+  "Let me check the current list of all active workflows.",
+  "Listing the workflows will show me all scheduled jobs.",
+  "I'll retrieve the workflow list to see what's running.",
+  "Getting the workflows will help me understand the pipeline.",
+  "Let's start by listing all workflows in the repo.",
+  "I need to query the actions list to proceed.",
+  "Fetching the workflow list is the next logical step."
+ ],
+ "github__actions_run_trigger": [
+  "I need to check the status of that pending GitHub workflow.",
+  "The user wants to trigger a fresh build for the repo.",
+  "Let me initiate the action with the specified owner and repository.",
+  "This will start the automated testing pipeline immediately.",
+  "I'll call the tool to run the latest workflow instance.",
+  "The required arguments are all set for this GitHub action.",
+  "Running the workflow now should resolve the pending issue.",
+  "Here is the command to trigger the GitHub Actions workflow."
+ ],
+ "github__add_comment_to_pending_review": [
+  "I need to check the latest pending pull request for this repo.",
+  "The path needs to point to the file with the code change.",
+  "I will add a specific subject type to categorize the comment.",
+  "Let me confirm the owner and repository name with you first.",
+  "I have the pull request number ready from our previous search.",
+  "The body text should summarize the new finding clearly.",
+  "I am preparing to submit the comment to the pending review.",
+  "All required parameters are gathered and ready for this tool."
+ ],
+ "github__add_issue_comment": [
+  "I see you want to leave a note on that open issue.",
+  "Adding a comment here will clarify the requirements for the PR.",
+  "This should help the maintainers understand the specific changes you made.",
+  "Let's add a comment to ensure everyone sees the important details.",
+  "I'll record your thoughts on the issue tracker now.",
+  "A comment here will keep the discussion thread organized and clear.",
+  "We should document this feedback directly on the issue page.",
+  "This will help the team track the status of this specific task."
+ ],
+ "github__add_reply_to_pull_request_comment": [
+  "I need to check the specific comment ID before proceeding.",
+  "The user mentioned they want to clarify a point in the discussion.",
+  "I will prepare the response text to address the code concern.",
+  "Adding a reply here will keep the conversation focused and organized.",
+  "I have verified that the owner and repo details match the request.",
+  "This reply should directly reference the previous comment for context.",
+  "I'm ready to generate the reply content now.",
+  "The next step is to invoke the tool with the gathered arguments."
+ ],
+ "github__create_branch": [
+  "I need to check the branch name before creating it.",
+  "The owner and repo are already known to the system.",
+  "Creating this branch will isolate the new feature work.",
+  "I must ensure the branch name follows GitHub conventions.",
+  "This action will update the local repository state.",
+  "The branch is currently empty and ready for commits.",
+  "I'll generate the command to finalize the branch creation.",
+  "Proceeding with the tool call now to save the state."
+ ],
+ "github__create_gist": [
+  "I need to generate a new file named 'notes.txt' with your summary content.",
+  "The user's request matches the criteria for creating a fresh text file.",
+  "I will proceed to build the file using the provided filename and content.",
+  "This action aligns with the requirement to output a new text document.",
+  "I have all the necessary details to construct the new file now.",
+  "The goal is clear: produce a new file with the specified text.",
+  "I will execute the command to create the requested file.",
+  "Ready to generate the file using the given parameters."
+ ],
+ "github__create_or_update_file": [
+  "I need to fetch the current file content first to get its SHA.",
+  "Let me call get_file_contents with the existing branch to retrieve the blob hash.",
+  "Now that I have the SHA, I can proceed with the update.",
+  "I must ensure the content matches the latest version before writing.",
+  "The commit message should describe these specific changes clearly.",
+  "I'll use the standard branch name for this repository update.",
+  "Double-checking the path to ensure it matches the file exactly.",
+  "Ready to invoke create_or_update_file with the gathered parameters."
+ ],
+ "github__create_pull_request": [
+  "I need to know the repository owner and name to proceed.",
+  "Could you provide the title for this pull request?",
+  "I require the branch name from which the changes come.",
+  "What target branch should this pull request merge into?",
+  "I'll draft the request once you confirm the branch details.",
+  "The head branch must match the commit source you provided.",
+  "I am ready to generate the PR with your specifications.",
+  "Let's ensure the base branch is up to date first."
+ ],
+ "github__create_repository": [
+  "I need to set up a new project space for you.",
+  "What should we call this brand new repository?",
+  "Let's create a fresh repository on your GitHub account.",
+  "I'll generate the code for a new GitHub repository now.",
+  "Ready to initialize a new repository for your needs.",
+  "Shall we proceed with creating a repository for you?",
+  "I'm about to write the code for a new repo.",
+  "Creating a new repository requires a specific name first."
+ ],
+ "github__delete_file": [
+  "I need to remove that outdated configuration file from the repo.",
+  "The user wants to clean up the git history completely.",
+  "Deleting this script will resolve the permission conflict immediately.",
+  "I'll proceed with removing the specific path from the main branch.",
+  "This action will permanently erase the file from the repository.",
+  "The owner and repo are confirmed, so deletion is safe.",
+  "Adding a message ensures the change is tracked properly.",
+  "Ready to execute the delete command now."
+ ],
+ "github__discussion_comment_write": [
+  "I need to add a top-level comment to this GitHub discussion.",
+  "Let me reply to that specific thread about the bug.",
+  "I'll update the existing comment with the latest details.",
+  "It's time to mark this comment as the official answer.",
+  "I should delete that outdated comment before proceeding.",
+  "Let me add a follow-up comment to the discussion.",
+  "I need to unmark this comment since the answer changed.",
+  "Time to write a new comment summarizing the update."
+ ],
+ "github__dismiss_notification": [
+  "I need to mark this GitHub notification as read so it disappears.",
+  "The user's request aligns perfectly with the dismiss_notification function.",
+  "I'll use the provided thread ID to target the specific message.",
+  "Setting the state to 'read' should fulfill the user's intent here.",
+  "This tool is exactly what's required to handle the GitHub alert.",
+  "I have the necessary thread ID and state to proceed with the action.",
+  "Executing this call will clear the notification from the GitHub server.",
+  "The dismiss_notification tool is the correct solution for this task."
+ ],
+ "github__fork_repository": [
+  "I need to know which repository you want to fork.",
+  "Please tell me the owner name of that repo.",
+  "What is the specific name of the repository?",
+  "I'm ready to proceed once I have those details.",
+  "Let's confirm the owner and repo name together.",
+  "I'll fork the repo once you provide the names.",
+  "Do you have the owner and repo names handy?",
+  "Just give me the owner and repo to proceed."
+ ],
+ "github__get_code_scanning_alert": [
+  "I need to check the latest security alert for this repo.",
+  "The user specifically asked for alert number 402.",
+  "I'll query GitHub for that specific scanning alert now.",
+  "This alert number should give us the vulnerability details.",
+  "Let's pull the code scanning data for the owner and repo.",
+  "I have all the required arguments to fetch the alert.",
+  "Time to retrieve the specific GitHub scanning alert info.",
+  "The user wants to know about alert 402 right away."
+ ],
+ "github__get_commit": [
+  "I need to fetch the details for that specific commit hash.",
+  "Let me retrieve the information from the owner's repository.",
+  "My next step is to query the GitHub server with the commit ID.",
+  "I will now use the get_commit tool to pull the data.",
+  "The required owner and repo names are ready for the API call.",
+  "Fetching the commit metadata now using the available GitHub tool.",
+  "I'll execute the tool call with the provided SHA to get the details.",
+  "Time to use get_commit to ensure I have the latest info."
+ ],
+ "github__get_discussion": [
+  "I need to fetch that specific GitHub discussion for you.",
+  "Let me grab the details for owner, repo, and the number.",
+  "I'll query the GitHub tool to retrieve that discussion thread.",
+  "Time to pull the discussion data from the specified repository.",
+  "I will now call get_discussion to find the content.",
+  "The GitHub tool is the best way to get that info.",
+  "I need to execute the get_discussion function now.",
+  "Let's use the GitHub tool to fetch the requested discussion."
+ ],
+ "github__get_discussion_comments": [
+  "I need to fetch the comments for this GitHub discussion.",
+  "Let me retrieve the user replies using the discussion number.",
+  "I'll query the GitHub server to gather all comments now.",
+  "The owner and repo are known, so I can call the tool.",
+  "I'm about to use the get_discussion_comments function.",
+  "This tool will give me the full thread of comments.",
+  "I have all the required arguments to make this call.",
+  "Time to pull the discussion comments from GitHub."
+ ],
+ "github__get_file_contents": [
+  "I need to pull the latest code from the main branch.",
+  "Let me check the commit history before reading the file.",
+  "The file path looks correct, but I should verify permissions.",
+  "I'll fetch the specific file to ensure I have the right version.",
+  "Okay, now I can retrieve the contents of the target file.",
+  "I have all the necessary arguments to make this request.",
+  "Time to execute the get_file_contents tool with the provided owner and repo.",
+  "The tool is ready to return the file data to you."
+ ],
+ "github__get_gist": [
+  "I need to fetch the content of that specific gist for you.",
+  "Let me pull up the details associated with that ID.",
+  "My next step is to retrieve the gist using its identifier.",
+  "I will now access the GitHub server to get the content.",
+  "The tool requires the gist ID to proceed with the retrieval.",
+  "I am ready to execute the request for that particular gist.",
+  "Fetching the content now using the provided gist identifier.",
+  "This action will complete the request for the gist details."
+ ],
+ "github__get_job_logs": [
+  "I need to fetch the logs for this specific job.",
+  "The user has provided the required owner and repository details.",
+  "Let me retrieve the GitHub Actions workflow job logs now.",
+  "I will query the GitHub server for the requested job information.",
+  "Time to pull those logs from the specified repository.",
+  "The parameters are ready, so I can call the tool.",
+  "I'm about to execute the get_job_logs command on GitHub.",
+  "Retrieving the logs will help clarify what went wrong."
+ ],
+ "github__get_label": [
+  "I need to find the label for that specific issue.",
+  "Let me check the repository settings.",
+  "The label name is stored in the GitHub repo.",
+  "I'll fetch the details from the owner's repo.",
+  "This tool will retrieve the exact label info.",
+  "I have all the required arguments ready.",
+  "Fetching the label data now.",
+  "Time to query the GitHub server."
+ ],
+ "github__get_latest_release": [
+  "I need to find the newest version for the user's project.",
+  "Let me check GitHub for the latest update.",
+  "The repository info is right here in the request.",
+  "Fetching the latest release data from GitHub now.",
+  "I'll query the GitHub API to get this update.",
+  "Looking up the latest tag for the specified repo.",
+  "Time to retrieve the newest release from the server.",
+  "Getting the latest release info will help the user."
+ ],
+ "github__get_notification_details": [
+  "I need to find the specific notification ID you mentioned.",
+  "Let me check your recent notifications for that ID.",
+  "You asked for details, so I must locate the exact notification first.",
+  "I'll search through your feed to identify the right notification ID.",
+  "The user wants specifics, which requires the notification ID from the list.",
+  "I found the ID in your recent GitHub activity feed.",
+  "Now that I have the ID, I can retrieve the full details.",
+  "Ready to fetch the notification information using the tool."
+ ],
+ "github__get_release_by_tag": [
+  "I need to find the release tagged v1.0 for the user's repo.",
+  "The user specified the tag, so I'll query GitHub directly.",
+  "Fetching the release details now using the provided tag.",
+  "This tool will retrieve the specific version info requested.",
+  "I have all the owner, repo, and tag parameters ready.",
+  "Let me pull the release data from the GitHub server.",
+  "The release object should contain the version notes and assets.",
+  "Executing the tool call to get the exact release content."
+ ],
+ "github__get_tag": [
+  "I need to check the tag details for this repository.",
+  "Let me fetch the information about the specified tag now.",
+  "I'll retrieve the metadata for the requested version tag.",
+  "Getting the tag info requires looking up the GitHub server.",
+  "I have all the owner, repo, and tag details ready.",
+  "Now I'll query the GitHub tool to get the tag specifics.",
+  "This tool call will give me the tag description and date.",
+  "I'm about to execute the get_tag function for the user."
+ ],
+ "github__issue_read": [
+  "I need to check the details of that GitHub issue for you.",
+  "Let me pull up the information on this specific problem report.",
+  "I'll retrieve the full text and status from that repository now.",
+  "My next step is to fetch the issue data using the owner and repo.",
+  "I should query the GitHub server to see what that issue says.",
+  "I need to get the specific metadata for this requested issue.",
+  "Let's find out exactly what that issue number represents in the repo.",
+  "I will now ask GitHub to return the details you are looking for."
+ ],
+ "github__issue_write": [
+  "I need to locate the specific issue ID first.",
+  "The owner and repository name are clearly defined here.",
+  "A PATCH method will update the existing issue content.",
+  "I have the full title and description ready to send.",
+  "This request matches the required parameters for issue_write.",
+  "The GitHub API expects a JSON body with the changes.",
+  "I will now construct the request with the provided details.",
+  "Ready to update the issue in the specified repo."
+ ],
+ "github__list_branches": [
+  "I need to check what branches exist in this repo.",
+  "Let me fetch the branch list for you right now.",
+  "Here are the available branches for your project.",
+  "I'll query the repository to show all branches.",
+  "Ready to list the branches in the specified repo.",
+  "Fetching branch information from the GitHub server now.",
+  "This tool will give you the full branch inventory.",
+  "Let's see what branches are currently active in the repo."
+ ],
+ "github__list_code_scanning_alerts": [
+  "I need to check for any recent security alerts in this repository.",
+  "Let me fetch the list of open code scanning issues now.",
+  "I'll retrieve the alerts to ensure the codebase is safe.",
+  "Getting the latest code scanning data for this project.",
+  "I should pull the active alerts to review them.",
+  "Let's see what code scanning alerts are currently active.",
+  "I need to list the scanning alerts for this repo.",
+  "Fetching the GitHub code scanning status now."
+ ],
+ "github__list_commits": [
+  "I need to check the recent changes in that repository.",
+  "Let me pull the commit history for that branch.",
+  "Fetching the latest commits from GitHub now.",
+  "I'll list the recent activity on this repo.",
+  "Time to retrieve the commit list from GitHub.",
+  "Checking the changelog for that specific branch.",
+  "Pulling commit data from the GitHub server.",
+  "I'm gathering the recent commit history now."
+ ],
+ "github__list_discussion_categories": [
+  "I need to show you the available discussion categories for this repo.",
+  "Let me fetch the list of topics users might discuss here.",
+  "I'll retrieve the category IDs and names now.",
+  "I should check what discussion topics exist in this project.",
+  "Here are the categories you asked about for the repository.",
+  "I'll gather the discussion structure from the GitHub data.",
+  "Let me list out the main topics for you.",
+  "I'm pulling the discussion categories to complete your request."
+ ],
+ "github__list_discussions": [
+  "I need to see the discussion list for this repository.",
+  "Let me fetch the available discussions from the owner's repo.",
+  "My next step is to retrieve all recent discussions here.",
+  "I'll query the GitHub API to get the discussion threads.",
+  "Time to list the discussions for the specified owner.",
+  "I need to pull the discussion data from GitHub now.",
+  "Let's check what discussions are available in this organization.",
+  "I'm ready to list the discussions for the given owner."
+ ],
+ "github__list_gists": [
+  "I need to fetch your public gists from GitHub now.",
+  "Let me retrieve the list of your GitHub gists.",
+  "Time to check what gists you have shared.",
+  "I will query the GitHub server for your gists.",
+  "Here is the list of your GitHub gists.",
+  "I'm about to list your gists from GitHub.",
+  "Let's see what gists are available for you.",
+  "Fetching your GitHub gists right now."
+ ],
+ "github__list_issue_fields": [
+  "I need to see what custom fields are available for this repository.",
+  "Let me check the issue fields to help you configure the form.",
+  "The user asked about fields, so I'll retrieve the list from GitHub.",
+  "I should verify the field types before providing the details to the user.",
+  "Calling the tool to get the available options for the issue template.",
+  "I need the organization name to fetch the correct field definitions.",
+  "Listing the fields will show the user which data is required.",
+  "This call will reveal if there are any new single-select options available."
+ ],
+ "github__list_issue_types": [
+  "I need to check what issue types this organization supports.",
+  "Let me query the GitHub server for their issue types.",
+  "The owner parameter is ready, so I can fetch the list now.",
+  "I'll use the list_issue_types tool to get the organization's issues.",
+  "Checking the repo structure to determine available issue types.",
+  "I must call GitHub to retrieve the supported issue types.",
+  "Fetching the list of issue types from the specified owner.",
+  "I'll execute the tool call to display all available issue types."
+ ],
+ "github__list_issues": [
+  "I need to see what problems exist in this repository first.",
+  "Let me check the open issues to understand the current status.",
+  "Listing the issues will help me prioritize the next steps.",
+  "I should gather all available information before proceeding further.",
+  "Retrieving the issue list is the logical next move here.",
+  "I want to know if there are any critical bugs waiting.",
+  "Accessing the issue tracker will clarify the team's current focus.",
+  "Let's start by getting a full view of the reported issues."
+ ],
+ "github__list_notifications": [
+  "You mentioned checking for pending reviews, so I'll list your GitHub notifications now.",
+  "Since you need to know what to work on next, I'm retrieving your notifications.",
+  "I see you want a summary of your GitHub activity, so here are your notifications.",
+  "To find new updates or tasks, I need to pull your list of GitHub notifications.",
+  "You asked for reminders, which means listing your unread GitHub notifications is the right step.",
+  "Checking for assignments and mentions requires me to fetch your GitHub notifications immediately.",
+  "To help you prioritize, I'm getting the details from your GitHub notifications feed.",
+  "You need to see outstanding work, so I'm calling the tool to list notifications."
+ ],
+ "github__list_pull_requests": [
+  "I need to find the open pull requests for this repo.",
+  "Let me check the current list of pull requests for you.",
+  "I'll retrieve the pull requests associated with this owner and repository.",
+  "Here is the list of pull requests currently in the repository.",
+  "I am gathering the pull request details for this project.",
+  "I need to fetch the list of pull requests now.",
+  "Let me pull the list of open pull requests for you.",
+  "I will now list the pull requests for this repository."
+ ],
+ "github__list_releases": [
+  "I need to fetch the latest updates from that specific repository.",
+  "Let me check the version history to see what's new.",
+  "The owner and repo names are all I require to proceed.",
+  "I'll pull the release list now to give you an overview.",
+  "My next step is to query GitHub for these available versions.",
+  "I have the necessary identifiers to execute this request.",
+  "Retrieving the release notes will complete this part of your query.",
+  "Now I will generate the list of releases for you."
+ ],
+ "github__list_repository_collaborators": [
+  "I need to check who has access to this repo.",
+  "Let me fetch the list of collaborators now.",
+  "Who else is contributing to this project?",
+  "I'll retrieve the team members for the repository.",
+  "It's time to see the full list of collaborators.",
+  "I should query GitHub for the current contributors.",
+  "Fetching the collaborator list for this repository now.",
+  "I need the details of everyone with access."
+ ],
+ "github__list_tags": [
+  "I need to check the available tags for this repository.",
+  "Let me retrieve the git tag information now.",
+  "Here are the tags I found in the repo.",
+  "I'm pulling the list of tags from GitHub.",
+  "Checking the tag history for the owner and repo.",
+  "I'll display all the tags associated with this project.",
+  "Retrieving the current git tags for you.",
+  "I have the list of tags ready to show."
+ ],
+ "github__manage_notification_subscription": [
+  "I need to stop these alerts so you won't be bothered.",
+  "Let's remove this entire thread to clear your inbox.",
+  "I want to ignore these specific updates for now.",
+  "Should I delete this subscription entirely?",
+  "I'll mark this topic as read and stop notifications.",
+  "I need to watch this thread closely again.",
+  "This notification thread is causing too much noise.",
+  "Let's ignore this specific issue for a while."
+ ],
+ "github__manage_repository_notification_subscription": [
+  "I need to stop getting updates from that project.",
+  "Let me ignore notifications for this repository now.",
+  "I'll delete the subscription since I'm not watching it.",
+  "The user wants to unsubscribe from repo alerts.",
+  "I should manage the notification settings for this repo.",
+  "Ignoring this repository will quiet those push notifications.",
+  "I'll delete the subscription to clean up my feed.",
+  "Let me remove the watch action for this owner and repo."
+ ],
+ "github__mark_all_notifications_read": [
+  "I see you have unread GitHub notifications waiting for attention.",
+  "Let me help you mark all of them as read now.",
+  "This will clear your inbox so you can focus on work.",
+  "I'll update the system to reflect that these messages are handled.",
+  "The notification panel will refresh to show you the latest status.",
+  "This action ensures your dashboard stays clean and organized.",
+  "You can now ignore these messages without worrying about missing anything.",
+  "All done; your GitHub notifications are officially read."
+ ],
+ "github__merge_pull_request": [
+  "I need to combine these two branches for you.",
+  "Let's get this pull request merged now.",
+  "Ready to update the repository state.",
+  "The PR number is all I need.",
+  "Merging changes into the main branch.",
+  "This will finalize the code updates.",
+  "Time to execute the merge command.",
+  "Pull request merge initiated successfully."
+ ],
+ "github__pull_request_read": [
+  "I need to fetch the details for pull request number 42.",
+  "Checking the specific status of that recent merge request.",
+  "Let me look up the author and comments on this change.",
+  "I'll retrieve the latest activity on this open branch.",
+  "Gathering the full context of this proposed code update.",
+  "Now I will query GitHub for that specific PR data.",
+  "I have the owner, repo, and number ready to go.",
+  "Time to pull the information about this pull request now."
+ ],
+ "github__pull_request_review_write": [
+  "I need to check the pull request comments before I can submit them.",
+  "The user wants me to post feedback on that specific code change.",
+  "I should locate the pending review thread to update it with new comments.",
+  "This action requires knowing the owner, repository, and pull number first.",
+  "I'll find the existing pending review so I can modify its body.",
+  "Submitting the review will trigger the event on the GitHub server.",
+  "I must ensure the thread ID is correct before resolving the comment.",
+  "Let me verify the required parameters are all present in the request."
+ ],
+ "github__push_files": [
+  "I need to push these code changes to the main branch now.",
+  "The files are ready, so I will initiate the push.",
+  "Let me commit this batch of updates with a clear message.",
+  "I should send the files to the owner's repository immediately.",
+  "This commit will merge all pending edits into the shared repo.",
+  "I am preparing to upload the modified source files now.",
+  "The repository is updated and ready for the push command.",
+  "I will execute the push to finalize these local changes."
+ ],
+ "github__search_code": [
+  "I need to find the specific function definition you mentioned in the codebase.",
+  "Searching GitHub directly should reveal the exact line of code you're looking for.",
+  "Let me query the global repository search to locate that symbol immediately.",
+  "This tool will help me find the precise code pattern across all repositories.",
+  "I'll use the native search engine to pinpoint the exact function definition.",
+  "Querying the codebase now will give me the most accurate results quickly.",
+  "Using the search tool is the fastest way to locate that specific code snippet.",
+  "I am initiating the search to ensure I find the correct function definition."
+ ],
+ "github__search_commits": [
+  "I need to find the specific commit message the user mentioned.",
+  "Let me search the GitHub default branch for that query.",
+  "The user wants to locate a particular code change.",
+  "I will run a search across the available repositories.",
+  "Finding the exact commit ID is the next step here.",
+  "My query needs to match the GitHub search syntax.",
+  "I'll filter the results to show only the default branch.",
+  "Ready to execute the commit search tool now."
+ ],
+ "github__search_issues": [
+  "The user is asking about login failures after a password reset.",
+  "I need to find existing reports about this specific authentication problem.",
+  "Searching GitHub issues for paraphrased terms about login issues.",
+  "This semantic search should match variations of 'login fails after reset'.",
+  "I will scope the search specifically to issue records.",
+  "Natural language matching will help find the conceptual root cause.",
+  "Retrieving relevant reports to suggest workarounds or fixes.",
+  "Let me query the GitHub issue database for this pattern."
+ ],
+ "github__search_orgs": [
+  "I need to find the specific GitHub organization for you.",
+  "Let me search GitHub to get the details.",
+  "My next step is to query the organization database.",
+  "I'll use the search function to locate this group.",
+  "Retrieving organization info from GitHub is the way to go.",
+  "I must now call the search tool with the query.",
+  "Looking up the org on GitHub will give me the answer.",
+  "Time to search GitHub for the organization you mentioned."
+ ],
+ "github__search_pull_requests": [
+  "I need to find all open pull requests for the new feature.",
+  "Let me query the repo to see what's currently being merged.",
+  "Searching for issues labeled as pull requests will give me the list.",
+  "I'll use the search syntax to filter specifically for PRs.",
+  "My next step is to execute the GitHub search tool.",
+  "I want to know which pull requests are still open.",
+  "Running a scoped search on the pull requests now.",
+  "I have the query ready to search for active changes."
+ ],
+ "github__search_repositories": [
+  "I need to find that specific repository for you.",
+  "Let me search GitHub to see if it exists.",
+  "I'll look up the repository using the query provided.",
+  "Searching GitHub now to locate the requested project.",
+  "I will search the GitHub repositories database.",
+  "Let me find the repo details on GitHub.",
+  "I'll search GitHub for that specific repository.",
+  "Searching GitHub repositories to fulfill your request."
+ ],
+ "github__search_users": [
+  "I need to find the developer who works on the new feature.",
+  "Let me look up their username in the GitHub repository.",
+  "Searching for the team member with the real name John Smith.",
+  "I should check if this user has contributed to the codebase.",
+  "Finding the profile associated with that project handle.",
+  "Who is the lead contributor listed in the README?",
+  "I will search for anyone matching that specific description.",
+  "Time to locate the user ID from the server."
+ ],
+ "github__sub_issue_write": [
+  "I need to add a sub-issue to the parent ticket.",
+  "The owner and repo details match our target project.",
+  "I have the specific sub-issue ID ready now.",
+  "This will help track related bugs in the GitHub system.",
+  "The method parameter is set to create a new link.",
+  "All required fields are populated for this request.",
+  "Executing the tool to finalize the sub-issue attachment.",
+  "Done adding the sub-issue to the parent issue."
+ ],
+ "github__update_gist": [
+  "I need to refresh that specific file on your GitHub repository.",
+  "The new content for your project update is ready to go.",
+  "Let's apply these changes to the existing gist immediately.",
+  "Your latest edits are syncing up with the main branch now.",
+  "I'm about to push the revised content to your GitHub account.",
+  "This update will ensure your shared notes stay current.",
+  "Connecting to GitHub to finalize the gist modification.",
+  "Ready to commit the new text to your public gist."
+ ],
+ "github__update_issue_comment": [
+  "I need to find the specific comment ID for this issue first.",
+  "The user wants to change the text of their original post.",
+  "I'll update the comment body to reflect the latest clarification.",
+  "This is a direct edit to the conversation thread on GitHub.",
+  "I have the owner, repo, and comment ID ready for this action.",
+  "The new body text is now clear and concise enough to use.",
+  "Updating the issue comment will resolve the confusion in the thread.",
+  "I'm executing the update to ensure the project team sees the change."
+ ],
+ "github__update_pull_request": [
+  "I need to fetch the latest changes from the branch.",
+  "The user wants to refresh this PR with new commits.",
+  "Updating the pull request requires the repo owner name.",
+  "I have the pull number from the previous context.",
+  "The repository name is stored in the user's history.",
+  "Let me confirm the target branch before making changes.",
+  "I'll proceed to update the pull request details now.",
+  "Ready to call the update tool with the gathered info."
+ ],
+ "github__update_pull_request_branch": [
+  "I need to sync this PR with the latest main branch changes.",
+  "The base branch was updated since the pull request was created.",
+  "Updating the branch now will ensure we have the newest code.",
+  "This update will resolve any merge conflicts automatically.",
+  "I'll refresh the branch reference to match the upstream state.",
+  "This keeps the pull request aligned with the repository history.",
+  "Executing the update will incorporate all pending commits.",
+  "Ready to push the latest base branch changes now."
+ ],
+ "memory__create_entities": [
+  "I need to add these new people to the database.",
+  "The user mentioned several contacts that don't exist yet.",
+  "Let's create the new entries for everyone on the list.",
+  "I have the entity data ready to input now.",
+  "Adding these three profiles will complete the current request.",
+  "The knowledge graph needs these fresh records.",
+  "I'm about to register the new individuals in the system.",
+  "Creating the entities now should resolve the missing data issue."
+ ],
+ "memory__create_relations": [
+  "I need to map out the new connections between these key entities.",
+  "The active voice is crucial for this specific relation type.",
+  "Let's define the precise relationships first before executing.",
+  "This batch of updates will refresh the knowledge graph structure.",
+  "I must ensure all verbs clearly indicate direction and action.",
+  "The memory server requires a structured list of these links.",
+  "Generating the arguments now to complete this task.",
+  "Ready to establish these five new connections in the graph."
+ ],
+ "memory__add_observations": [
+  "I need to record the new data point for this entity.",
+  "Adding this observation will update the user's health profile.",
+  "The system requires a fresh entry for the current timestamp.",
+  "I should log this specific symptom to track progression.",
+  "This new fact must be attached to the existing record.",
+  "Updating the knowledge graph with this latest finding.",
+  "I'll store this observation to maintain an accurate history.",
+  "Time to append this detail to the entity's profile."
+ ],
+ "memory__delete_entities": [
+  "I need to remove these outdated user profiles from the system.",
+  "These three entities no longer have active connections to the database.",
+  "Let's clean up the graph by removing those specific nodes.",
+  "I've identified the records that need to be deleted immediately.",
+  "Updating the knowledge graph requires removing these obsolete entities now.",
+  "The system is ready to drop these specific user references.",
+  "I must clear these items to maintain data integrity.",
+  "Executing the deletion command for these three inactive accounts."
+ ],
+ "memory__delete_observations": [
+  "I need to remove that outdated sensor reading from the graph.",
+  "The user specifically asked to erase those previous measurements.",
+  "Let's clear out the observation labeled 'initial_error' now.",
+  "This deletion will keep the knowledge graph clean and accurate.",
+  "I found the exact observation record that needs to be removed.",
+  "Executing this action will update the entity's state immediately.",
+  "Removing this data point aligns with the latest user request.",
+  "The system is ready to finalize the deletion of this observation."
+ ],
+ "memory__delete_relations": [
+  "I need to remove that outdated connection between the user and the old product.",
+  "This relation no longer holds truth in our current database.",
+  "The knowledge graph needs updating to reflect the new status.",
+  "I found the specific link that must be severed now.",
+  "Deleting this will clean up the redundancy in the memory graph.",
+  "The system requires this deletion to maintain data integrity.",
+  "I have identified the exact relations that should be removed.",
+  "Proceeding with the cleanup of these historical connections."
+ ],
+ "memory__read_graph": [
+  "I need to visualize the connections between these nodes to understand the flow.",
+  "The user asked about the relationships, so the full graph is essential here.",
+  "My memory of this specific topic is fragmented, requiring a complete read.",
+  "To answer accurately, I must first retrieve the entire structural map.",
+  "I can't summarize the interactions without seeing the underlying graph structure.",
+  "The complexity of this query demands a full view of the data.",
+  "I'll compile the necessary details by accessing the central knowledge hub.",
+  "Understanding the user's intent requires mapping out every link in the network."
+ ],
+ "memory__search_nodes": [
+  "I need to find all nodes related to the user's current query.",
+  "Searching the knowledge graph will reveal the most relevant connections.",
+  "Let me query the memory server to see what's stored there.",
+  "The search_nodes tool is the best way to retrieve this specific data.",
+  "I'm filtering the results to show only the most pertinent nodes.",
+  "This tool will help me synthesize the information into a clear answer.",
+  "Executing the search now to ensure I have the latest node details.",
+  "I'll use this tool to gather the context needed for the final response."
+ ],
+ "memory__open_nodes": [
+  "I need to check the status of those specific nodes.",
+  "Let me open the relevant nodes in the graph now.",
+  "These three items are the ones I need to examine.",
+  "Opening the nodes will help me find the data.",
+  "I should retrieve the information stored in these specific areas.",
+  "Let's access the details for each of these nodes.",
+  "I will now open the nodes to get the full picture.",
+  "Fetching the data from these specific graph nodes next."
+ ],
+ "puppeteer__puppeteer_navigate": [
+  "I need to check the homepage of that website for you.",
+  "Let me open this link directly in the browser.",
+  "I'll navigate to the requested URL to fetch the content.",
+  "Opening the specific page you asked about now.",
+  "Redirecting the browser to load that external site.",
+  "I will now follow the link to see what's there.",
+  "Time to load the page at that address.",
+  "I'm navigating to the URL you provided."
+ ],
+ "puppeteer__puppeteer_screenshot": [
+  "I need to capture the current view of the page for you.",
+  "Let's grab the screenshot of the entire webpage now.",
+  "I will take a picture of the whole page to show you.",
+  "Capturing the full page view is the next step here.",
+  "I'll generate the image of the current screen content.",
+  "The full page screenshot is what I'm about to make.",
+  "I need to record the entire page view visually.",
+  "Taking the full page picture is required right now."
+ ],
+ "puppeteer__puppeteer_click": [
+  "I need to find the button the user wants to press.",
+  "The link text points directly to this interactive element.",
+  "My script must locate the exact spot on the page.",
+  "This click action is required to proceed with the request.",
+  "I will target the specific DOM node identified by the selector.",
+  "Simulating a human click here will trigger the next step.",
+  "The element is visible and ready for interaction now.",
+  "I'm executing this command to update the page state."
+ ],
+ "puppeteer__puppeteer_fill": [
+  "I need to locate the input field first.",
+  "The user wants to enter text here.",
+  "Let me find the element by its selector.",
+  "I will simulate typing the value now.",
+  "This action updates the form state.",
+  "The script is ready to execute.",
+  "Input validation looks good so far.",
+  "Filling the field completes this step."
+ ],
+ "puppeteer__puppeteer_select": [
+  "I need to find the specific input field the user wants to fill out.",
+  "The form contains multiple options, so I must narrow down the exact element.",
+  "User requested a selection, which requires interacting with a dropdown menu.",
+  "I have the selector and the value needed to perform this action.",
+  "Executing the selection will update the page state as requested.",
+  "This tool is the standard way to handle such UI interactions here.",
+  "I'm ready to trigger the element selection now.",
+  "Proceeding with the puppeteer_select tool to complete the task."
+ ],
+ "puppeteer__puppeteer_hover": [
+  "I need to check the current state of that button before proceeding.",
+  "The user specified they want to test the hover effect on this link.",
+  "I should interact with the DOM element to trigger the desired visual change.",
+  "My goal is to verify if the tooltip appears when the mouse moves there.",
+  "I must execute the hover action to fulfill the user's request accurately.",
+  "This tool will help me simulate a user moving their cursor over the target.",
+  "I will now interact with the element to observe the resulting page update.",
+  "Executing a hover command is necessary to complete this specific interaction test."
+ ],
+ "puppeteer__puppeteer_evaluate": [
+  "I need to run this specific JavaScript code in the browser environment.",
+  "Executing the script directly in the puppeteer context is the best approach.",
+  "The browser console requires this exact evaluation to proceed.",
+  "Passing the script argument will trigger the necessary browser action.",
+  "I'll use the puppeteer tool to handle the JavaScript execution now.",
+  "This script needs to run within the active browser session.",
+  "The evaluation function is ready to receive the requested code.",
+  "I will invoke the tool to execute the script in the console."
+ ],
+ "sequential-thinking__sequentialthinking": [
+  "I need to break this complex problem down into manageable steps before proceeding.",
+  "My initial understanding seems incomplete, so I'll add more thoughts to verify the hypothesis.",
+  "The data is overwhelming; I should filter out irrelevant details first.",
+  "I'm unsure if my current approach is correct, so let me reconsider my assumptions.",
+  "This requires a multi-step solution, so I'll map out the full sequence now.",
+  "I realize I need to backtrack and adjust my strategy based on new insights.",
+  "The scope isn't fully clear yet, requiring further analysis and refinement.",
+  "I'll generate a solution hypothesis and then systematically verify each step."
+ ],
+ "time__get_current_time": [
+  "I need to know what time it is in Tokyo for you.",
+  "Let me check the current hour in Sydney.",
+  "What is the exact time right now in New York?",
+  "I'll grab the current time for London right away.",
+  "Checking the clock for you in Paris.",
+  "Let me find out what time it is in Berlin.",
+  "I'll get the current time in Dubai for you.",
+  "What does the clock say in Moscow at this moment?"
+ ],
+ "time__convert_time": [
+  "I need to find out what time it is in Tokyo right now.",
+  "The user asked for a specific location's current time.",
+  "My internal clock shows the time for the local timezone.",
+  "I should convert this local time to the requested destination.",
+  "The conversion tool requires a source and target timezone.",
+  "I have the current time and the target city specified.",
+  "Executing the time conversion for the user's request.",
+  "The tool will handle the timezone difference accurately."
+ ]
+}
