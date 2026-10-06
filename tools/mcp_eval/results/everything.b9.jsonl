@@ -1,0 +1,88 @@
+{"case_id": "pos_everything__echo__direct_0", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Repeat exactly what I just said to me."}}, "prompt_tokens": 1470, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__direct_3", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Verbatim echo my latest spoken words here."}}, "prompt_tokens": 1470, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__direct_6", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Repeat the input string exactly as given."}}, "prompt_tokens": 1469, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__indirect_9", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Repeat exactly what I typed so I can see it."}}, "prompt_tokens": 1472, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__indirect_11", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Echo the text I just spoke so I can review it."}}, "prompt_tokens": 1473, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__echo__indirect_14", "kind": "pos", "plan": {"tool": "everything__echo", "args": {"message": "Say back my typed input so I can verify it."}}, "prompt_tokens": 1472, "got": "echo", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-annotated-message__direct_17", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "report"}}, "prompt_tokens": 891, "got": "read_text_file", "ok": false}
+{"case_id": "pos_everything__get-annotated-message__indirect_20", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1471, "got": null, "ok": false}
+{"case_id": "pos_everything__get-annotated-message__indirect_23", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "alert_file"}}, "prompt_tokens": 1471, "got": "read_text_file", "ok": false}
+{"case_id": "pos_everything__get-env__direct_26", "kind": "pos", "plan": {"tool": "everything__get-env", "args": {}}, "prompt_tokens": 1469, "got": "get-env", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-env__indirect_28", "kind": "pos", "plan": {"tool": "filesystem__list_allowed_directories", "args": {}}, "prompt_tokens": 1472, "got": "list_allowed_directories", "ok": false}
+{"case_id": "pos_everything__get-env__indirect_31", "kind": "pos", "plan": {"tool": "everything__get-env", "args": {}}, "prompt_tokens": 1471, "got": "get-env", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-resource-links__direct_34", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "Pictures"}}, "prompt_tokens": 1471, "got": "list_directory", "ok": false}
+{"case_id": "pos_everything__get-resource-links__direct_37", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "design"}}, "prompt_tokens": 1469, "got": "list_directory", "ok": false}
+{"case_id": "pos_everything__get-resource-links__indirect_40", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "Documents"}}, "prompt_tokens": 1472, "got": "list_directory", "ok": false}
+{"case_id": "pos_everything__get-resource-links__indirect_43", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "images"}}, "prompt_tokens": 1470, "got": "list_directory", "ok": false}
+{"case_id": "pos_everything__get-resource-links__indirect_46", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1471, "got": null, "ok": false}
+{"case_id": "pos_everything__get-resource-reference__direct_48", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1471, "got": null, "ok": false}
+{"case_id": "pos_everything__get-resource-reference__direct_51", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "logs"}}, "prompt_tokens": 1469, "got": "list_directory", "ok": false}
+{"case_id": "pos_everything__get-resource-reference__direct_54", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "."}}, "prompt_tokens": 1469, "got": "list_directory", "ok": false}
+{"case_id": "pos_everything__get-resource-reference__indirect_57", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1471, "got": null, "ok": false}
+{"case_id": "pos_everything__get-resource-reference__indirect_60", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1471, "got": null, "ok": false}
+{"case_id": "pos_everything__get-resource-reference__indirect_63", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1471, "got": null, "ok": false}
+{"case_id": "pos_everything__get-structured-content__direct_65", "kind": "pos", "plan": {"tool": "filesystem__list_directory_with_sizes", "args": {"path": "/data/reports"}}, "prompt_tokens": 1473, "got": "list_directory_with_sizes", "ok": false}
+{"case_id": "pos_everything__get-structured-content__direct_68", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "/images"}}, "prompt_tokens": 1469, "got": "list_directory", "ok": false}
+{"case_id": "pos_everything__get-structured-content__direct_71", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "/assets/styles.css"}}, "prompt_tokens": 1472, "got": "read_text_file", "ok": false}
+{"case_id": "pos_everything__get-structured-content__indirect_74", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "."}}, "prompt_tokens": 1473, "got": "list_directory", "ok": false}
+{"case_id": "pos_everything__get-structured-content__indirect_77", "kind": "pos", "plan": {"tool": "filesystem__list_allowed_directories", "args": {}}, "prompt_tokens": 1472, "got": "list_allowed_directories", "ok": false}
+{"case_id": "pos_everything__get-sum__direct_80", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 5, "b": 3}}, "prompt_tokens": 836, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__direct_82", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 7, "b": 9}}, "prompt_tokens": 834, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__direct_85", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 15, "b": 35}}, "prompt_tokens": 836, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__indirect_88", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 200, "b": 200}}, "prompt_tokens": 995, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__indirect_91", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 1234, "b": 456}}, "prompt_tokens": 843, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-sum__indirect_94", "kind": "pos", "plan": {"tool": "everything__get-sum", "args": {"a": 300, "b": 400}}, "prompt_tokens": 839, "got": "get-sum", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-tiny-image__direct_97", "kind": "pos", "plan": {"tool": "everything__get-tiny-image", "args": {}}, "prompt_tokens": 1468, "got": "get-tiny-image", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__get-tiny-image__indirect_100", "kind": "pos", "plan": {"tool": "everything__get-tiny-image", "args": {}}, "prompt_tokens": 1471, "got": "get-tiny-image", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__direct_102", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1470, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__direct_105", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1473, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__direct_108", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1470, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__indirect_111", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 893, "got": null, "ok": false}
+{"case_id": "pos_everything__gzip-file-as-resource__indirect_114", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1471, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__gzip-file-as-resource__indirect_117", "kind": "pos", "plan": {"tool": "everything__gzip-file-as-resource", "args": {}}, "prompt_tokens": 1474, "got": "gzip-file-as-resource", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-simulated-logging__direct_119", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {}}, "prompt_tokens": 1469, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-simulated-logging__direct_122", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {}}, "prompt_tokens": 1471, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-simulated-logging__direct_125", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {}}, "prompt_tokens": 1470, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-simulated-logging__indirect_128", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {}}, "prompt_tokens": 1472, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-simulated-logging__indirect_131", "kind": "pos", "plan": {"tool": "everything__toggle-simulated-logging", "args": {}}, "prompt_tokens": 1472, "got": "toggle-simulated-logging", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-subscriber-updates__direct_134", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1472, "got": null, "ok": false}
+{"case_id": "pos_everything__toggle-subscriber-updates__direct_136", "kind": "pos", "plan": {"tool": "everything__toggle-subscriber-updates", "args": {"enabled": false}}, "prompt_tokens": 1471, "got": "toggle-subscriber-updates", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-subscriber-updates__direct_139", "kind": "pos", "plan": {"tool": "everything__toggle-subscriber-updates", "args": {"enabled": false}}, "prompt_tokens": 1471, "got": "toggle-subscriber-updates", "ok": true, "schema_ok": true}
+{"case_id": "pos_everything__toggle-subscriber-updates__indirect_142", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1473, "got": null, "ok": false}
+{"case_id": "pos_everything__toggle-subscriber-updates__indirect_145", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1473, "got": null, "ok": false}
+{"case_id": "pos_everything__toggle-subscriber-updates__indirect_148", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1474, "got": null, "ok": false}
+{"case_id": "pos_everything__trigger-long-running-operation__direct_151", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1476, "got": null, "ok": false}
+{"case_id": "pos_everything__trigger-long-running-operation__direct_154", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1475, "got": null, "ok": false}
+{"case_id": "pos_everything__trigger-long-running-operation__direct_156", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1474, "got": null, "ok": false}
+{"case_id": "pos_everything__trigger-long-running-operation__indirect_159", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1475, "got": null, "ok": false}
+{"case_id": "pos_everything__trigger-long-running-operation__indirect_162", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1474, "got": null, "ok": false}
+{"case_id": "pos_everything__trigger-long-running-operation__indirect_165", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1474, "got": null, "ok": false}
+{"case_id": "pos_everything__simulate-research-query__direct_168", "kind": "pos", "plan": {"tool": "ir_research", "args": {"query": ["renewable energy", "recent trends"], "question": "what are the recent trends", "depth": 2}}, "prompt_tokens": 1471, "got": "ir_research", "ok": false}
+{"case_id": "pos_everything__simulate-research-query__direct_171", "kind": "pos", "plan": {"tool": "ir_research", "args": {"query": ["new product launch"], "question": "find mentions", "depth": 1}}, "prompt_tokens": 890, "got": "ir_research", "ok": false}
+{"case_id": "pos_everything__simulate-research-query__direct_173", "kind": "pos", "plan": {"tool": "ir_research", "args": {"query": ["TechCorp", "Nova", "merger"], "question": "What are the merger details?", "depth": 2}}, "prompt_tokens": 892, "got": "ir_research", "ok": false}
+{"case_id": "pos_everything__simulate-research-query__indirect_176", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1473, "got": null, "ok": false}
+{"case_id": "pos_everything__simulate-research-query__indirect_179", "kind": "pos", "plan": {"tool": "ir_research", "args": {"query": ["space mission plans", "upcoming missions"], "question": "What are the details of upcoming space missions?", "depth": 2}}, "prompt_tokens": 891, "got": "ir_research", "ok": false}
+{"case_id": "neg_00", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 886, "got": null, "ok": true}
+{"case_id": "neg_01", "kind": "neg", "plan": {"tool": "timer", "args": {"seconds": 1200, "label": "20 minutes"}}, "prompt_tokens": 1469, "got": "timer", "ok": false}
+{"case_id": "neg_02", "kind": "neg", "plan": {"tool": "reminder", "args": {"when": "Friday", "text": "Dentist appointment"}}, "prompt_tokens": 855, "got": "reminder", "ok": false}
+{"case_id": "neg_03", "kind": "neg", "plan": {"tool": "note", "args": {"text": "The wifi password is on the fridge."}}, "prompt_tokens": 1472, "got": "note", "ok": false}
+{"case_id": "neg_04", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 425, "got": null, "ok": true}
+{"case_id": "neg_05", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 853, "got": null, "ok": true}
+{"case_id": "neg_06", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 834, "got": null, "ok": true}
+{"case_id": "neg_07", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_08", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 426, "got": null, "ok": true}
+{"case_id": "neg_09", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 422, "got": null, "ok": true}
+{"case_id": "neg_10", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_11", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 881, "got": null, "ok": true}
+{"case_id": "neg_12", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 883, "got": null, "ok": true}
+{"case_id": "neg_13", "kind": "neg", "plan": {"tool": "everything__echo", "args": {"message": "Say that again louder"}}, "prompt_tokens": 884, "got": "echo", "ok": false}
+{"case_id": "neg_14", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_15", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 883, "got": null, "ok": true}
+{"case_id": "neg_16", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 882, "got": null, "ok": true}
+{"case_id": "neg_17", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_18", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1466, "got": null, "ok": true}
+{"case_id": "neg_19", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}
+{"case_id": "neg_20", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 882, "got": null, "ok": true}
+{"case_id": "neg_21", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_22", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 885, "got": null, "ok": true}
+{"case_id": "neg_23", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 884, "got": null, "ok": true}

@@ -1117,3 +1117,55 @@ committed and untouched.
 
 Files: gen_eval.py + run_eval.py amendments committed before data;
 evals/<server>.b9.json; results/<server>.b9.{jsonl,verdict}.
+
+## MS-16b-2 (results + adjudication)
+
+One launch hiccup, disclosed: the first background launch passed
+MCP_EVAL_SUFFIX=b9 (no dot), giving evals/filesystemb9.json ->
+FileNotFoundError. No cases were scored; relaunched with MCP_EVAL_SUFFIX=.b9.
+Runner code unchanged (registered contract: suffix splices into
+{name}{SUFFIX}.json; default empty = B8 paths).
+
+Results (320 cases = 224 pos + 96 neg; combined four-server manifest;
+"index from cache (hash b6ac5cf5)" — the SAME index the B8 run scored
+against; no pool regeneration):
+
+```
+server      B8 pos   B9 pos   neg     schema    verdict
+filesystem  0.4219   0.6406   20/24   41/41     FAIL -> PASS
+time        0.7188   0.7500   20/24   24/24     PASS
+everything  0.6562   0.4375   20/24   28/28     PASS -> FAIL (flipped)
+git         0.5312   0.6406   20/24   37/41     FAIL -> PASS
+```
+
+The autopsy's prediction held: with self-contained, uniquely-resolved
+utterances and the deprecated alias excluded — same gate, same planner,
+same index, zero code change — filesystem (+0.22) and git (+0.11) clear
+the registered bar. The B8 failures were substantially eval-borne.
+
+The everything flip is a true measurement, not a recipe artifact. Its
+tools are MCP SDK demo fixtures (echo / annotated-message / resource
+links / long-op trigger / simulated research); under the uniqueness
+rule the frozen cases demand demo-fixture precision, and the model
+repeatedly does the CORRECT assistant thing: it picks the real native
+research tool over simulate-research-query (4x) and refuses demo-fixture
+utterances (trigger-long-running-operation 6x null). Demo tools do not
+map to distinct user intents; the B8 pass was vagueness dressed as
+coverage. everything stays gated off — correct for a server that exists
+to exercise protocol features, not serve users.
+
+Residual concentrations (recorded for the future, all within PASSing
+servers): git git_commit -> native note (3x) and the show/log/diff
+triangle persisting despite uniqueness phrasing (the three descriptions
+genuinely overlap); git 4 schema misses (right tool, required arg
+absent — 37/41); filesystem edit_file -> read_text_file (2x);
+time get_current_time -> null / ir_research / convert_time ("what time
+is it in X" vs conversion ambiguity persists).
+
+Deployment state per the registered rule (PASS enables): filesystem,
+git, and time are CLEARED FOR ENABLEMENT; everything remains disabled.
+The user's live config.json is untouched — flipping the enable switch
+is the user's call. When enabled with <= 20 MCP tools total the gate
+runs flat; the four-server set (41 tools) runs through the cached index.
+
+Files: tools/mcp_eval/results/{filesystem,time,everything,git}.b9.{jsonl,verdict}.
