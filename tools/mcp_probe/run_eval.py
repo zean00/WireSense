@@ -29,8 +29,11 @@ os.chdir(WEB)
 import server  # noqa: E402
 
 CORPUS = os.path.join(HERE, "corpus")
-RESULTS = os.path.join(HERE, "results.jsonl")
-SUMMARY = os.path.join(HERE, "summary.json")
+RESULTS = os.environ.get("MCP_PROBE_RESULTS",
+                         os.path.join(HERE, "results.jsonl"))
+SUMMARY = os.environ.get("MCP_PROBE_SUMMARY",
+                         os.path.join(HERE, "summary.json"))
+CANARY_N = int(os.environ.get("MCP_PROBE_CANARY", "0"))  # 0 = all cases
 BUDGET = os.path.join(HERE, "C_budget.json")
 K = 10
 TOPN = {"top1": 1, "top2": 2}
@@ -186,6 +189,13 @@ def main():
                                 "vecs": np.stack(svecs)}
         print(f"hier-synth space built in {time.time()-t0:.0f}s; "
               f"cluster sizes={np.bincount(assign, minlength=K).tolist()}")
+
+    if CANARY_N:
+        pos = [c for c in cases if c["kind"] == "pos"][:2]
+        neg = [c for c in cases if c["kind"] == "neg"][:2]
+        trap = [c for c in cases if c["kind"] == "trap"][:2]
+        cases = pos + neg + trap
+        print(f"CANARY subset: {[c['id'] for c in cases]}")
 
     done = set()
     if os.path.exists(RESULTS):
