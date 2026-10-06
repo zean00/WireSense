@@ -1,0 +1,625 @@
+{
+ "server": "filesystem",
+ "generated": "2026-10-06",
+ "recipe": "Write 8 short things a user might say to a voice assistant for this tool. \"directs\": plain direct requests for what the tool does, do not copy the tool name, max 14 words each. \"indirects\": goal-oriented phrasings where the tool is implied but never named, max 16 words each. Reply with ONLY JSON: {\"directs\": [\"...\", ...], \"indirects\": [\"...\", ...]}",
+ "seed": 2,
+ "pos_cap": 64,
+ "cases": [
+  {
+   "id": "pos_filesystem__read_text_file__direct_0",
+   "kind": "pos",
+   "utterance": "read my notes file",
+   "want": "read_text_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__read_text_file__direct_3",
+   "kind": "pos",
+   "utterance": "get the text from setup.txt",
+   "want": "read_text_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__read_text_file__direct_6",
+   "kind": "pos",
+   "utterance": "view the settings file",
+   "want": "read_text_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__read_text_file__indirect_9",
+   "kind": "pos",
+   "utterance": "what did I write in the diary?",
+   "want": "read_text_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__read_text_file__indirect_12",
+   "kind": "pos",
+   "utterance": "show me what's in the contact list",
+   "want": "read_text_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__read_text_file__indirect_15",
+   "kind": "pos",
+   "utterance": "tell me the summary from the sales report",
+   "want": "read_text_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__read_media_file__direct_18",
+   "kind": "pos",
+   "utterance": "Show me the audio recording.",
+   "want": "read_media_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__read_media_file__direct_21",
+   "kind": "pos",
+   "utterance": "Read the notes from last week.",
+   "want": "read_media_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__read_media_file__indirect_24",
+   "kind": "pos",
+   "utterance": "Can you share the image I saved?",
+   "want": "read_media_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__read_media_file__indirect_27",
+   "kind": "pos",
+   "utterance": "Can you tell me about the photo?",
+   "want": "read_media_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__read_media_file__indirect_30",
+   "kind": "pos",
+   "utterance": "Read the content of that file for me.",
+   "want": "read_media_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__read_multiple_files__direct_33",
+   "kind": "pos",
+   "utterance": "Read the contents of all these documents.",
+   "want": "read_multiple_files",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__read_multiple_files__direct_36",
+   "kind": "pos",
+   "utterance": "Please read these files together for me.",
+   "want": "read_multiple_files",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__read_multiple_files__direct_39",
+   "kind": "pos",
+   "utterance": "Please read and show me these files.",
+   "want": "read_multiple_files",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__read_multiple_files__indirect_42",
+   "kind": "pos",
+   "utterance": "Could you pull the content from these files for me?",
+   "want": "read_multiple_files",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__read_multiple_files__indirect_45",
+   "kind": "pos",
+   "utterance": "Can you help me read through all these files?",
+   "want": "read_multiple_files",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__write_file__direct_48",
+   "kind": "pos",
+   "utterance": "Create a file named notes.txt with today's schedule.",
+   "want": "write_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__write_file__direct_51",
+   "kind": "pos",
+   "utterance": "Save the summary text to a file called final.txt.",
+   "want": "write_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__write_file__direct_54",
+   "kind": "pos",
+   "utterance": "Put the poem into a file named verse.txt now.",
+   "want": "write_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__write_file__indirect_57",
+   "kind": "pos",
+   "utterance": "Save this meeting summary to my documents folder.",
+   "want": "write_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__write_file__indirect_60",
+   "kind": "pos",
+   "utterance": "Draft a new welcome message and save it to a file.",
+   "want": "write_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__write_file__indirect_63",
+   "kind": "pos",
+   "utterance": "Save the story I just told into a new file.",
+   "want": "write_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__edit_file__direct_66",
+   "kind": "pos",
+   "utterance": "update the report text with new data.",
+   "want": "edit_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__edit_file__direct_69",
+   "kind": "pos",
+   "utterance": "replace the error message in the script.",
+   "want": "edit_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__edit_file__indirect_72",
+   "kind": "pos",
+   "utterance": "update the notes file to reflect today's changes.",
+   "want": "edit_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__edit_file__indirect_75",
+   "kind": "pos",
+   "utterance": "fix the script so it runs without errors.",
+   "want": "edit_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__edit_file__indirect_78",
+   "kind": "pos",
+   "utterance": "modify the instructions to include the new steps.",
+   "want": "edit_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__create_directory__direct_81",
+   "kind": "pos",
+   "utterance": "Create a directory called backup.",
+   "want": "create_directory",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__create_directory__direct_84",
+   "kind": "pos",
+   "utterance": "Create the folder data.",
+   "want": "create_directory",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__create_directory__direct_87",
+   "kind": "pos",
+   "utterance": "Create the directory cache.",
+   "want": "create_directory",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__create_directory__indirect_90",
+   "kind": "pos",
+   "utterance": "Can you make sure this path exists?",
+   "want": "create_directory",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__create_directory__indirect_93",
+   "kind": "pos",
+   "utterance": "Can you set up the needed directory?",
+   "want": "create_directory",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__list_directory_with_sizes__direct_96",
+   "kind": "pos",
+   "utterance": "What is in my Documents folder?",
+   "want": "list_directory_with_sizes",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__list_directory_with_sizes__direct_99",
+   "kind": "pos",
+   "utterance": "What files exist in the Pictures directory?",
+   "want": "list_directory_with_sizes",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__list_directory_with_sizes__direct_102",
+   "kind": "pos",
+   "utterance": "What files are in the backup directory?",
+   "want": "list_directory_with_sizes",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__list_directory_with_sizes__indirect_105",
+   "kind": "pos",
+   "utterance": "I need to see what's inside this folder.",
+   "want": "list_directory_with_sizes",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__list_directory_with_sizes__indirect_108",
+   "kind": "pos",
+   "utterance": "I want to explore the directory structure now.",
+   "want": "list_directory_with_sizes",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__list_directory_with_sizes__indirect_111",
+   "kind": "pos",
+   "utterance": "I need a quick overview of this folder.",
+   "want": "list_directory_with_sizes",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__directory_tree__direct_114",
+   "kind": "pos",
+   "utterance": "Display all files and folders in /root.",
+   "want": "directory_tree",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__directory_tree__direct_117",
+   "kind": "pos",
+   "utterance": "Give me the directory tree for /home/user.",
+   "want": "directory_tree",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__directory_tree__indirect_120",
+   "kind": "pos",
+   "utterance": "I want to see all my files organized.",
+   "want": "directory_tree",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__directory_tree__indirect_123",
+   "kind": "pos",
+   "utterance": "List the structure of my workspace.",
+   "want": "directory_tree",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__directory_tree__indirect_126",
+   "kind": "pos",
+   "utterance": "Show me everything stored in that folder.",
+   "want": "directory_tree",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__move_file__direct_129",
+   "kind": "pos",
+   "utterance": "I want to rename this document to report.pdf.",
+   "want": "move_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__move_file__direct_132",
+   "kind": "pos",
+   "utterance": "Please shift this file to the /data directory.",
+   "want": "move_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__move_file__direct_135",
+   "kind": "pos",
+   "utterance": "I need to move this file to a subfolder.",
+   "want": "move_file",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__move_file__indirect_138",
+   "kind": "pos",
+   "utterance": "I want to clean up this folder.",
+   "want": "move_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__move_file__indirect_141",
+   "kind": "pos",
+   "utterance": "Please transfer these documents to the secure folder.",
+   "want": "move_file",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__search_files__direct_144",
+   "kind": "pos",
+   "utterance": "Find all Python files in the project folder.",
+   "want": "search_files",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__search_files__direct_147",
+   "kind": "pos",
+   "utterance": "Show me all files ending in .log.",
+   "want": "search_files",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__search_files__direct_150",
+   "kind": "pos",
+   "utterance": "Look for all PDFs in the documents folder.",
+   "want": "search_files",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__search_files__indirect_153",
+   "kind": "pos",
+   "utterance": "Where are all my backup files located?",
+   "want": "search_files",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__search_files__indirect_156",
+   "kind": "pos",
+   "utterance": "Where did I save the recent error reports?",
+   "want": "search_files",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__search_files__indirect_159",
+   "kind": "pos",
+   "utterance": "I need to find any recently created log files.",
+   "want": "search_files",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__get_file_info__direct_162",
+   "kind": "pos",
+   "utterance": "Show me the file info for this directory.",
+   "want": "get_file_info",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__get_file_info__direct_165",
+   "kind": "pos",
+   "utterance": "Tell me the last modified time of this file.",
+   "want": "get_file_info",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__get_file_info__indirect_168",
+   "kind": "pos",
+   "utterance": "What size is that file I need for my project?",
+   "want": "get_file_info",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__get_file_info__indirect_171",
+   "kind": "pos",
+   "utterance": "I need to verify the permissions on that folder.",
+   "want": "get_file_info",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__get_file_info__indirect_174",
+   "kind": "pos",
+   "utterance": "I'm looking for the file size of that directory entry.",
+   "want": "get_file_info",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__list_allowed_directories__direct_177",
+   "kind": "pos",
+   "utterance": "List the accessible directories.",
+   "want": "list_allowed_directories",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__list_allowed_directories__direct_180",
+   "kind": "pos",
+   "utterance": "Display the available directories.",
+   "want": "list_allowed_directories",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__list_allowed_directories__direct_183",
+   "kind": "pos",
+   "utterance": "What directories are safe to use?",
+   "want": "list_allowed_directories",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_filesystem__list_allowed_directories__indirect_186",
+   "kind": "pos",
+   "utterance": "I want to organize my photos, where should I save them?",
+   "want": "list_allowed_directories",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_filesystem__list_allowed_directories__indirect_189",
+   "kind": "pos",
+   "utterance": "I am looking for settings, where are they stored on my computer?",
+   "want": "list_allowed_directories",
+   "flavor": "indirect"
+  },
+  {
+   "id": "neg_00",
+   "kind": "neg",
+   "utterance": "What's a deference span",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_01",
+   "kind": "neg",
+   "utterance": "Set a timer for 20 minutes",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_02",
+   "kind": "neg",
+   "utterance": "Remind me about the dentist on Friday",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_03",
+   "kind": "neg",
+   "utterance": "Make a note that the wifi password is on the fridge",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_04",
+   "kind": "neg",
+   "utterance": "How are you doing today",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_05",
+   "kind": "neg",
+   "utterance": "Write a haiku about autumn",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_06",
+   "kind": "neg",
+   "utterance": "What's 17 times 23",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_07",
+   "kind": "neg",
+   "utterance": "Tell me a joke",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_08",
+   "kind": "neg",
+   "utterance": "What's the weather in Jakarta",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_09",
+   "kind": "neg",
+   "utterance": "Good morning",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_10",
+   "kind": "neg",
+   "utterance": "What did you just say",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_11",
+   "kind": "neg",
+   "utterance": "Stop",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_12",
+   "kind": "neg",
+   "utterance": "Who made you",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_13",
+   "kind": "neg",
+   "utterance": "Say that again louder",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_14",
+   "kind": "neg",
+   "utterance": "I love this song",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_15",
+   "kind": "neg",
+   "utterance": "Are you real",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_16",
+   "kind": "neg",
+   "utterance": "Thank you",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_17",
+   "kind": "neg",
+   "utterance": "What's your favorite color",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_18",
+   "kind": "neg",
+   "utterance": "Explain quantum computing simply",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_19",
+   "kind": "neg",
+   "utterance": "Translate hello to French",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_20",
+   "kind": "neg",
+   "utterance": "Spell entrepreneurship",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_21",
+   "kind": "neg",
+   "utterance": "How do you make bread",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_22",
+   "kind": "neg",
+   "utterance": "Open the pod bay doors",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_23",
+   "kind": "neg",
+   "utterance": "What's my name",
+   "want": null,
+   "flavor": "hand"
+  }
+ ]
+}

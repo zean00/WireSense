@@ -1,0 +1,625 @@
+{
+ "server": "git",
+ "generated": "2026-10-06",
+ "recipe": "Write 8 short things a user might say to a voice assistant for this tool. \"directs\": plain direct requests for what the tool does, do not copy the tool name, max 14 words each. \"indirects\": goal-oriented phrasings where the tool is implied but never named, max 16 words each. Reply with ONLY JSON: {\"directs\": [\"...\", ...], \"indirects\": [\"...\", ...]}",
+ "seed": 2,
+ "pos_cap": 64,
+ "cases": [
+  {
+   "id": "pos_git__git_status__direct_0",
+   "kind": "pos",
+   "utterance": "Check my git status.",
+   "want": "git_status",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_status__direct_3",
+   "kind": "pos",
+   "utterance": "What is the current status?",
+   "want": "git_status",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_status__direct_5",
+   "kind": "pos",
+   "utterance": "Show working tree status.",
+   "want": "git_status",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_status__indirect_8",
+   "kind": "pos",
+   "utterance": "Has my code changed recently?",
+   "want": "git_status",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_status__indirect_11",
+   "kind": "pos",
+   "utterance": "Are there unpushed changes?",
+   "want": "git_status",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_status__indirect_13",
+   "kind": "pos",
+   "utterance": "Is the repo clean?",
+   "want": "git_status",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_diff_unstaged__direct_16",
+   "kind": "pos",
+   "utterance": "Show unstaged changes in my repo.",
+   "want": "git_diff_unstaged",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_diff_unstaged__direct_19",
+   "kind": "pos",
+   "utterance": "Display my unstaged git changes.",
+   "want": "git_diff_unstaged",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_diff_unstaged__indirect_21",
+   "kind": "pos",
+   "utterance": "What files have I modified but not saved?",
+   "want": "git_diff_unstaged",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_diff_unstaged__indirect_24",
+   "kind": "pos",
+   "utterance": "I need to know what's pending in my branch.",
+   "want": "git_diff_unstaged",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_diff_staged__direct_27",
+   "kind": "pos",
+   "utterance": "Show me the staged changes.",
+   "want": "git_diff_staged",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_diff_staged__direct_29",
+   "kind": "pos",
+   "utterance": "Display the staged area now.",
+   "want": "git_diff_staged",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_diff_staged__direct_32",
+   "kind": "pos",
+   "utterance": "What did I stage for commit?",
+   "want": "git_diff_staged",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_diff_staged__indirect_35",
+   "kind": "pos",
+   "utterance": "What changes are ready to go?",
+   "want": "git_diff_staged",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_diff_staged__indirect_37",
+   "kind": "pos",
+   "utterance": "What's been prepped for a push?",
+   "want": "git_diff_staged",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_diff_staged__indirect_40",
+   "kind": "pos",
+   "utterance": "Show the staged files for review.",
+   "want": "git_diff_staged",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_diff__direct_42",
+   "kind": "pos",
+   "utterance": "show changes between branches",
+   "want": "git_diff",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_diff__direct_45",
+   "kind": "pos",
+   "utterance": "list differences in my repo",
+   "want": "git_diff",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_diff__direct_48",
+   "kind": "pos",
+   "utterance": "show branch differences",
+   "want": "git_diff",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_diff__indirect_50",
+   "kind": "pos",
+   "utterance": "see what changed since I merged",
+   "want": "git_diff",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_diff__indirect_53",
+   "kind": "pos",
+   "utterance": "tell me the changes between versions",
+   "want": "git_diff",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_diff__indirect_56",
+   "kind": "pos",
+   "utterance": "list the changes I made",
+   "want": "git_diff",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_commit__direct_58",
+   "kind": "pos",
+   "utterance": "commit the changes to the repo",
+   "want": "git_commit",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_commit__direct_61",
+   "kind": "pos",
+   "utterance": "record these changes now",
+   "want": "git_commit",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_commit__indirect_64",
+   "kind": "pos",
+   "utterance": "log the latest changes",
+   "want": "git_commit",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_commit__indirect_66",
+   "kind": "pos",
+   "utterance": "push my updates to the server",
+   "want": "git_commit",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_add__direct_69",
+   "kind": "pos",
+   "utterance": "stage the modified files",
+   "want": "git_add",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_add__direct_72",
+   "kind": "pos",
+   "utterance": "stage the new code",
+   "want": "git_add",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_add__direct_74",
+   "kind": "pos",
+   "utterance": "stage the file changes",
+   "want": "git_add",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_add__indirect_77",
+   "kind": "pos",
+   "utterance": "get the changes staged for push",
+   "want": "git_add",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_add__indirect_80",
+   "kind": "pos",
+   "utterance": "get the file changes ready to commit",
+   "want": "git_add",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_add__indirect_82",
+   "kind": "pos",
+   "utterance": "prepare the modified files for a commit",
+   "want": "git_add",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_reset__direct_85",
+   "kind": "pos",
+   "utterance": "Unstage all modified files now.",
+   "want": "git_reset",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_reset__indirect_88",
+   "kind": "pos",
+   "utterance": "Please remove all staged changes so I can edit again.",
+   "want": "git_reset",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_log__direct_90",
+   "kind": "pos",
+   "utterance": "What is the git log?",
+   "want": "git_log",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_log__direct_93",
+   "kind": "pos",
+   "utterance": "Run the log command now.",
+   "want": "git_log",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_log__direct_96",
+   "kind": "pos",
+   "utterance": "Execute the log function.",
+   "want": "git_log",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_log__indirect_98",
+   "kind": "pos",
+   "utterance": "When was the last time I pushed?",
+   "want": "git_log",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_log__indirect_101",
+   "kind": "pos",
+   "utterance": "What changes were made recently?",
+   "want": "git_log",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_log__indirect_104",
+   "kind": "pos",
+   "utterance": "What are the latest changes?",
+   "want": "git_log",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_create_branch__direct_106",
+   "kind": "pos",
+   "utterance": "create a new branch in my repository",
+   "want": "git_create_branch",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_create_branch__direct_109",
+   "kind": "pos",
+   "utterance": "create a branch named hotfix",
+   "want": "git_create_branch",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_create_branch__direct_112",
+   "kind": "pos",
+   "utterance": "create a new branch here",
+   "want": "git_create_branch",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_create_branch__indirect_114",
+   "kind": "pos",
+   "utterance": "I need a branch to work on this feature",
+   "want": "git_create_branch",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_create_branch__indirect_117",
+   "kind": "pos",
+   "utterance": "How do I create a branch for this task?",
+   "want": "git_create_branch",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_create_branch__indirect_120",
+   "kind": "pos",
+   "utterance": "I'd like to isolate this work into a branch",
+   "want": "git_create_branch",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_checkout__direct_122",
+   "kind": "pos",
+   "utterance": "Check out main branch.",
+   "want": "git_checkout",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_checkout__direct_125",
+   "kind": "pos",
+   "utterance": "Move to release branch.",
+   "want": "git_checkout",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_checkout__direct_128",
+   "kind": "pos",
+   "utterance": "Checkout master.",
+   "want": "git_checkout",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_checkout__indirect_130",
+   "kind": "pos",
+   "utterance": "I need to switch to the feature branch.",
+   "want": "git_checkout",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_checkout__indirect_133",
+   "kind": "pos",
+   "utterance": "I want to update our branch.",
+   "want": "git_checkout",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_checkout__indirect_135",
+   "kind": "pos",
+   "utterance": "What if I checkout the release branch?",
+   "want": "git_checkout",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_show__direct_138",
+   "kind": "pos",
+   "utterance": "What changes are in this commit?",
+   "want": "git_show",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_show__direct_141",
+   "kind": "pos",
+   "utterance": "What's in this specific commit?",
+   "want": "git_show",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_show__direct_143",
+   "kind": "pos",
+   "utterance": "Show me the commit history here.",
+   "want": "git_show",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_show__indirect_146",
+   "kind": "pos",
+   "utterance": "I want to see what changed in this commit.",
+   "want": "git_show",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_show__indirect_149",
+   "kind": "pos",
+   "utterance": "Let me know what this commit includes.",
+   "want": "git_show",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_show__indirect_151",
+   "kind": "pos",
+   "utterance": "Show me the changes from this commit.",
+   "want": "git_show",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_branch__direct_154",
+   "kind": "pos",
+   "utterance": "Show me all my git branches.",
+   "want": "git_branch",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_branch__direct_157",
+   "kind": "pos",
+   "utterance": "Display the available git branches.",
+   "want": "git_branch",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_branch__direct_159",
+   "kind": "pos",
+   "utterance": "Show the branch list.",
+   "want": "git_branch",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_git__git_branch__indirect_162",
+   "kind": "pos",
+   "utterance": "What projects am I working on?",
+   "want": "git_branch",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_branch__indirect_165",
+   "kind": "pos",
+   "utterance": "List the different branches I've created.",
+   "want": "git_branch",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_git__git_branch__indirect_167",
+   "kind": "pos",
+   "utterance": "Which branches are currently available?",
+   "want": "git_branch",
+   "flavor": "indirect"
+  },
+  {
+   "id": "neg_00",
+   "kind": "neg",
+   "utterance": "What's a deference span",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_01",
+   "kind": "neg",
+   "utterance": "Set a timer for 20 minutes",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_02",
+   "kind": "neg",
+   "utterance": "Remind me about the dentist on Friday",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_03",
+   "kind": "neg",
+   "utterance": "Make a note that the wifi password is on the fridge",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_04",
+   "kind": "neg",
+   "utterance": "How are you doing today",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_05",
+   "kind": "neg",
+   "utterance": "Write a haiku about autumn",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_06",
+   "kind": "neg",
+   "utterance": "What's 17 times 23",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_07",
+   "kind": "neg",
+   "utterance": "Tell me a joke",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_08",
+   "kind": "neg",
+   "utterance": "What's the weather in Jakarta",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_09",
+   "kind": "neg",
+   "utterance": "Good morning",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_10",
+   "kind": "neg",
+   "utterance": "What did you just say",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_11",
+   "kind": "neg",
+   "utterance": "Stop",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_12",
+   "kind": "neg",
+   "utterance": "Who made you",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_13",
+   "kind": "neg",
+   "utterance": "Say that again louder",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_14",
+   "kind": "neg",
+   "utterance": "I love this song",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_15",
+   "kind": "neg",
+   "utterance": "Are you real",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_16",
+   "kind": "neg",
+   "utterance": "Thank you",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_17",
+   "kind": "neg",
+   "utterance": "What's your favorite color",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_18",
+   "kind": "neg",
+   "utterance": "Explain quantum computing simply",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_19",
+   "kind": "neg",
+   "utterance": "Translate hello to French",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_20",
+   "kind": "neg",
+   "utterance": "Spell entrepreneurship",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_21",
+   "kind": "neg",
+   "utterance": "How do you make bread",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_22",
+   "kind": "neg",
+   "utterance": "Open the pod bay doors",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_23",
+   "kind": "neg",
+   "utterance": "What's my name",
+   "want": null,
+   "flavor": "hand"
+  }
+ ]
+}
