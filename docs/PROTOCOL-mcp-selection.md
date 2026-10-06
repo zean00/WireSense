@@ -784,3 +784,53 @@ device would require the Tuya side (tinytuya local control with the
 device's local key), or a firmware/ONVIF toggle if the camera's settings
 expose one — not an ONVIF wrapper. Streams + snapshot wrapper remains the
 only shippable ONVIF shape for this camera.
+
+## MS-17a (registered before any generation): mid-loop gate keying — continuation text vs utterance text
+
+Design context (session discussion, no code yet): the deep loop's per-step
+decisions (need a tool? which one?) are candidates for the tree/gate
+machinery as a System-1 layer. Load-bearing assumption: the gate's
+shortlist, keyed on the MODEL'S CONTINUATION TEXT (what it says/thinks
+right before acting) rather than the user utterance, still recalls the
+right tool. This entry measures exactly that, retrieval-only — no loop
+changes, no need-check classifier (that is MS-17b).
+
+Generation (RECIPE_C, verbatim):
+  'Write 8 different short things an assistant might SAY or THINK
+  mid-answer, right before it should use this tool. One or two sentences
+  of the assistant's own reasoning or speech that leads naturally into
+  the call; never the tool name; max 24 words each. Reply with ONLY
+  JSON: {"utterances": ["...", ...]}'
+- 24-word cap vs RECIPE_A's 12 is deliberate: continuations are
+  reasoning-shaped sentences, and length/register drift is part of what
+  is being tested.
+- Mechanics mirror the frozen pool gen exactly (card Name/Server/
+  Description/Required args; build_prompt([], card, RECIPE_C); max_tokens
+  220, temp 0.8, id_slot 5); seed 3 (unused: pools seed 1, eval seed 2);
+  parse via mcp_gate.parse_json_obj, >=5 utterances else ONE retry at
+  seed 4 (MS-16c rule), else empty list + recorded failure. All 121
+  corpus tools. Output frozen to tools/mcp_loop/continuations.json;
+  the generator refuses to overwrite.
+
+Index: rebuilt STRICTLY from the committed synth_pools.json via the
+probe's own code path (run_eval: embed+norm_router_text slot 6,
+mean-of-L2, committed kmeans, MCP_PROBE_K=5 asserted) — the shipped gate
+recipe, unchanged. NO continuation text enters the index (no-leak rule;
+that would be an index-recipe change = MS-18, separately registered).
+
+Scoring (retrieval-only; recall = want in top-2 cluster-union shortlist):
+- Set A (baseline): the 242 frozen eval positives, utterance-keyed,
+  recomputed on THIS build.
+- Set B (treatment): every frozen continuation text, keyed to its tool.
+- Secondary: mean shortlist size both sets; per-tool recall deltas;
+  utterance-vs-continuation shortlist Jaccard per tool.
+
+Bars (set BEFORE data): primary recall_B >= 0.80; non-inferiority
+recall_B - recall_A >= -0.05. Both pass -> MS-17b (need-check readout)
+is worth registering. recall_B collapses (< recall_A - 0.10) ->
+continuation keying is dead; the loop keeps marker legs only. Middle
+band -> candidate remedy is RECIPE_C-augmented pools, but that is an
+index-recipe change: MS-18, separately registered, never a silent edit.
+
+Files: tools/mcp_loop/{gen_cont.py, run_17a.py, continuations.json,
+results_17a.jsonl, summary_17a.json}. Runners committed before data.
