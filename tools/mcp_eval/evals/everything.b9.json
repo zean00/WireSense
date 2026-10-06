@@ -1,0 +1,626 @@
+{
+ "server": "everything",
+ "generated": "2026-10-06",
+ "recipe": "Write 8 short things a user might say to a voice assistant for this tool. \"directs\": plain direct requests for what the tool does, do not copy the tool name, max 14 words each. \"indirects\": goal-oriented phrasings where the tool is implied but never named, max 16 words each. Two rules: every utterance must be self-contained \u2014 include the concrete details the tool needs (file or folder names, content to write) so nothing needs a follow-up question; and phrase it so THIS tool is the only reasonable choice among similar tools \u2014 include what makes it distinct (sizes, recursion, staging, conversion, whatever separates it). Reply with ONLY JSON: {\"directs\": [\"...\", ...], \"indirects\": [\"...\", ...]}",
+ "recipe_name": "B9",
+ "seed": 2,
+ "pos_cap": 64,
+ "cases": [
+  {
+   "id": "pos_everything__echo__direct_0",
+   "kind": "pos",
+   "utterance": "Repeat exactly what I just said to me.",
+   "want": "echo",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__echo__direct_3",
+   "kind": "pos",
+   "utterance": "Verbatim echo my latest spoken words here.",
+   "want": "echo",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__echo__direct_6",
+   "kind": "pos",
+   "utterance": "Repeat the input string exactly as given.",
+   "want": "echo",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__echo__indirect_9",
+   "kind": "pos",
+   "utterance": "Repeat exactly what I typed so I can see it.",
+   "want": "echo",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__echo__indirect_11",
+   "kind": "pos",
+   "utterance": "Echo the text I just spoke so I can review it.",
+   "want": "echo",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__echo__indirect_14",
+   "kind": "pos",
+   "utterance": "Say back my typed input so I can verify it.",
+   "want": "echo",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-annotated-message__direct_17",
+   "kind": "pos",
+   "utterance": "What is the content of the 'report' message?",
+   "want": "get-annotated-message",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-annotated-message__indirect_20",
+   "kind": "pos",
+   "utterance": "What are the key details about this email notification?",
+   "want": "get-annotated-message",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-annotated-message__indirect_23",
+   "kind": "pos",
+   "utterance": "What specific information is tagged on this alert file?",
+   "want": "get-annotated-message",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-env__direct_26",
+   "kind": "pos",
+   "utterance": "Show me the current environment variable values.",
+   "want": "get-env",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-env__indirect_28",
+   "kind": "pos",
+   "utterance": "I need to check what config values this server uses.",
+   "want": "get-env",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-env__indirect_31",
+   "kind": "pos",
+   "utterance": "Show me how this server is configured via environment.",
+   "want": "get-env",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-resource-links__direct_34",
+   "kind": "pos",
+   "utterance": "List references to every image in the Pictures directory.",
+   "want": "get-resource-links",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-resource-links__direct_37",
+   "kind": "pos",
+   "utterance": "Show links referencing the design folder contents.",
+   "want": "get-resource-links",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-resource-links__indirect_40",
+   "kind": "pos",
+   "utterance": "Show me everything in the Documents folder that's linked.",
+   "want": "get-resource-links",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-resource-links__indirect_43",
+   "kind": "pos",
+   "utterance": "Show me files that the images folder references.",
+   "want": "get-resource-links",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-resource-links__indirect_46",
+   "kind": "pos",
+   "utterance": "Show me resources that depend on my notes file.",
+   "want": "get-resource-links",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-resource-reference__direct_48",
+   "kind": "pos",
+   "utterance": "Tell me where the project config file is located.",
+   "want": "get-resource-reference",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-resource-reference__direct_51",
+   "kind": "pos",
+   "utterance": "List the reference for the logs directory.",
+   "want": "get-resource-reference",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-resource-reference__direct_54",
+   "kind": "pos",
+   "utterance": "Get the reference for the readme documentation.",
+   "want": "get-resource-reference",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-resource-reference__indirect_57",
+   "kind": "pos",
+   "utterance": "Where is the path to the specific config file?",
+   "want": "get-resource-reference",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-resource-reference__indirect_60",
+   "kind": "pos",
+   "utterance": "Where is the path to the latest backup file?",
+   "want": "get-resource-reference",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-resource-reference__indirect_63",
+   "kind": "pos",
+   "utterance": "Help me find where the database file is stored.",
+   "want": "get-resource-reference",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-structured-content__direct_65",
+   "kind": "pos",
+   "utterance": "Show file sizes for all documents in /data/reports.",
+   "want": "get-structured-content",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-structured-content__direct_68",
+   "kind": "pos",
+   "utterance": "Check if /images/logo.png exists.",
+   "want": "get-structured-content",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-structured-content__direct_71",
+   "kind": "pos",
+   "utterance": "Show the structure of the /assets/styles.css file.",
+   "want": "get-structured-content",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-structured-content__indirect_74",
+   "kind": "pos",
+   "utterance": "Can you show me the details of the recent backup files?",
+   "want": "get-structured-content",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-structured-content__indirect_77",
+   "kind": "pos",
+   "utterance": "I'm checking the structure of the main configuration file.",
+   "want": "get-structured-content",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-sum__direct_80",
+   "kind": "pos",
+   "utterance": "What's the sum of 5 and 3?",
+   "want": "get-sum",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-sum__direct_82",
+   "kind": "pos",
+   "utterance": "Calculate 7 plus 9 for me.",
+   "want": "get-sum",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-sum__direct_85",
+   "kind": "pos",
+   "utterance": "I need 15 added to 35.",
+   "want": "get-sum",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-sum__indirect_88",
+   "kind": "pos",
+   "utterance": "What's the total if I put 200 apples in two baskets?",
+   "want": "get-sum",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-sum__indirect_91",
+   "kind": "pos",
+   "utterance": "What's the combined total of 1,234 and 456?",
+   "want": "get-sum",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-sum__indirect_94",
+   "kind": "pos",
+   "utterance": "Calculate 300 plus 400 for my budget.",
+   "want": "get-sum",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__get-tiny-image__direct_97",
+   "kind": "pos",
+   "utterance": "Get the small MCP logo picture.",
+   "want": "get-tiny-image",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__get-tiny-image__indirect_100",
+   "kind": "pos",
+   "utterance": "I need a small image of the MCP logo.",
+   "want": "get-tiny-image",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__gzip-file-as-resource__direct_102",
+   "kind": "pos",
+   "utterance": "Compress this specific PDF file using gzip.",
+   "want": "gzip-file-as-resource",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__gzip-file-as-resource__direct_105",
+   "kind": "pos",
+   "utterance": "Compress the video file using gzip and output the stream.",
+   "want": "gzip-file-as-resource",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__gzip-file-as-resource__direct_108",
+   "kind": "pos",
+   "utterance": "Apply gzip compression to this specific folder structure.",
+   "want": "gzip-file-as-resource",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__gzip-file-as-resource__indirect_111",
+   "kind": "pos",
+   "utterance": "Compress that document so it's ready for the next download.",
+   "want": "gzip-file-as-resource",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__gzip-file-as-resource__indirect_114",
+   "kind": "pos",
+   "utterance": "I need this file compressed without any extra folders.",
+   "want": "gzip-file-as-resource",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__gzip-file-as-resource__indirect_117",
+   "kind": "pos",
+   "utterance": "Compress this specific file so I can download the exact output.",
+   "want": "gzip-file-as-resource",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__toggle-simulated-logging__direct_119",
+   "kind": "pos",
+   "utterance": "Stop the random logging simulation right now.",
+   "want": "toggle-simulated-logging",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__toggle-simulated-logging__direct_122",
+   "kind": "pos",
+   "utterance": "Enable simulated logging with random levels on this file.",
+   "want": "toggle-simulated-logging",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__toggle-simulated-logging__direct_125",
+   "kind": "pos",
+   "utterance": "Switch off the simulated random logging feature immediately.",
+   "want": "toggle-simulated-logging",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__toggle-simulated-logging__indirect_128",
+   "kind": "pos",
+   "utterance": "Turn off the random log simulation for this backup set.",
+   "want": "toggle-simulated-logging",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__toggle-simulated-logging__indirect_131",
+   "kind": "pos",
+   "utterance": "Can I get random level logs simulated on this folder?",
+   "want": "toggle-simulated-logging",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__toggle-subscriber-updates__direct_134",
+   "kind": "pos",
+   "utterance": "Stop my file updates so I can edit it manually.",
+   "want": "toggle-subscriber-updates",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__toggle-subscriber-updates__direct_136",
+   "kind": "pos",
+   "utterance": "Disable the subscription updates for this specific resource file.",
+   "want": "toggle-subscriber-updates",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__toggle-subscriber-updates__direct_139",
+   "kind": "pos",
+   "utterance": "Stop the simulated resource updates for my current folder.",
+   "want": "toggle-subscriber-updates",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__toggle-subscriber-updates__indirect_142",
+   "kind": "pos",
+   "utterance": "Pause the file changes so I can edit it without interference.",
+   "want": "toggle-subscriber-updates",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__toggle-subscriber-updates__indirect_145",
+   "kind": "pos",
+   "utterance": "Disable the background changes on this resource while I edit it.",
+   "want": "toggle-subscriber-updates",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__toggle-subscriber-updates__indirect_148",
+   "kind": "pos",
+   "utterance": "Turn off the background changes for this resource so I can save.",
+   "want": "toggle-subscriber-updates",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__trigger-long-running-operation__direct_151",
+   "kind": "pos",
+   "utterance": "Compress the video files in my downloads directory and send them to me.",
+   "want": "trigger-long-running-operation",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__trigger-long-running-operation__direct_154",
+   "kind": "pos",
+   "utterance": "Sync the new notes from my phone to the shared team folder now.",
+   "want": "trigger-long-running-operation",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__trigger-long-running-operation__direct_156",
+   "kind": "pos",
+   "utterance": "Create a staging copy of the database files in the backup directory.",
+   "want": "trigger-long-running-operation",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__trigger-long-running-operation__indirect_159",
+   "kind": "pos",
+   "utterance": "Convert the messy PDF report into images and put it in my docs.",
+   "want": "trigger-long-running-operation",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__trigger-long-running-operation__indirect_162",
+   "kind": "pos",
+   "utterance": "Download that big server report and save it to my local computer.",
+   "want": "trigger-long-running-operation",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__trigger-long-running-operation__indirect_165",
+   "kind": "pos",
+   "utterance": "Process that giant image file and save the smaller version for me.",
+   "want": "trigger-long-running-operation",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__simulate-research-query__direct_168",
+   "kind": "pos",
+   "utterance": "Query the system for recent trends in renewable energy.",
+   "want": "simulate-research-query",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__simulate-research-query__direct_171",
+   "kind": "pos",
+   "utterance": "Search for any mentions of the new product launch.",
+   "want": "simulate-research-query",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__simulate-research-query__direct_173",
+   "kind": "pos",
+   "utterance": "Find information about the merger details between TechCorp and Nova.",
+   "want": "simulate-research-query",
+   "flavor": "direct"
+  },
+  {
+   "id": "pos_everything__simulate-research-query__indirect_176",
+   "kind": "pos",
+   "utterance": "Find me all the steps to fix the server error logs.",
+   "want": "simulate-research-query",
+   "flavor": "indirect"
+  },
+  {
+   "id": "pos_everything__simulate-research-query__indirect_179",
+   "kind": "pos",
+   "utterance": "Search for every detail about the upcoming space mission plans.",
+   "want": "simulate-research-query",
+   "flavor": "indirect"
+  },
+  {
+   "id": "neg_00",
+   "kind": "neg",
+   "utterance": "What's a deference span",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_01",
+   "kind": "neg",
+   "utterance": "Set a timer for 20 minutes",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_02",
+   "kind": "neg",
+   "utterance": "Remind me about the dentist on Friday",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_03",
+   "kind": "neg",
+   "utterance": "Make a note that the wifi password is on the fridge",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_04",
+   "kind": "neg",
+   "utterance": "How are you doing today",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_05",
+   "kind": "neg",
+   "utterance": "Write a haiku about autumn",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_06",
+   "kind": "neg",
+   "utterance": "What's 17 times 23",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_07",
+   "kind": "neg",
+   "utterance": "Tell me a joke",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_08",
+   "kind": "neg",
+   "utterance": "What's the weather in Jakarta",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_09",
+   "kind": "neg",
+   "utterance": "Good morning",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_10",
+   "kind": "neg",
+   "utterance": "What did you just say",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_11",
+   "kind": "neg",
+   "utterance": "Stop",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_12",
+   "kind": "neg",
+   "utterance": "Who made you",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_13",
+   "kind": "neg",
+   "utterance": "Say that again louder",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_14",
+   "kind": "neg",
+   "utterance": "I love this song",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_15",
+   "kind": "neg",
+   "utterance": "Are you real",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_16",
+   "kind": "neg",
+   "utterance": "Thank you",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_17",
+   "kind": "neg",
+   "utterance": "What's your favorite color",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_18",
+   "kind": "neg",
+   "utterance": "Explain quantum computing simply",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_19",
+   "kind": "neg",
+   "utterance": "Translate hello to French",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_20",
+   "kind": "neg",
+   "utterance": "Spell entrepreneurship",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_21",
+   "kind": "neg",
+   "utterance": "How do you make bread",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_22",
+   "kind": "neg",
+   "utterance": "Open the pod bay doors",
+   "want": null,
+   "flavor": "hand"
+  },
+  {
+   "id": "neg_23",
+   "kind": "neg",
+   "utterance": "What's my name",
+   "want": null,
+   "flavor": "hand"
+  }
+ ]
+}
