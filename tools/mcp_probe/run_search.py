@@ -28,9 +28,14 @@ SEARCH_CARD = {"name": "mcp_search", "server": "meta",
                "desc": "Search the connected MCP servers for tools that match "
                        "a need. Use this first to discover which tool fits.",
                "required": ["query"]}
-CONTRACT_PRIME = ('Reply with ONLY a JSON object: {"tool": "mcp_search", '
-                  '"args": {"query": "<a few keywords>"}} to search for tools, '
-                  'or {"tool": null} if this request needs no tool. No other text.')
+# MS-15a: exact registered wording — the first draft nulled 6/6 in canary
+CONTRACT_PRIME = ('Choose a tool for this request. You have no tools listed '
+                  'yet. If this request could be handled by a tool, call '
+                  'mcp_search first. Reply with ONLY a JSON object: '
+                  '{"tool": "mcp_search", "args": {"query": "<a few '
+                  'keywords>"}} to search for tools, or {"tool": null} if '
+                  'this request is pure conversation needing no tool. '
+                  'No other text.')
 CONTRACT3 = ('Reply with ONLY a JSON object: {"tool": "<name>", "args": {...}}, '
              'or {"tool": "mcp_search", "args": {"query": "<keywords>"}} to '
              'search for other tools, or {"tool": null} if no tool fits. '
@@ -136,8 +141,7 @@ def main():
                 out.flush()
                 continue
             pick = r["plan"]
-            if arm != "search-primary" and pick and \
-                    pick.get("tool") == "mcp_search":
+            if pick and pick.get("tool") == "mcp_search":
                 searched = True
                 q = (pick.get("args") or {}).get("query") or c["utterance"]
                 found = [tools[i] for i in nn_search(q, svecs)]

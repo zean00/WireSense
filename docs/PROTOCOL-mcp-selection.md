@@ -379,3 +379,12 @@ Escape-path mechanics verified offline pre-data (no eval cases): query
 "convert 3pm Tokyo time to UTC" -> top-8 NN returns convert_time,
 get_current_time at ranks 1-2; history-free re-plan picks convert_time with
 correct args (340 prompt tokens).
+
+### Amendment MS-15b (registered pre-data, from canary): dead search path in runner
+
+Second canary pass caught a runner bug of the MS-13 class: the search-execution
+branch was gated on `arm != "search-primary"`, so the search-primary arm
+recorded got="mcp_search" WITHOUT ever executing the search (calls=1). Zero
+scored data existed. Fix: the mcp_search branch now runs for both arms; canary
+records wiped; re-canary must show calls=2 / searched=true on search-emitting
+cases before the full run. No other change.
