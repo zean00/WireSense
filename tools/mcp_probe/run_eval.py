@@ -36,6 +36,7 @@ SUMMARY = os.environ.get("MCP_PROBE_SUMMARY",
 CANARY_N = int(os.environ.get("MCP_PROBE_CANARY", "0"))  # 0 = all cases
 K = int(os.environ.get("MCP_PROBE_K", "10"))  # MS-12 sweep parameter
 SUBSET = int(os.environ.get("MCP_PROBE_SUBSET", "0"))  # MS-12: 0 = all tools
+PREFIX = bool(os.environ.get("MCP_PROBE_PREFIX"))  # MS-16a: {server}__{name}
 BUDGET = os.path.join(HERE, "C_budget.json")
 TOPN = {"top1": 1, "top2": 2}
 CS = [200, 160, 120, 100, 80]
@@ -98,7 +99,8 @@ def kmeans(vecs, k=K, iters=50):
 
 def manifest_line(t, C):
     args = ", ".join(t["required"]) if t["required"] else "none"
-    return f"- {t['name']}: {t['desc'][:C]}; args: {args}"
+    name = f"{t['server']}__{t['name']}" if PREFIX else t["name"]
+    return f"- {name}: {t['desc'][:C]}; args: {args}"
 
 
 def directive_for(tools, C):
@@ -175,6 +177,8 @@ def main():
         print(f"MS-12 subset {SUBSET}: servers={sorted(sub)} tools={len(tools)} cases={len(cases)} k={K}")
     elif os.environ.get("MCP_PROBE_K"):
         sfx += f"@k{K}"
+    if PREFIX:
+        sfx += "@pref"
     print(f"{len(tools)} tools, {len(cases)} cases, arms={arms}")
 
     if os.path.exists(BUDGET):
@@ -260,6 +264,10 @@ def main():
                    "want": c["want"], **r, **({"route": route} if route else {})}
             if "plan" in r and r["plan"] is not None:
                 got = r["plan"]["tool"]
+                rec["got_raw"] = got
+                if PREFIX and isinstance(got, str):
+                    # MS-16a: one trailing __ suffix; want stays bare
+                    got = got.rsplit("__", 1)[-1]
                 rec["got"] = got
                 rec["ok"] = (got == c["want"]) if c["want"] is not None else (got is None)
                 if rec["ok"] and c["want"] is not None:
