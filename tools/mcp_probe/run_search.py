@@ -161,8 +161,9 @@ def main():
             if pick is not None:
                 got = pick.get("tool")
                 rec["got"] = got
-                if arm == "search-primary" and got not in (None, "mcp_search"):
-                    rec["ok"] = False  # MS-15: no recovery for blind picks
+                if arm == "search-primary" and got not in (None, "mcp_search") \
+                        and not searched:
+                    rec["ok"] = False  # MS-15: blind pick, no search executed
                 else:
                     rec["ok"] = ((got == c["want"])
                                  if c["want"] is not None else (got is None))

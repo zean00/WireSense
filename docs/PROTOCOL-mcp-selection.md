@@ -388,3 +388,21 @@ recorded got="mcp_search" WITHOUT ever executing the search (calls=1). Zero
 scored data existed. Fix: the mcp_search branch now runs for both arms; canary
 records wiped; re-canary must show calls=2 / searched=true on search-emitting
 cases before the full run. No other change.
+
+### Amendment MS-15c (registered pre-rerun): primary-arm scorer invalidated the arm
+
+Post-run decomposition replay caught a scoring bug of the MS-11 class: the
+MS-15 clause "a non-search tool name returned from the search-only manifest
+scores as a wrong answer directly" was implemented as `ok = False` for EVERY
+real-tool pick in the search-primary arm — including picks made AFTER a
+legitimate search, which is the arm's core path. Evidence: 3 replayed cases
+with want inside the returned top-8 re-picked the correct tool with args, and
+their stored records show got == want yet ok = false. All 278 search-primary
+records are INVALID (ok/schema_ok fields wrong; raw model outputs were valid
+but args were not stored, so offline re-scoring cannot restore schema_ok).
+Adjudication rule: archive the invalid records, fix the clause to apply ONLY
+to blind picks (search not executed), rerun search-primary only. The
+hier-synth-esc/top2@k5 arm never enters that branch (arm equality check) — its
+278 records and all decomposition numbers stand as valid. Search-trigger stats
+from the invalid run (91.4% search rate on the tightened contract) remain
+descriptive evidence about the contract, not scores.
