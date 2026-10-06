@@ -834,3 +834,44 @@ index-recipe change: MS-18, separately registered, never a silent edit.
 
 Files: tools/mcp_loop/{gen_cont.py, run_17a.py, continuations.json,
 results_17a.jsonl, summary_17a.json}. Runners committed before data.
+
+### MS-17a results (run of 2026-10-06)
+
+Generation: 968 continuation texts over all 121 tools, seed 3, ZERO
+retries and zero failures (the MS-16c rule never fired). Texts read as
+intended — assistant-voice reasoning leading into a call ("I need to save
+this summary to the notes file").
+
+Hygiene disclosure: the scorer crashed AFTER all 1210 rows were written
+(summary-only code, `jac` initializer lost in an edit); the runner now
+resumes from complete rows (deterministic frozen inputs) and the
+aggregation was re-run from them. Rows themselves were untouched.
+
+Primary numbers (index rebuilt strictly from committed pools, k=5
+asserted; cluster sizes [5, 46, 29, 3, 38]):
+- recall_A (utterance-keyed, 242 frozen positives): 0.8884 — reproduces
+  the committed ~0.88 recall; build sanity holds.
+- recall_B (continuation-keyed, 968 texts): 0.8058.
+- delta_pooled −0.083; delta_per_tool −0.083; mean shortlist 70.9 (A) vs
+  74.4 (B) tools; utterance-vs-continuation shortlist Jaccard 0.601.
+
+ADJUDICATION against the registered bars:
+- Primary (recall_B >= 0.80): PASS, by 0.006 — statistically AT the bar
+  (n=968, binomial SE ~0.013), not comfortably above it.
+- Non-inferiority (delta >= −0.05): FAIL (−0.083).
+- Collapse band (recall_B < recall_A − 0.10 = 0.788): NOT entered.
+Registered middle band, so: the candidate remedy (RECIPE_C-augmented
+pools — an index-recipe change) is NOT applied; it goes to MS-18 as a
+separate registration if pursued. No silent edits.
+
+Per-tool shape: 56 tools degrade, 19 improve, 45 flat (n_A=2/tool —
+per-tool deltas are ±0.5-noisy; trust the aggregate). Worst: jargon-heavy
+GitHub-class tools (simulate-research-query, get_job_logs, PR-comment
+family) and convert_time/list_notifications.
+
+Design reading for the System-1 loop: continuation keying WORKS at a
+usable level — 0.81 shortlist recall is far above the model's own
+retrieval (0.51 target-in-top8, MS-15) with zero generation cost, and the
+0.60 Jaccard confirms shortlists genuinely differ mid-loop (re-keying on
+state is necessary, not optional). The open question MS-18 would answer:
+does an index built from both text kinds close the −0.08?

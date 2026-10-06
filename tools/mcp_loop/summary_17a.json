@@ -1,0 +1,17 @@
+{
+ "n_A": 242,
+ "n_B": 968,
+ "recall_A_utterance": 0.8884,
+ "recall_B_continuation": 0.8058,
+ "delta_pooled": -0.0826,
+ "delta_per_tool_mean": -0.0833,
+ "mean_shortlist_A": 70.9,
+ "mean_shortlist_B": 74.4,
+ "shortlist_jaccard_mean": 0.601,
+ "bars": {
+  "primary": true,
+  "noninferiority": false
+ },
+ "k": 5,
+ "topn": 2
+}

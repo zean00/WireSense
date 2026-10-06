@@ -55,12 +55,7 @@ def main():
         short = sorted({n for c in top for n in members_of[c]})
         return want in short, len(short), top, short
 
-    if os.path.exists(RESULTS):
-        sys.exit(f"REFUSING: {RESULTS} exists (frozen inputs -> "
-                 f"deterministic; delete by hand to redo)")
-    out = open(RESULTS, "w")
-
-    def score(set_name, text, want, key):
+    def score(out, set_name, text, want, key):
         h, n, top, short = hit(text, want)
         out.write(json.dumps({"set": set_name, "key": key, "want": want,
                               "hit": h, "shortlist_n": n,
@@ -68,44 +63,71 @@ def main():
         out.flush()
         return h, n, short
 
-    cases = [c for c in json.load(open(os.path.join(PROBE,
-                                                    "eval_cases.json")))
-             if c["kind"] == "pos"]
     conts = json.load(open(CONT))
-    print(f"scoring: A={len(cases)} frozen positives, "
-          f"B={sum(len(v) for v in conts.values())} continuations", flush=True)
+    if os.path.exists(RESULTS):
+        # resume: complete frozen-input rows are deterministic — skip the
+        # embeds, aggregate only (this is how the first run's summary crash
+        # was repaired, disclosed in the protocol)
+        rows = [json.loads(line) for line in open(RESULTS)]
+        if len(rows) != 242 + sum(len(v) for v in conts.values()):
+            sys.exit(f"REFUSING: {RESULTS} incomplete ({len(rows)} rows)")
+        print(f"resuming from {len(rows)} complete rows", flush=True)
+        out = None
+        ra = [r["hit"] for r in rows if r["set"] == "A-utterance"]
+        na = [r["shortlist_n"] for r in rows if r["set"] == "A-utterance"]
+        rb = [r["hit"] for r in rows if r["set"] == "B-continuation"]
+        nb = [r["shortlist_n"] for r in rows if r["set"] == "B-continuation"]
+        per_tool_a, per_tool_b = {}, {}
+        for r in rows:
+            (per_tool_a if r["set"] == "A-utterance"
+             else per_tool_b).setdefault(r["want"], []).append(r["hit"])
+        recall_a = float(np.mean(ra))
+        recall_b = float(np.mean(rb))
+        na, nb = np.array(na), np.array(nb)
+    else:
+        out = open(RESULTS, "w")
+        cases = [c for c in json.load(open(os.path.join(PROBE,
+                                                        "eval_cases.json")))
+                 if c["kind"] == "pos"]
+        print(f"scoring: A={len(cases)} frozen positives, "
+              f"B={sum(len(v) for v in conts.values())} continuations",
+              flush=True)
 
-    ra, na, ra_n = [], [], []
-    per_tool_a = {}
-    t0 = time.time()
-    for i, c in enumerate(cases):
-        h, n, short = score("A-utterance", c["utterance"], c["want"], c["id"])
-        ra.append(h)
-        na.append(n)
-        per_tool_a.setdefault(c["want"], []).append(h)
-        if (i + 1) % 50 == 0:
-            print(f"  A {i + 1}/{len(cases)}, {time.time() - t0:.0f}s",
-                  flush=True)
+        ra, na, ra_n = [], [], []
+        per_tool_a = {}
+        t0 = time.time()
+        for i, c in enumerate(cases):
+            h, n, short = score(out, "A-utterance", c["utterance"], c["want"],
+                                c["id"])
+            ra.append(h)
+            na.append(n)
+            per_tool_a.setdefault(c["want"], []).append(h)
+            if (i + 1) % 50 == 0:
+                print(f"  A {i + 1}/{len(cases)}, {time.time() - t0:.0f}s",
+                      flush=True)
 
-    rb, nb = [], []
-    per_tool_b = {}
-    for key, us in sorted(conts.items()):
-        want = by_key.get(key)
-        if want is None:
-            continue
-        for j, u in enumerate(us):
-            h, n, short = score("B-continuation", u, want, f"{key}#{j}")
-            rb.append(h)
-            nb.append(n)
-            per_tool_b.setdefault(want, []).append(h)
+        rb, nb = [], []
+        per_tool_b = {}
+        for key, us in sorted(conts.items()):
+            want = by_key.get(key)
+            if want is None:
+                continue
+            for j, u in enumerate(us):
+                h, n, short = score(out, "B-continuation", u, want,
+                                    f"{key}#{j}")
+                rb.append(h)
+                nb.append(n)
+                per_tool_b.setdefault(want, []).append(h)
+        recall_a = float(np.mean(ra))
+        recall_b = float(np.mean(rb))
+        na, nb = np.array(na), np.array(nb)
 
-    recall_a = float(np.mean(ra))
-    recall_b = float(np.mean(rb))
     shared = sorted(set(per_tool_a) & set(per_tool_b))
     d_tool = [float(np.mean(per_tool_b[t])) - float(np.mean(per_tool_a[t]))
               for t in shared]
     delta_tool = float(np.mean(d_tool))
     delta_pooled = recall_b - recall_a
+    jac = []
     # Jaccard per tool, from the rows (A's shortlist is per-case; keep the
     # last utterance-case shortlist per tool — the paired B shortlist is
     # the same tool's continuation-keyed one)
@@ -136,7 +158,8 @@ def main():
     }
     json.dump(summary, open(SUMMARY, "w"), indent=1)
     print(json.dumps(summary, indent=1))
-    out.close()
+    if out is not None:
+        out.close()
 
 
 if __name__ == "__main__":
