@@ -679,3 +679,38 @@ keeps the client unmodified — no cwd support added for one probe).
 No MS-16b deployment gate in this entry: enablement is a separate decision
 given the findings; if wanted, the registered gate runs on the frozen eval
 generated from the live tools/list like any other server.
+
+### Entry BE results (run of 2026-10-06, camera 192.168.110.83)
+
+- OUR CLIENT: clean pass. stdio connect 0.4 s, 8 tools listed, three
+  whitelisted calls round-tripped, server process group killed at exit.
+  First third-party stdio server beyond the probe corpus.
+- THE SERVER'S stdio entry is broken: main_stdio.py re-creates
+  `FastMCP('onvif-mcp')` AFTER `from main import *`, orphaning all real
+  tools — it serves only a do-nothing `onvif_tool` stub. A 2-line launcher
+  (/tmp/onvif-mcp/run_stdio.py: `from main import mcp;
+  mcp.run(transport='stdio')`) serves the real 8; repo unmodified
+  otherwise.
+- CAMERA (ONVIF on :5000, confirmed by ws-discovery XAddrs; RTSP on
+  :8554): get_rtsp returned 2 streams (H264 2304x1296, PROFILE_0/…) —
+  fully working data. get_deviceInfo answered (valid ONVIF round trip)
+  but with ALL FIELDS NULL — some cameras report empty DeviceInfo; the
+  pipeline faithfully relayed the camera's answer, not a client bug.
+  handle_discover_devices: 3.2 s, found the camera plus its own dummy
+  published service.
+- SCHEMA FINDING (the creds-as-args design, now measured): only `host` is
+  required on get_deviceInfo/get_rtsp — usr/pwd carry defaults
+  ('admin'/'admin'). A voice planner would pass host and credentials
+  would either default wrong or have to be MODEL-FILLED; and get_rtsp
+  embeds user:pass in the returned URI, which run_tool would speak aloud
+  in the reply. Two leak paths through the model/TTS, as predicted.
+- Probe script /tmp/probe_onvif.py (creds inline, deliberately NOT in the
+  repo tree). Repo clone at /tmp/onvif-mcp (uv.lock synced).
+
+VERDICT: implementation verified against a real camera; onvif-mcp AS-IS is
+not shippable under house rules. If camera control is wanted for real: a
+thin wrapper server (env-bound ONVIF_HOST/ONVIF_USER/ONVIF_PASS at spawn —
+the $ENV_NAME rule; read-only tool subset; snapshot to local file, not
+MinIO; PTZ behind the confirm park with per-server "confirm": true, since
+"handle_ptz_control" does not match RISKY_RE by name). Wrapper would be a
+separate registered entry.
