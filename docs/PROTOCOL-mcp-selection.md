@@ -506,3 +506,70 @@ production manifests, per the registered rule. (An earlier read of the first
 206 records, before the run finished, showed 0.6942/p=0.23 — noted only to
 flag that partial-file adjudication happened once and was discarded unacted;
 the verdict above is the complete-run number.)
+
+### Amendment MS-16c (registered pre-scoring): per-server eval generator retry
+
+The first gen_eval.py pass froze incomplete evals: 4/41 tools produced
+unparseable generations (diagnosed verbatim: the model emits EOS mid-JSON —
+finish=stop at 151 tokens with no closing brace — a seed-2 quirk on specific
+tool cards; one character of description difference flips it). Zero cases
+were scored. Remedy, registered before any data: gen_eval.gen retries ONCE at
+seed+1 on parse failure (the same 2-attempt pattern as every other llama
+call in this repo); the four incomplete freeze files are archived to
+evals/_invalid_gen/ and all four servers regenerated + refrozen pre-scoring.
+No other recipe change.
+
+## Implementation (entries AT-BB, 2026-10-06)
+
+The measured verdicts are now running code. Opt-in like face: a `"mcp"` key in
+web/config.json (gitignored; web/config.example.json documents the format),
+absent/disabled leaves both MCP globals None and the manifest byte-identical.
+
+- `web/mcp_client.py` — stdio transport + lifecycle. One MCPServer per config
+  entry (spawn with own process group, 2024-11-05 handshake, id-matched
+  newline-JSON-RPC, tools/call -> joined text). Blocking reads run under
+  to_thread; a wedged server is unblocked by killing its process group.
+  Secrets: config env values must be "$ENV_NAME"; literals for
+  TOKEN/KEY/SECRET/PASSWORD keys are refused at load. Dead servers: lazy
+  reconnect on the next call plus a 60 s supervisor task; a deliberate
+  kill() clears the respawn cooldown. Smoke: 9/9 corpus servers connect,
+  8/9 tool counts exact, live reconnect mid-session verified.
+- `web/mcp_gate.py` — the coarse gate, port of the frozen probe. RECIPE_A
+  pools verbatim (temp 0.8 seed 1, build_prompt prefix), slot-6 embeddings
+  via norm_router_text, k-means VERBATIM port (an argmin/argmax init
+  divergence the equivalence check caught: 30/30 shortlists now match the
+  recorded run-2 routes), top-2 union, C=200 lines, `{server}__{tool}`
+  namespacing (MS-16a-adopted: 0.6763 vs 0.7014 bare, p=0.281, contract
+  stable 278/278). Index cached in web/mcp_index.json keyed on a tools/list
+  content hash; a 60 s watcher rebuilds when a server changes its tools.
+  Flat manifest at <= 20 MCP tools (registered threshold); credential-bearing
+  schemas refused at load; write-heuristic confirm flag per tool with
+  per-server override.
+- `web/server.py` — integration surface only: main() connects + builds the
+  index (to_thread); tool_flow swaps `tool_manifest_directive()` for
+  `MCP_GATE.directive_for(utterance)`; validate_tool delegates to the gate's
+  inputSchema check (required args, types, caps, unknown keys dropped);
+  run_tool calls tools/call (30 s default, result truncated to 300 chars,
+  honest failure lines); risky MCP tools park for the spoken read-back via
+  the existing pending machinery ("Just to confirm — run <name>?").
+- `tools/mcp_eval/` — MS-16b deployment gate. gen_eval.py generates per-server
+  frozen evals from the LIVE tools/list (RECIPE_B8 = MS-4 recipe B widened to
+  the registered 8+8, seed 2, one retry at seed+1 after the diagnosed
+  EOS-mid-JSON quirk, MS-16c); run_eval.py scores through the PRODUCTION gate
+  over the combined server set; results append-only.
+
+First deployment-gate run (bar: pos >= 0.60 AND neg >= 20/24):
+time PASS (0.719), everything PASS (0.656), filesystem FAIL (0.422,
+read/write near-duplicate confusion), git FAIL (0.531, log/show/add
+disambiguation). Per registration, filesystem and git stay DISABLED. Note on
+negatives: 3 of the 4 neg failures per server are the model correctly picking
+native tools (timer/reminder/note are in the combined manifest); true null
+discipline is 23/24 everywhere. The bar's 20/24 was set knowing this.
+
+Live smoke (tools/mcp_smoke.py, fake WS, no audio path): direct call with
+spoken confirmation, risky write parked + executed on YES, chat falls
+through, mid-session server kill reconnects transparently. SMOKE PASS.
+
+Not enabled anywhere yet: config.example defaults off. The user's live
+config.json is untouched; the running web server still has pre-MCP code
+until its next restart.
