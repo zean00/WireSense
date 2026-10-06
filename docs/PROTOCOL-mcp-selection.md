@@ -933,3 +933,53 @@ markers only.
 
 Files: tools/mcp_loop/{gen_state.py, state_texts.json, run_17b.py,
 results_17b.jsonl, summary_17b.json}. Runner committed before data.
+
+## MS-17b (results + adjudication)
+
+Run mechanics, two crashes disclosed (neither touched scored data):
+1. `NameError: time` during centroid building — the runner had a
+   `__import__("time").time()` initializer but a bare `time.time()` in
+   the progress print. Crash BEFORE any row was written; fixed with a
+   normal import; the retry was a clean full run (no rows existed to
+   resume or discard).
+2. `TypeError` in summary aggregation — `sum()` over a generator of
+   `dict_values` objects. Crash AFTER all 1448 rows were written and
+   flushed; fixed; the retry took the registered resume path
+   (aggregate-only, row count validated == 1448, no re-embedding).
+
+Results (results_17b.jsonl, 1448 held-out rows; summary_17b.json):
+
+```
+              pred tool  cont  done | recall
+true tool          252   129   103 |  0.5207
+true continue      123   244   113 |  0.5083
+true done           71    83   330 |  0.6818
+overall accuracy 0.5704    false-tool rate 0.2012
+bars: overall>=0.75 FAIL, tool-recall>=0.80 FAIL, false-tool<=0.15 FAIL
+```
+
+Adjudication (registered fork, applied verbatim): tool-class recall
+fails -> the need-check readout is DEAD. No two-stage rescue is
+registered (that fork required tool recall to pass). The deep_turn loop
+keeps its model-driven markers (IR_TOOL / BROWSE_TOOL) as the sole
+loop-continuation signal; no centroid readout at round boundaries.
+
+Reading (diagnostic, not scored): the confusion is symmetric
+tool<->continue (~25% each way) and above chance (0.57 vs 0.33) — the
+arm-C head space encodes topic/intent, not "does this text need a
+tool"; synthetic state text of all three classes projects into
+overlapping regions. This is a structural miss, not a marginal one:
+any rescue would be a TRAINED readout head (the arm-C precedent —
+supervised, labeled rounds), a different mechanism class with its own
+registration, not another centroid/pool recipe. Not justified by
+current evidence.
+
+Consequence for the System-1 loop design: what survives measurement is
+entry-point tool selection (MS-17a: utterance-keyed readout 0.89/0.81 —
+already the shipped gate mechanism). Mid-loop system-1 gating is
+rejected by MS-17b. MS-18 (RECIPE_C-augmented pools) remains open as a
+selector-quality fork only; it does not rescue this verdict.
+
+Housekeeping: `snapshot.json` (tinytuya device dump from the BF2
+diagnostics) sits untracked at the repo root; left alone deliberately —
+it may hold device local keys and must not be committed.

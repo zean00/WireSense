@@ -1,0 +1,32 @@
+{
+ "n_eval": 1448,
+ "confusion": {
+  "tool": {
+   "tool": 252,
+   "continue": 129,
+   "done": 103
+  },
+  "continue": {
+   "tool": 123,
+   "continue": 244,
+   "done": 113
+  },
+  "done": {
+   "tool": 71,
+   "continue": 83,
+   "done": 330
+  }
+ },
+ "recall": {
+  "tool": 0.5207,
+  "continue": 0.5083,
+  "done": 0.6818
+ },
+ "overall_acc": 0.5704,
+ "false_tool_rate": 0.2012,
+ "bars": {
+  "overall": false,
+  "tool_recall": false,
+  "false_tool": false
+ }
+}

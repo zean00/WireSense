@@ -10,6 +10,7 @@ fresh, refuses to overwrite, and a complete file is resumed aggregate-only.
 import json
 import os
 import sys
+import time
 
 import numpy as np
 
@@ -61,7 +62,7 @@ def main():
                      f"expected {n_eval}")
         print(f"resuming from {len(rows)} complete rows", flush=True)
     else:
-        t0 = __import__("time").time()
+        t0 = time.time()
         cents = {}
         for cls in CLASSES:
             V = np.stack([vec(u) for u, _ in pools[cls]])
@@ -91,7 +92,7 @@ def main():
     recall = {c: conf[c][c] / max(1, sum(conf[c].values())) for c in CLASSES}
     overall = sum(conf[c][c] for c in CLASSES) / len(rows)
     nt = sum(conf[c]["tool"] for c in ("continue", "done"))
-    false_tool = nt / max(1, sum(conf[c].values()
+    false_tool = nt / max(1, sum(sum(conf[c].values())
                                  for c in ("continue", "done")))
     summary = {
         "n_eval": len(rows),
