@@ -355,3 +355,27 @@ Registered predictions (to be checked, not assumed):
 If P2 holds and null discipline holds >= gate - 2 points, the escape line
 joins the implementation spec; if P1 fails, primary-as-tool is recorded as
 rejected at this scale.
+
+### Amendment MS-15a (registered pre-data, from canary): prime contract tightening
+
+Pre-run canary (6 cases, diagnostic only, MS-10 precedent): the search-primary
+contract as first written produced {"tool": null} on 6/6 cases INCLUDING both
+positives — the model never invoked mcp_search. As written the arm would measure
+that phrasing's null bias, not the search mechanism. Registered fix, exact
+wording (replaces CONTRACT_PRIME in run_search.py):
+
+  "Choose a tool for this request. You have no tools listed yet. If this
+  request could be handled by a tool, call mcp_search first. Reply with ONLY
+  a JSON object: {\"tool\": \"mcp_search\", \"args\": {\"query\": \"<a few
+  keywords>\"}} to search for tools, or {\"tool\": null} if this request is
+  pure conversation needing no tool. No other text."
+
+If the tightened contract STILL nulls positives at scale, that is the recorded
+answer for search-primary (a primary search tool a 4B planner won't invoke is
+functionally dead). Also registered: missing/empty query arg in an mcp_search
+call falls back to the case utterance verbatim; a second mcp_search after the
+re-plan is not executed (one search per case) and scores as a wrong pick.
+Escape-path mechanics verified offline pre-data (no eval cases): query
+"convert 3pm Tokyo time to UTC" -> top-8 NN returns convert_time,
+get_current_time at ranks 1-2; history-free re-plan picks convert_time with
+correct args (340 prompt tokens).
