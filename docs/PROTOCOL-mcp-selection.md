@@ -767,3 +767,20 @@ ptz.ContinuousMove(ProfileToken=PROFILE_0, PanTilt x=0.1 ~10% speed,
 y=0, Zoom 0) for ~1.5 s, then Stop. Outcomes recorded honestly either
 way; if it moves, a wrapper could drive PTZ via raw ONVIF despite the
 empty node registry.
+
+### Entry BF2 results (run of 2026-10-06)
+
+- PTZ GetServiceCapabilities: responds (endpoint alive) — EFlip/Reverse
+  False, nothing move-related enabled.
+- RAW ContinuousMove(ProfileToken=PROFILE_0, PanTilt x=0.1, 1.5 s):
+  SOAP Fault **"PTZ Profile Not Exist"** before any motion. The stub is
+  dead, not merely unadvertised — the firmware itself refuses PTZ on a
+  real video profile.
+
+FINAL: three independent confirmations the camera's ONVIF cannot steer it
+(0 nodes/0 configs; no profile binding; firmware faults on raw move).
+Tuya app drives the motors via Tuya's own protocol. Voice PTZ for this
+device would require the Tuya side (tinytuya local control with the
+device's local key), or a firmware/ONVIF toggle if the camera's settings
+expose one — not an ONVIF wrapper. Streams + snapshot wrapper remains the
+only shippable ONVIF shape for this camera.
