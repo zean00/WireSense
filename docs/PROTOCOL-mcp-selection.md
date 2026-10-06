@@ -618,3 +618,29 @@ Verification (in order, all before any enablement):
    frozen — deployment-gate (MS-16b) applies before any real enablement.
 Prediction: no gate impact of any kind (tools/list content is
 transport-independent); new failure modes are network-level only.
+
+### Entry BD results (run of 2026-10-06)
+
+- tools/mcp_http_smoke.py (hand-rolled stateful streamable-HTTP server,
+  stdlib thread, driven MCPServer-direct): SMOKE PASS 8/8 — initialize +
+  session-id issue, JSON tools/call round-trip, MCP-Protocol-Version header
+  after negotiate, SSE-response call parsed, isError raised as MCPError,
+  mid-session 404 -> transparent re-init + retry (server saw exactly 2
+  initializes), kill() -> DELETE seen, fresh restart.
+- Regression: tools/mcp_smoke.py (stdio, live llama + gate) re-run
+  unchanged: SMOKE PASS all four scenarios.
+- Real-world probe (logged, not frozen, per registration):
+  https://mcp.deepwiki.com/mcp — initialize 200 with SSE body, NO session
+  id (stateless server; client handles: alive() keys on the handshake flag,
+  not the id), protocol negotiated 2025-03-26; tools/list = 3 tools
+  (ask_wiki_question, read_wiki_contents, read_wiki_structure);
+  read_wiki_structure(fastapi/fastapi) returned 1818 chars in 0.8 s.
+- Prediction held: zero server.py/mcp_gate.py edits (grep-verified — no
+  references to argv/proc outside the client); gate untouched because
+  tools/list content is transport-independent.
+
+deepwiki is NOT enabled anywhere (MS-16b deployment gate still applies
+before any real enablement; if it's ever enabled, its frozen eval gets
+generated from the live tools/list like any stdio server). Auth remains
+deferred: config has no headers field yet; a 401/403 at initialize fails
+honestly with the "auth required? (deferred, entry BD)" hint.

@@ -21,6 +21,7 @@
     "_comment1": "opt-in MCP tool servers (docs/PROTOCOL-mcp-selection.md, implementation section). Each server's tools join the planner manifest namespaced as <server>__<tool>; >20 connected tools switch the manifest to the measured coarse gate (k=5 top-2 shortlist).",
     "_comment2": "env values MUST be \"$ENV_NAME\" references — a literal value for a TOKEN/KEY/SECRET/PASSWORD key is refused at startup. Tools whose name implies a mutation (create/write/delete/commit/push/navigate/...) park for a spoken confirm before running; set \"confirm\": false on a server to downgrade that, true to force it for every tool.",
     "_comment3": "a server is enabled here only after its per-server frozen eval passes (MS-16b: pos>=0.60, neg>=20/24). timeout_s bounds each tools/call.",
+    "_comment4": "remote servers: \"url\" instead of cmd/args — Streamable HTTP (entry BD). No auth yet (deferred): only no-auth endpoints connect; a 401/403 fails honestly at startup. Remote servers pass the same MS-16b gate before enabling.",
     "servers": [
       {
         "name": "filesystem",
@@ -39,6 +40,12 @@
         "env": {"GITHUB_TOKEN": "$GITHUB_TOKEN", "GITHUB_HOST": "https://github.com"},
         "args": ["--toolsets", "repos", "--toolsets", "issues"],
         "timeout_s": 30
+      },
+      {
+        "name": "deepwiki",
+        "enabled": false,
+        "url": "https://mcp.deepwiki.com/mcp",
+        "timeout_s": 60
       }
     ]
   }
