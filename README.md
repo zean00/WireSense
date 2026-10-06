@@ -500,6 +500,15 @@ query available. Gate+search-escape: 65.8% < 70.1% plain gate — the trigger
 fires on the wrong turns (45x on already-hit shortlists, 15/31 true misses)
 and merely offering the option costs ~4 points on turns that never use it.
 
+MCP support is IMPLEMENTED (opt-in, web/config.json `"mcp"`; entries AT-BB):
+stdio client with process-group lifecycle and $ENV-only secrets, the coarse
+gate (k=5 top-2 synth-pool shortlist, `{server}__{tool}` namespace — MS-16a
+re-passed the frozen eval at p=0.281) over >20 tools, flat below; risky
+tools park for a spoken confirm; index cached by tools/list hash. Per-server
+deployment gate (MS-16b, pos>=0.60 & neg>=20/24): time + everything PASS,
+filesystem (0.42) + git (0.53) FAIL and stay disabled. Live smoke green
+including mid-session server reconnect.
+
 ## Status
 
 - [x] Architecture + component selection (this repo's docs)
