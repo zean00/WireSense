@@ -317,3 +317,41 @@ Scored data: results.jsonl (run 2: flat carried from run 1 + 4 hier arms),
 results_run1_invalid_hier.jsonl (MS-11, archived invalid), sweep_k{5,8,15,25}_
 valid.jsonl (MS-12/13), grad78_*.jsonl (MS-14). Invalid MS-12 first sweep kept
 off-repo (byte-identical to k=10, superceded).
+
+## Amendment MS-15 (registered pre-data): tool-selection-as-a-tool
+
+Question: should "search for tools" be exposed to the planner as a tool — as the
+PRIMARY selector (tiny manifest, model calls mcp_search when a task smells
+tool-shaped), or as an ESCAPE HATCH inside the measured k=5/top-2 gate (planner
+may call mcp_search when the shortlist doesn't fit)? Same frozen corpus, eval,
+pools, budget C=200, planner params, k=5 synth space as run 2. New results file;
+existing results untouched.
+
+Search mechanics (both arms): query embedded via the production path
+(norm_router_text, slot 6), cosine vs all 121 per-tool synth centroids, top-8
+tools returned verbatim (name + desc[:C] + required args). Re-plan is
+HISTORY-FREE (Rev G spirit): build_prompt over the SAME utterance with a
+directive presenting the returned tools and the null escape; NO nested search;
+exactly one search per case maximum. A non-search tool name returned from the
+search-only manifest scores as a wrong answer directly (no recovery round).
+
+| arm | first directive | search | scored |
+|---|---|---|---|
+| search-primary | only the mcp_search line + 3-way contract | on mcp_search | final pick |
+| hier-synth-esc/top2 | k=5 top-2 shortlist + mcp_search line + 3-way contract | on mcp_search | final pick |
+
+Metrics as MS-6, plus per-arm: search invocation rate, mean completions calls per
+case, end-to-end ms and total prompt tokens (all calls summed), and for the
+escape arm: pos_acc on gate-miss cases (run-2 baseline: 0.000 — the dead mass
+this arm exists to recover).
+
+Registered predictions (to be checked, not assumed):
+- P1: search-primary lands BELOW both flat (0.6835) and gate k=5 (0.7014) on
+  overall accuracy, with worse null discipline than gate (0.917) and roughly
+  2x gate latency.
+- P2: gate+escape recovers a meaningful share of the 12% miss mass
+  (pos_acc on miss cases > 0.3, vs 0.000) and finishes >= gate k=5 overall,
+  at <= 1.2 mean calls per case.
+If P2 holds and null discipline holds >= gate - 2 points, the escape line
+joins the implementation spec; if P1 fails, primary-as-tool is recorded as
+rejected at this scale.
