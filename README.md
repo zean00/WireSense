@@ -467,6 +467,30 @@ deciding run — the D11 hold flake re-manifested, registered 2/3).
 All measurements on the local 4B fallback; the Mirai 27B provider
 was unreachable the whole cycle.
 
+## MCP tool-selection experiment (2026-10-06)
+
+Pre-implementation read for MCP support, fully pre-registered
+(`docs/PROTOCOL-mcp-selection.md`, decisions MS-1..MS-14). Corpus: 121 real
+tools dumped verbatim from 9 public MCP servers (github-mcp-server 62,
+filesystem 14, everything 13, git 12, memory 9, puppeteer 7, time 2, fetch 1,
+sequential-thinking 1). Eval: 278 hand-audited frozen cases. All arms on the
+production 4B planner, history-free, temp 0; routing via slot-6 embeddings and
+deterministic k-means over description / synthetic-utterance centroids.
+
+- Flat 121-tool manifest: 68.4% overall, 3739 prompt tokens, 2205 ms.
+- Hierarchical top-2 with k=10 clusters: 56.5% — routing recall is the whole
+  loss (hit 71%, planner-given-hit 75-91%: shortlists de-crowd the planner).
+- k-sweep found the optimum at k=5: 70.1% (paired tie with flat, p=0.597) at
+  57% of flat's tokens and 65% of its latency; every k>=8 loses to flat.
+- Scale/composition probe at N=78 (80% one server): flat COLLAPSES to 36.0%
+  with 6/24 null discipline; the coarse gate holds 50.5% (p=0.0011).
+- Synthetic-utterance pools beat raw-description pools in both topologies.
+
+VERDICT: build MCP selection hierarchically but COARSELY — few domains
+(4-8), top-2 union shortlist, `{"tool": null}` escape, LLM does the
+near-duplicate disambiguation. Fine unsupervised hierarchies are the failure
+mode, and dominant-server flat manifests are the risk the gate removes.
+
 ## Status
 
 - [x] Architecture + component selection (this repo's docs)
