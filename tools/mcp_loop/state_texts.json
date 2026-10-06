@@ -1,0 +1,2417 @@
+{
+ "continue": {
+  "everything__echo": [
+   "That sounds simple but effective.",
+   "I have many other options.",
+   "The input needs to be clear.",
+   "I'll process this next.",
+   "Simple repetition can be useful.",
+   "No extra tools needed here.",
+   "I understand the request well.",
+   "Ready to proceed now."
+  ],
+  "everything__get-annotated-message": [
+   "Annotations are like hidden notes attached to a message.",
+   "They store extra details without changing the main text.",
+   "This allows the system to understand context better.",
+   "You could label something as urgent or private.",
+   "These tags help machines sort and prioritize data.",
+   "Metadata embedded here makes information more powerful.",
+   "Without them, the message would just be plain text.",
+   "Annotations bridge the gap between raw data and meaning."
+  ],
+  "everything__get-env": [
+   "This tool fetches system environment variables.",
+   "Debugging configurations often requires checking these values.",
+   "I can access the current server's settings internally.",
+   "Many application behaviors depend on these variables.",
+   "I'm gathering details without making external calls.",
+   "Understanding the runtime state is crucial here.",
+   "I'll synthesize this data for the user.",
+   "No new tool calls are needed for this task."
+  ],
+  "everything__get-resource-links": [
+   "I can locate files by their names easily.",
+   "Paths help me find exactly where things are stored.",
+   "I know which folders contain the documents we need.",
+   "Sorting by date is a good way to organize.",
+   "Some files are shared across multiple users.",
+   "I can group items by their file types.",
+   "Recent changes often show up first in lists.",
+   "I can help you find what you are looking for."
+  ],
+  "everything__get-resource-reference": [],
+  "everything__get-structured-content": [
+   "I should verify the location parameter for the content request.",
+   "The schema will help validate the returned data structure.",
+   "I need to ensure the client has proper validation rules ready.",
+   "This tool aggregates structured data from various sources effectively.",
+   "Without the location, I cannot determine where to fetch the content.",
+   "The output format must align with the specified schema requirements.",
+   "I should check if the client supports the expected data types.",
+   "Validation ensures the retrieved content meets all structural standards."
+  ],
+  "everything__get-sum": [
+   "Adding two positive integers always yields a larger positive result.",
+   "Negative numbers can reduce the total sum when added together.",
+   "The order of numbers doesn't affect their final sum.",
+   "Zero added to any number leaves the original value unchanged.",
+   "Multiplying a number by zero always results in zero.",
+   "Subtracting a negative number is equivalent to adding a positive.",
+   "Large numbers might require careful handling to avoid overflow errors.",
+   "The sum represents the combined value of the two inputs."
+  ],
+  "everything__get-tiny-image": [
+   "The logo looks sharp and recognizable.",
+   "Tiny icons make for quick previews.",
+   "I can describe the colors without calling it.",
+   "This symbol represents something very small.",
+   "Visual simplicity often aids recall.",
+   "I've seen similar compact graphics before.",
+   "No need to fetch it right now.",
+   "The design seems balanced and clean."
+  ],
+  "everything__gzip-file-as-resource": [
+   "This tool handles file compression efficiently.",
+   "I recall the gzip output types clearly.",
+   "The session allows immediate resource linking.",
+   "No external data is needed here.",
+   "Compression is the core function.",
+   "Gzipped resources stream directly to users.",
+   "Download links are generated on demand.",
+   "The tool operates entirely locally."
+  ],
+  "everything__toggle-simulated-logging": [
+   "This feature can help test system behavior. I need to verify the current state first.",
+   "Simulated logs often show random levels.",
+   "Toggling might affect how events are recorded.",
+   "I should check if logging is active right now.",
+   "Random levels could make debugging tricky.",
+   "Turning it off ensures consistent output.",
+   "This tool might be useful for stress testing.",
+   "Let me confirm the default setting before changing anything."
+  ],
+  "everything__toggle-subscriber-updates": [
+   "This feature lets users manage simulated resource streams.",
+   "I'll check if the toggle is currently active.",
+   "The status will flip between on and off states.",
+   "Simulated updates help test subscription logic locally.",
+   "No real network traffic occurs during this action.",
+   "I need to confirm the current subscription state first.",
+   "Toggling here affects only the simulation layer.",
+   "The change applies immediately to local views."
+  ],
+  "everything__trigger-long-running-operation": [
+   "This task needs time to complete.",
+   "I should show progress as it happens.",
+   "The system is still processing.",
+   "Updates will arrive soon.",
+   "Wait a bit longer.",
+   "Loading is underway now.",
+   "Almost done with this.",
+   "Finish shortly."
+  ],
+  "everything__simulate-research-query": [
+   "I need to break down the topic into manageable sections first.",
+   "Gathering relevant facts requires checking multiple sources in my database.",
+   "Synthesizing this information means finding patterns across all the data I've collected.",
+   "Now I must evaluate the credibility of each source before drawing conclusions.",
+   "The final step involves presenting a clear summary of the findings.",
+   "I should highlight key insights that address the user's original question directly.",
+   "Let me double-check my logic to ensure the research is accurate and complete.",
+   "Ready to deliver the synthesized research report with confidence now."
+  ],
+  "fetch__fetch": [
+   "I can't browse the web without this special tool now.",
+   "It's great that I finally have internet access.",
+   "I can fetch the latest news for you right away.",
+   "This allows me to get current data instantly.",
+   "My capabilities have expanded with new connectivity.",
+   "I'm ready to retrieve up-to-date information now.",
+   "Having internet access makes my responses much more accurate.",
+   "I can now check real-time sources for you."
+  ],
+  "filesystem__read_file": [
+   "I could read the file contents right here, but I must avoid using that specific tool.",
+   "Since I cannot access the filesystem, I can't retrieve the data I need from this location.",
+   "My knowledge doesn't cover this file, so I'm limited to what I already know.",
+   "I need to look up information, but I don't have a way to search for this text.",
+   "This requires external data I don't possess, so I can't proceed without tools.",
+   "I should acknowledge the request but confirm I lack the ability to fetch this file.",
+   "Without access to the server, I must rely on my internal knowledge base only.",
+   "This task needs a tool I cannot use, so I will decline to perform it."
+  ],
+  "filesystem__read_text_file": [
+   "I have the file path ready and will process its contents.",
+   "The encoding should handle this text file without issues.",
+   "I can determine if this path is safe to access immediately.",
+   "My internal knowledge confirms the directory permissions are sufficient.",
+   "I am confident in reading the text directly from memory.",
+   "This task requires no external lookups or additional tools.",
+   "I will extract the data without needing to invoke any functions.",
+   "The solution is clear and requires zero tool interactions."
+  ],
+  "filesystem__read_media_file": [
+   "I need the file path to proceed.",
+   "This tool requires a specific directory location.",
+   "The path must be within allowed directories.",
+   "I'm waiting for the file location from you.",
+   "I'll need the exact filename and path.",
+   "Without a path, I can't access the file.",
+   "Please provide the directory and filename.",
+   "I'm ready to read once you specify the path."
+  ],
+  "filesystem__read_multiple_files": [
+   "I need the file paths to proceed with my request.",
+   "Reading all files at once will save time for this analysis.",
+   "The system will handle any read failures automatically.",
+   "I cannot access external sources for this specific task.",
+   "I know the tool only works within allowed directories.",
+   "My current knowledge confirms the efficiency of this method.",
+   "I have no further information about the file contents.",
+   "I must wait for the tool to return the data."
+  ],
+  "filesystem__write_file": [
+   "This tool changes files directly, so I need to be very careful with paths.",
+   "Overwriting existing data without warning can cause serious data loss.",
+   "I must verify the content before passing it to the file writer.",
+   "The allowed directories restrict where I can safely write new information.",
+   "Text encoding matters here to ensure the file saves correctly.",
+   "I should double-check that the path points to a writable location.",
+   "Overwriting is irreversible, so I need to confirm the intent is clear.",
+   "Handling text properly ensures the saved file remains readable later."
+  ],
+  "filesystem__edit_file": [
+   "I need the file path and the specific lines to replace.",
+   "The user must provide exact line sequences for the edit.",
+   "I will generate a git-style diff to show the changes.",
+   "This only works if the file is in an allowed directory.",
+   "I'm ready to construct the line-based edit once I have the data.",
+   "The response will clearly display how the text will be modified.",
+   "I'll ensure the replacement matches the exact line content provided.",
+   "Let's proceed with creating the text file modification now."
+  ],
+  "filesystem__create_directory": [
+   "This tool is designed to set up directory structures quickly.",
+   "I can create nested folders in a single operation.",
+   "It will silently succeed if the path already exists.",
+   "This is useful for ensuring required paths are available.",
+   "The tool operates only within specific allowed directories.",
+   "I need the target path to proceed with this action.",
+   "Multiple levels of folders can be created at once.",
+   "This feature helps organize projects efficiently without errors."
+  ],
+  "filesystem__list_directory": [
+   "I'm ready to explore the folder structure next.",
+   "Let me visualize the path layout in my mind.",
+   "Understanding the hierarchy is key here.",
+   "I can spot patterns without listing every item.",
+   "The allowed directories define my boundaries.",
+   "I'm focusing on file types and names.",
+   "No need to call tools for this overview.",
+   "My internal map shows the organization clearly."
+  ],
+  "filesystem__list_directory_with_sizes": [
+   "I know directory structures help organize files and folders efficiently.",
+   "Different file types have specific sizes that indicate their usage.",
+   "Understanding paths ensures we access only allowed locations.",
+   "Listing contents helps users find what they need quickly.",
+   "Directory sizes can reveal storage usage patterns.",
+   "Organizing files by type makes retrieval much easier.",
+   "Clear labels distinguish between documents and folders.",
+   "System paths must be verified before any operation."
+  ],
+  "filesystem__directory_tree": [
+   "I can visualize folder structures to help you organize.",
+   "Understanding nested paths will make navigation easier.",
+   "Let's explore the hierarchy to find what you need.",
+   "File types and names need clear categorization here.",
+   "A tree view helps track changes effectively.",
+   "I'll break down the directory levels for clarity.",
+   "This structure shows relationships between items clearly.",
+   "Organizing by type keeps everything distinct and clear."
+  ],
+  "filesystem__move_file": [
+   "This tool allows moving files between folders while renaming them.",
+   "I need to ensure both source and destination paths are valid.",
+   "The operation will fail if the target directory already exists.",
+   "Renaming within the same directory is a common use case here.",
+   "I must verify that both paths stay within the allowed directories.",
+   "Moving files across different directories requires careful path validation.",
+   "The destination file cannot coexist with the new name.",
+   "I should confirm the user's intent before executing any movement."
+  ],
+  "filesystem__search_files": [
+   "I'm looking for files matching your pattern in the specified directory.",
+   "Glob patterns like asterisks will help locate exactly what you need.",
+   "I'll check both the current folder and all subdirectories recursively.",
+   "Making sure I only access allowed paths while searching.",
+   "The results will give you full paths to every match found.",
+   "I understand you need a quick way to find specific file types.",
+   "Searching now without needing any external tools or lookups.",
+   "Ready to return the complete list of matching file locations."
+  ],
+  "filesystem__get_file_info": [
+   "This tool extracts file metadata like size and permissions without reading content.",
+   "I need to check the path to understand the file's characteristics.",
+   "The return includes timestamps and type without accessing the actual data.",
+   "I'll focus on gathering size and creation time details next.",
+   "This approach avoids reading the file while getting full directory info.",
+   "I can determine if the target is a file or directory now.",
+   "Permissions and last modified times are key details to capture.",
+   "I have all the context needed to proceed without external help."
+  ],
+  "filesystem__list_allowed_directories": [
+   "I recall the system has specific folder access limits defined by security policies.",
+   "Knowing the base paths helps me validate where file operations are permitted.",
+   "Subfolders within allowed zones inherit permissions automatically without extra checks.",
+   "This transparency prevents accidental access to restricted or private areas.",
+   "I can map out the hierarchy mentally before executing any file commands.",
+   "Understanding directory boundaries ensures all operations stay within safe parameters.",
+   "These known paths serve as the boundary for any upcoming file tasks.",
+   "I am ready to operate confidently within these established structural limits."
+  ],
+  "git__git_status": [
+   "I'm checking what files have changed.",
+   "Need to see uncommitted modifications.",
+   "Looking for staged changes in the repo.",
+   "Scanning for new and deleted files.",
+   "Checking for any local work in progress.",
+   "Reviewing the diff before committing.",
+   "Identifying branches with local divergences.",
+   "Ensuring the workspace is clean."
+  ],
+  "git__git_diff_unstaged": [
+   "I understand you want to see uncommitted local changes.",
+   "This feature helps track work before it goes into a branch.",
+   "The tool requires a path to locate the repository folder.",
+   "I need the directory name to proceed with your request.",
+   "You must specify which project folder to analyze.",
+   "Without a path, I cannot determine where to look.",
+   "The command will display only unstaged files in that repo.",
+   "Please provide the root path of your git repository."
+  ],
+  "git__git_diff_staged": [
+   "The user wants to know what changes are ready to be committed.",
+   "I need to check the staging area of the repository.",
+   "Staged changes are those prepared for the next commit.",
+   "The system will list modified files waiting to be pushed.",
+   "This helps users preview their next version update.",
+   "Files in the staging area are highlighted for review.",
+   "Ready-to-commit changes are distinct from uncommitted edits.",
+   "The output will show exactly what goes into the commit."
+  ],
+  "git__git_diff": [
+   "I could compare two branches to see how much code changed.",
+   "Looking at the commit history might reveal who made the edits.",
+   "This will show exactly which lines were added or removed.",
+   "Maybe I should check if the changes look correct at a glance.",
+   "The output will help me understand the scope of the modification.",
+   "I need to focus on the specific path where the changes are.",
+   "Visualizing the diff could make the complex history easier to grasp.",
+   "This approach gives a clear picture of the project's evolution."
+  ],
+  "git__git_commit": [
+   "The user needs to save their changes now.",
+   "A commit message must describe what changed.",
+   "I have the repo path ready to use.",
+   "This action records history into the log.",
+   "No external data is required for this.",
+   "The message field will explain the update.",
+   "I can execute this safely right now.",
+   "Saving the state keeps the project versioned."
+  ],
+  "git__git_add": [
+   "This command organizes files for the next commit.",
+   "Users select specific files to stage locally.",
+   "The staging area acts as a preview for commits.",
+   "Git tracks changes before they reach history.",
+   "Only selected paths are affected by this action.",
+   "Files must exist within a valid repository.",
+   "This prepares modifications for batch submission.",
+   "It separates local changes from permanent history."
+  ],
+  "git__git_reset": [
+   "I see you want to revert staged modifications in your project.",
+   "This action will undo all commits currently marked as staged.",
+   "The process requires the path to your specific repository folder.",
+   "Once executed, your working directory will reflect the previous state.",
+   "This effectively removes all changes from the staging area entirely.",
+   "You will need to re-add those files if you want them later.",
+   "The command targets only the index, not the actual file contents.",
+   "It is a common step when preparing to force a rollback."
+  ],
+  "git__git_log": [
+   "I should check the repository path you provided.",
+   "This will show me the history of recent changes.",
+   "The list will include all authors and commit messages.",
+   "I need to know the date range for the logs.",
+   "This tool is not available in the current context.",
+   "I will generate a summary of the most recent commits.",
+   "Please confirm the exact location of the source code.",
+   "I am ready to display the timeline of your project."
+  ],
+  "git__git_create_branch": [
+   "This will let me create a new branch easily.",
+   "The user just wants to start a new branch.",
+   "I need the repo path and branch name.",
+   "Branch creation is a simple Git operation.",
+   "I don't need any extra tools for this.",
+   "The base branch is optional in the request.",
+   "This command isolates changes for the new branch.",
+   "I'm ready to execute the branch creation now."
+  ],
+  "git__git_checkout": [
+   "Switching to the new branch now.",
+   "The files will update instantly.",
+   "This change is ready to go.",
+   "Branching is all set.",
+   "We can check the status later.",
+   "The new commit looks good.",
+   "Ready to move to that branch.",
+   "All systems are green for the switch."
+  ],
+  "git__git_show": [
+   "I'll check the commit history now.",
+   "That specific revision should have the details I need.",
+   "The repository path looks correct for this operation.",
+   "I'll need to parse the output once I have it.",
+   "The commit message might contain important context.",
+   "I should verify the file changes included here.",
+   "This will help me understand what changed at that point.",
+   "Ready to process the commit contents."
+  ],
+  "git__git_branch": [
+   "I need the repository path to find branches.",
+   "Knowing the branch type will narrow the list.",
+   "This operation requires access to the local git history.",
+   "I'll filter results based on the requested type.",
+   "The output will show available branch names.",
+   "No external data is needed for this query.",
+   "I'm ready to compile the branch list now.",
+   "Executing the search with the provided parameters."
+  ],
+  "github__actions_get": [
+   "I'll check the workflow ID right away.",
+   "This job seems to be running smoothly.",
+   "The build artifacts look ready for download.",
+   "Let me verify the latest run status.",
+   "The trigger conditions appear to be met.",
+   "I'm noting the completion time of this run.",
+   "All steps in the pipeline finished successfully.",
+   "The repository owner and name are correct."
+  ],
+  "github__actions_list": [
+   "I recall GitHub has a powerful automation system you can explore.",
+   "This feature helps you track your CI/CD pipeline activities.",
+   "You can list all the workflow files in any repository.",
+   "It also shows recent runs of specific jobs.",
+   "Artifacts from failed builds are easily accessible here.",
+   "This tool organizes your entire GitHub Actions history.",
+   "You can filter by owner and repo to stay focused.",
+   "It provides a clear view of your deployment status."
+  ],
+  "github__actions_run_trigger": [
+   "This tool runs GitHub Actions workflows for you.",
+   "You need the owner, repo, and method.",
+   "It can start, stop, or delete workflows.",
+   "The method must match the action name.",
+   "GitHub servers handle the actual execution.",
+   "Logs are deleted when no longer needed.",
+   "This connects directly to your GitHub account.",
+   "Just provide the required arguments now."
+  ],
+  "github__add_comment_to_pending_review": [
+   "I need the repository owner and name to identify the codebase.",
+   "The pull request number is essential to find the specific review.",
+   "I must verify that a pending review currently exists for this PR.",
+   "The file path and comment body content are required inputs.",
+   "The subject type determines how the comment will be categorized.",
+   "I should confirm the user has permission to comment here.",
+   "Missing any of these details will prevent adding the comment.",
+   "I will gather the required information before proceeding."
+  ],
+  "github__add_issue_comment": [
+   "The user needs to specify the repository and issue number first.",
+   "I should clarify if they want a text comment or an emoji reaction.",
+   "Both a body and reaction aren't strictly necessary, just one or the other.",
+   "Pull requests are treated as issues for this command as well.",
+   "I must ensure the user isn't trying to modify review comments.",
+   "The owner and repo names are critical for locating the correct repository.",
+   "I'll ask which specific issue or pull request they are targeting.",
+   "Ready to generate the comment once I have the required parameters."
+  ],
+  "github__add_reply_to_pull_request_comment": [
+   "I need to know which comment to reply to on the pull request.",
+   "The owner and repository names are missing from my current data.",
+   "I should check the conversation thread first to understand the context.",
+   "Have the user provide the specific comment ID they want to address.",
+   "Without a reaction or message body, I cannot proceed with this action.",
+   "I'll wait for the required details to construct a meaningful response.",
+   "This interaction is about adding feedback to a collaborative discussion.",
+   "I'm ready to help once all necessary identifiers are supplied."
+  ],
+  "github__create_branch": [
+   "This action updates the repository's branch history.",
+   "A new branch will be created locally.",
+   "The target branch name is required.",
+   "We are setting up a new code path.",
+   "This ensures the project remains organized.",
+   "Changes are isolated to this specific branch.",
+   "The owner and repo must be specified.",
+   "This step is purely local and safe."
+  ],
+  "github__create_gist": [
+   "I need a filename and content to begin.",
+   "The user must specify what to create.",
+   "Without details, I cannot proceed.",
+   "I'll ask for the filename now.",
+   "Content is just text data.",
+   "GitHub gists are public notes.",
+   "This helps share small code snippets.",
+   "Ready to generate the gist."
+  ],
+  "github__create_or_update_file": [
+   "I need to know which GitHub repository user and team owns.",
+   "What is the specific file path the user wants to modify?",
+   "The user must provide the file's SHA if it already exists.",
+   "I must ensure the new content replaces the old text exactly.",
+   "What message should be attached to this remote commit?",
+   "The branch name determines which version of the file gets updated.",
+   "I will verify the owner, repo, path, content, message, and branch.",
+   "Ready to generate the commit once all details are confirmed."
+  ],
+  "github__create_pull_request": [
+   "I need to know the repository owner first.",
+   "Which team should handle this code change?",
+   "The branch name needs to be unique.",
+   "I'll draft a title based on your request.",
+   "Base and head branches must match your rules.",
+   "Are there any specific reviewers you want?",
+   "Let me confirm the repo name again.",
+   "Ready to summarize the proposed changes."
+  ],
+  "github__create_repository": [
+   "We need to know the repository name before we can create it.",
+   "This action will generate a fresh project space for you.",
+   "The system will prepare your account for a new storage location.",
+   "Once you provide the name, the process starts immediately.",
+   "A unique identifier is essential for this new project.",
+   "We are ready to build your new repository structure.",
+   "No external data is needed to execute this local creation.",
+   "The next step is simply to input the desired name."
+  ],
+  "github__delete_file": [
+   "The user wants to remove a specific file from a GitHub repository.",
+   "I have all the necessary arguments to proceed with the deletion.",
+   "I should confirm the branch and file path with the user first.",
+   "Ensuring the owner and repo names match the repository is crucial.",
+   "A clear message will document why this file is being removed.",
+   "I must verify the current state of the file before deleting it.",
+   "The process will involve updating the repository's content permanently.",
+   "Once confirmed, the file will disappear from the specified branch immediately."
+  ],
+  "github__discussion_comment_write": [
+   "This tool helps manage GitHub discussion comments directly.",
+   "I can create new replies to existing threads here.",
+   "Updating comment content requires the method parameter to match.",
+   "Deleting comments is possible with the right method argument.",
+   "Marking an answer changes who the official response is.",
+   "Top-level comments appear at the start of discussions.",
+   "The tool supports adding, replying, updating, and deleting.",
+   "It also allows marking or unmarking comments as the answer."
+  ],
+  "github__dismiss_notification": [
+   "I know this message is waiting in your inbox.",
+   "Marking it as read will clear the alert.",
+   "The system will update your notification list soon.",
+   "You can now focus on other tasks.",
+   "This action confirms you've seen the update.",
+   "Your dashboard will reflect this change immediately.",
+   "No further steps are needed for this item.",
+   "The notification will disappear from your view."
+  ],
+  "github__fork_repository": [
+   "This tool moves a repo to your account.",
+   "We need the owner and repo names.",
+   "It copies the code to you.",
+   "The server is GitHub.",
+   "We will handle permissions here.",
+   "No outside info needed right now.",
+   "The process is standard cloning.",
+   "It creates a duplicate for you."
+  ],
+  "github__get_code_scanning_alert": [
+   "I need to know which user owns this repository to find the alert.",
+   "The repository name is required to locate the specific scan.",
+   "I must identify the exact alert number from the request details.",
+   "Looking up the user's profile might help verify their permissions here.",
+   "Checking the repo structure could reveal recent scanning configurations.",
+   "I need to confirm the alert number corresponds to a valid scan.",
+   "Gathering the owner and repo details is crucial before proceeding.",
+   "Ensuring the alert number exists in that specific repository is key."
+  ],
+  "github__get_commit": [
+   "The commit history looks interesting.",
+   "I need the repository details first.",
+   "Checking the owner and repo now.",
+   "The SHA is already provided.",
+   "Looking up the specific commit.",
+   "Nothing unusual in the log yet.",
+   "Ready to retrieve the details.",
+   "Analysis complete so far."
+  ],
+  "github__get_discussion": [
+   "I need to find the specific discussion number provided by the user.",
+   "The owner and repository name are essential for locating the conversation.",
+   "I will search the GitHub API for the correct discussion thread.",
+   "Once located, I can extract the details of that specific discussion.",
+   "The response should include the title and body of the discussion.",
+   "I must ensure the owner and repo match exactly what was requested.",
+   "This tool will help me retrieve the requested discussion information.",
+   "I am ready to fetch the data once all parameters are confirmed."
+  ],
+  "github__get_discussion_comments": [
+   "I need to know the owner, repository, and discussion number first.",
+   "The request is missing the essential arguments to proceed.",
+   "I cannot fetch data without specific GitHub project details.",
+   "What owner and repo are we targeting for this discussion?",
+   "The discussion number is crucial for locating the exact thread.",
+   "I'm ready to retrieve comments once the inputs are provided.",
+   "Please specify the repository path and discussion identifier.",
+   "Without the owner and repo, I can't access GitHub's API."
+  ],
+  "github__get_file_contents": [
+   "I need to know the owner and repository name first.",
+   "Let me recall the file path you provided earlier.",
+   "The repository structure seems to match our current context.",
+   "I can calculate the file size from the commit history.",
+   "The last author mentioned was active last week.",
+   "I remember the branch name from our previous sync.",
+   "The file format appears to be plain text based on the header.",
+   "I will check the local cache for any recent updates."
+  ],
+  "github__get_gist": [
+   "I need a specific gist ID to proceed. Can you provide the number?",
+   "The user must know the exact ID to retrieve content. Have them share it.?",
+   "Without an ID, I cannot fetch anything from GitHub. Ask for the identifier.?",
+   "This tool requires a numeric ID as its only input. Where is that number?",
+   "I have the tool ready, but I'm missing the gist ID. Please supply it.?",
+   "The user's next step is simply to tell me the number. I'm waiting.?",
+   "I understand the request, but I need the ID to act. What is it?",
+   "My options are limited until the user provides that single number. Ask again."
+  ],
+  "github__get_job_logs": [
+   "I need to know which repository to query for these logs.",
+   "The owner and repo names are missing from your request.",
+   "Without the repo details, I cannot identify the workflow yet.",
+   "I should have the GitHub token to access private workflows.",
+   "Please provide the owner and repo to proceed with the search.",
+   "I can filter for failed jobs if you give me the run ID.",
+   "Let me verify the repository exists before checking any logs.",
+   "I'll need the job ID if you want logs for a specific run."
+  ],
+  "github__get_label": [
+   "I need the owner and repo name to proceed.",
+   "The label name must be provided as well.",
+   "Once I have all three pieces, I can fetch it.",
+   "This looks like a GitHub API call.",
+   "I am checking for any missing required arguments.",
+   "I know the function returns label metadata.",
+   "I will structure the request with the three keys.",
+   "I am ready to call the tool once args are filled."
+  ],
+  "github__get_latest_release": [
+   "I should check the repository owner name first.",
+   "Next, I need to identify the specific repository.",
+   "Then I will look up the most recent tag.",
+   "After finding the tag, I'll fetch the release details.",
+   "I will extract the release version and description.",
+   "Now I'll verify the release date is current.",
+   "Finally, I will compile the version and metadata.",
+   "The latest release information is ready to share."
+  ],
+  "github__get_notification_details": [
+   "I need to find the specific notification ID first before proceeding.",
+   "The user has not provided the necessary notification ID yet.",
+   "I will search the recent logs for that particular GitHub alert.",
+   "It seems the user is asking about a detail I haven't seen.",
+   "I must locate the exact ID to retrieve the full notification data.",
+   "Checking my internal records for any reference to this GitHub event.",
+   "The user wants more info, but the key identifier is missing.",
+   "I recall seeing a similar alert earlier today involving a merge."
+  ],
+  "github__get_release_by_tag": [
+   "I need to find the release matching this tag.",
+   "Let me check the repository's history.",
+   "The owner and repo name are clear.",
+   "This tag usually points to a specific version.",
+   "I will look for the associated release details.",
+   "The commit messages should help confirm the version.",
+   "I'm verifying the release notes now.",
+   "Ready to present the correct release info."
+  ],
+  "github__get_tag": [
+   "The tag should contain a specific version string.",
+   "I need to identify the repository owner first.",
+   "This tag likely represents a release milestone.",
+   "I recall this tool fetches metadata directly.",
+   "The commit history might be attached here.",
+   "Release notes often accompany such tags.",
+   "I am filtering for the latest one.",
+   "This data usually appears in the API response."
+  ],
+  "github__issue_read": [
+   "I need to know which repository owner created this issue.",
+   "The repository name is essential for finding the correct context.",
+   "Without the issue number, I cannot retrieve specific details.",
+   "Method information will help identify the issue's action type.",
+   "I should verify if the owner exists before proceeding.",
+   "The repo name must match exactly to avoid search errors.",
+   "I am ready to fetch data once all parameters are clear.",
+   "This query requires specific GitHub issue metadata to succeed."
+  ],
+  "github__issue_write": [
+   "I can draft a summary of the bug report for you.",
+   "Let me check the current status of that open ticket.",
+   "The user reported a regression in the checkout flow.",
+   "We need to prioritize fixing the authentication error.",
+   "A quick review of recent logs might help isolate the cause.",
+   "The team is currently investigating the memory leak.",
+   "I'll prepare a status update for the project board.",
+   "Next steps include testing the patched version on staging."
+  ],
+  "github__list_branches": [
+   "I need to know the owner and repository name.",
+   "This will show all available branches.",
+   "I'll filter out the main branch later.",
+   "Remote and protected branches matter here.",
+   "Collaborators might have unique branches.",
+   "Sorting by creation date could help.",
+   "Pruning old branches is a good idea.",
+   "I'll check for any merge conflicts soon."
+  ],
+  "github__list_code_scanning_alerts": [
+   "Checking the repo owner and name for security issues.",
+   "Need to verify the repository exists first.",
+   "Security alerts often appear on pull requests.",
+   "The GitHub system scans code for vulnerabilities.",
+   "Different severity levels help prioritize fixes.",
+   "Owners usually manage these alerts themselves.",
+   "Code scanning runs automatically on pushes.",
+   "Alerts indicate potential bugs or vulnerabilities."
+  ],
+  "github__list_commits": [
+   "I need to know the owner and repo name.",
+   "Who is the repository owner?",
+   "What is the name of the repository?",
+   "I must identify the specific branch.",
+   "Is there a specific branch or default?",
+   "I have the owner and repo details.",
+   "I'll check the branch name next.",
+   "I need to verify the branch exists."
+  ],
+  "github__list_discussion_categories": [
+   "I already know how to list discussion categories on GitHub.",
+   "I need the owner's name to proceed with the request.",
+   "I'll check the available arguments before I call the function.",
+   "The tool requires the owner parameter to function properly.",
+   "I have all the necessary context to understand the task.",
+   "I'm ready to retrieve the category list for the specified owner.",
+   "I'll generate the response once I have the correct owner input.",
+   "My internal knowledge is sufficient to handle this query."
+  ],
+  "github__list_discussions": [
+   "I know we can filter discussions by type using owner data.",
+   "The API returns comments and issues in one call.",
+   "Owner names must match exactly for successful requests.",
+   "Pagination exists if the list exceeds the default limit.",
+   "Labels on discussions help organize team conversations.",
+   "I can structure the response to highlight top contributors.",
+   "Timestamps help sort recent activity within the group.",
+   "This tool is useful for monitoring active project topics."
+  ],
+  "github__list_gists": [
+   "I can summarize your recent activity.",
+   "Gist data isn't available here.",
+   "Let me check your preferences.",
+   "You haven't created any gists yet.",
+   "This tool is still under review.",
+   "Your profile seems incomplete.",
+   "I need more context for that.",
+   "Let's try a different approach."
+  ],
+  "github__list_issue_fields": [
+   "I'll check the repository owner for issue field definitions.",
+   "Text fields allow users to write custom descriptions.",
+   "Number fields track quantitative metrics like severity or priority.",
+   "Date fields enable tracking of issue creation or deadlines.",
+   "Single select options let users pick from predefined categories.",
+   "Organizations can define fields that apply to all repos.",
+   "The system will return valid option names for dropdowns.",
+   "I have all the context needed to explain these fields."
+  ],
+  "github__list_issue_types": [
+   "I'll check the GitHub documentation on supported issue types.",
+   "The owner parameter is essential for this query.",
+   "Organization-level types are also relevant here.",
+   "I need to determine which repo we are targeting.",
+   "Issue types can vary between repositories.",
+   "This information is usually available in the API docs.",
+   "I should verify the current list of types.",
+   "The output will depend on the selected owner."
+  ],
+  "github__list_issues": [
+   "I need the repository owner and name to start.",
+   "This will show me all reported problems.",
+   "Pagination will help me see more entries.",
+   "I'll filter results by recent activity.",
+   "Severity levels will guide my focus.",
+   "Labels might reveal common patterns.",
+   "I'm ready to generate the list now.",
+   "The output will help track progress."
+  ],
+  "github__list_notifications": [
+   "I'll check for any urgent code review requests pending on my dashboard.",
+   "There are new comments on that pull request I opened yesterday.",
+   "An issue update requires immediate attention from the team.",
+   "I see a notification about a security alert in the repo.",
+   "Someone mentioned me in a discussion thread that needs reading.",
+   "I have a pending assignment for the upcoming sprint.",
+   "The project timeline might shift based on this new blocker.",
+   "I need to prioritize these three items right now."
+  ],
+  "github__list_pull_requests": [
+   "I am considering the pull requests associated with the specified owner and repository.",
+   "My focus is on the current state of open or closed pull requests.",
+   "I will prioritize relevant updates and discussions within this specific project.",
+   "The list needs to accurately reflect the repository's recent activity.",
+   "I am filtering the data to ensure only valid pull requests are included.",
+   "This information will help identify potential contributions or merge candidates.",
+   "I must ensure the data is up-to-date and accurately reflects the repository.",
+   "The goal is to provide a clear overview of all pull requests."
+  ],
+  "github__list_releases": [
+   "I should check the owner and repository name first.",
+   "The list will show all public version tags.",
+   "Each release typically has a version number.",
+   "I need to look for release notes too.",
+   "Users often want the latest update quickly.",
+   "Some projects skip version numbering entirely.",
+   "I'll filter out private repositories if needed.",
+   "The output should be sorted by date."
+  ],
+  "github__list_repository_collaborators": [
+   "I need to know the owner and repository name.",
+   "Let me check the current page number.",
+   "The response might have more data here.",
+   "Pagination keys are in the fields.",
+   "I should look at the next page link.",
+   "Wait for the full list to load.",
+   "The last page will show everyone.",
+   "I'll compile the user list now."
+  ],
+  "github__list_tags": [
+   "I have the repository owner and name ready in my context.",
+   "I know git tags are version identifiers for code releases.",
+   "My internal memory suggests checking for a specific naming convention.",
+   "I can infer the latest tag based on recent commit history.",
+   "I am considering if a specific branch name is implied here.",
+   "I might need to verify the exact repository location first.",
+   "I recall that tags are typically stored in the remote origin.",
+   "I am thinking about how to filter the results by date."
+  ],
+  "github__manage_notification_subscription": [
+   "I need the specific notification ID to proceed with this request.",
+   "The user must specify whether they want to ignore, watch, or delete.",
+   "Without these details, I cannot determine the correct action to take.",
+   "I will guide the user to provide the necessary notification ID.",
+   "The action parameter is critical for managing the subscription correctly.",
+   "I cannot execute the command without knowing the target notification.",
+   "Please confirm the desired status for this particular thread.",
+   "Once provided, I can update the subscription settings immediately."
+  ],
+  "github__manage_repository_notification_subscription": [
+   "I know the user wants to control notifications for a specific GitHub repository.",
+   "I recall that actions like ignore or watch change how the user receives updates.",
+   "I have enough context to infer the desired state without calling any tools.",
+   "I understand that deleting the subscription stops all future alerts for that repo.",
+   "I can explain the options based on the standard behavior of repository settings.",
+   "I don't need to fetch live data since I already know the available actions.",
+   "I will summarize the ways to manage notifications without invoking the specific command.",
+   "I have processed the request and am ready to guide the user on the next step."
+  ],
+  "github__mark_all_notifications_read": [
+   "This action hides unread alerts from the sidebar.",
+   "It updates the status of every notification instantly.",
+   "The system will refresh the UI immediately.",
+   "All items marked here count as read.",
+   "No specific selection is needed for this.",
+   "The server processes this request globally.",
+   "It clears the read/unread flag for all.",
+   "This keeps the interface clean and tidy."
+  ],
+  "github__merge_pull_request": [
+   "The user wants to know about merging pull requests.",
+   "I don't need to call any tools for this.",
+   "Merging changes combines code from different branches.",
+   "This is a standard operation on GitHub.",
+   "I should keep my response concise.",
+   "The process requires identifying the correct branch.",
+   "No external data is needed right now.",
+   "I will summarize the key steps involved."
+  ],
+  "github__pull_request_read": [
+   "I need to know which repository to check first.",
+   "The owner's name will help me locate the correct space.",
+   "I'll need the specific pull request number next.",
+   "Understanding the repo structure is the first step here.",
+   "I should verify the owner hasn't changed recently.",
+   "The method type will determine how I fetch the data.",
+   "I'm thinking about the latest activity in that PR.",
+   "I need to ensure the numbers are accurate before proceeding."
+  ],
+  "github__pull_request_review_write": [
+   "I see you want to manage pull request reviews.",
+   "Creating a new review could be a good first step.",
+   "Submitting it immediately requires the event parameter.",
+   "Pending reviews stay open until you decide.",
+   "Deleting a review removes your comment entirely.",
+   "Resolving threads helps clarify discussions.",
+   "Unresolving lets the conversation restart again.",
+   "All these actions need the repo and pull number."
+  ],
+  "github__push_files": [
+   "I need to know which user owns the repository.",
+   "The repo name is essential for the push action.",
+   "I must identify the specific branch to update.",
+   "File paths must be absolute to locate them correctly.",
+   "A commit message is required to explain the changes.",
+   "All file paths must be provided in a single list.",
+   "I need to ensure no files are duplicated in the list.",
+   "Ready to execute the push once all inputs are gathered."
+  ],
+  "github__search_code": [
+   "Searching for precise code patterns across vast repositories.",
+   "This approach will quickly locate the exact function needed.",
+   "GitHub's native engine is ideal for symbol matching.",
+   "The results will be fast and highly targeted.",
+   "I'm filtering for the specific class definitions mentioned.",
+   "This method avoids unnecessary context from other repos.",
+   "The query will narrow down to exact matches.",
+   "Ready to execute the search without external tools."
+  ],
+  "github__search_commits": [
+   "I need to locate specific code changes on GitHub.",
+   "Finding commits requires precise search syntax.",
+   "The default branch will be the only target.",
+   "I must ensure the query covers the right scope.",
+   "Authors or messages could help narrow results.",
+   "This search won't span multiple repositories.",
+   "Exact syntax is crucial for accurate findings.",
+   "I'll focus on the specified query parameters now."
+  ],
+  "github__search_issues": [
+   "I know this tool searches GitHub issue reports semantically.",
+   "Users often phrase problems like login failures in natural language.",
+   "The system automatically limits results to confirmed bug reports only.",
+   "I understand these queries match paraphrased descriptions of technical issues.",
+   "Many reports describe login errors after password resets in vague terms.",
+   "The search engine handles conceptual matches without needing exact keywords.",
+   "I'm ready to help find specific GitHub issues using this method.",
+   "This approach works best for understanding user-reported problems accurately."
+  ],
+  "github__search_orgs": [
+   "Searching for companies or open source foundations by name or location.",
+   "Looking up teams that match the user's criteria.",
+   "Finding organizations based on specific metadata details.",
+   "Identifying groups relevant to the user's search query.",
+   "Discovering teams without needing any external tools.",
+   "Analyzing potential matches for the provided search terms.",
+   "Filtering results to show only relevant organizations.",
+   "Confirming if the query matches known company databases."
+  ],
+  "github__search_pull_requests": [
+   "I can check the GitHub repo for those open requests right now.",
+   "Searching for pull requests using issue syntax seems straightforward.",
+   "I have all the info I need to find open PRs.",
+   "No external tools are required to summarize recent pull requests.",
+   "I can filter the results to show only open pull requests.",
+   "The syntax I know will help me narrow down the list quickly.",
+   "I'm ready to compile the search results from the repository.",
+   "I'll organize the findings into a clear list of pull requests."
+  ],
+  "github__search_repositories": [
+   "This tool lets users find specific GitHub repos quickly.",
+   "Users might search for projects by name or topic.",
+   "It helps developers discover new code examples fast.",
+   "I should help them find the right repository.",
+   "The query will match against various repo metadata.",
+   "This is useful for locating open source projects.",
+   "We can filter results based on description or readme.",
+   "The goal is efficient discovery of GitHub repositories."
+  ],
+  "github__search_users": [
+   "Searching for developers who match the query.",
+   "The results might show team members.",
+   "I need to locate contributors by name.",
+   "This could help find a specific profile.",
+   "Checking if the search term is valid.",
+   "Potential matches might appear in the list.",
+   "Focusing on finding relevant users now.",
+   "Gathering information without using external tools."
+  ],
+  "github__sub_issue_write": [
+   "This action will create a nested discussion within a larger issue.",
+   "I need to ensure the sub-issue ID is valid before proceeding.",
+   "The parent issue must exist in the specified owner and repository.",
+   "Sub-issues help break down complex tasks into manageable parts.",
+   "I will verify that the issue number corresponds to an open ticket.",
+   "This method is useful for tracking progress on specific aspects.",
+   "The system will automatically associate the new sub-issue with the parent.",
+   "I am checking if the user has permission to modify this issue."
+  ],
+  "github__update_gist": [
+   "I need to know which specific file on the gist you want to change.",
+   "Could you provide the content you'd like to insert into that file?",
+   "The file name is important for locating exactly where the update happens.",
+   "I must ensure the content string is valid before proceeding with any changes.",
+   "Please confirm the gist ID so I can find the correct repository.",
+   "Are you updating a public or private gist that requires special permissions?",
+   "I will wait for your inputs to construct the update command carefully.",
+   "Once you provide all details, I'm ready to execute the file modification."
+  ],
+  "github__update_issue_comment": [
+   "I need the owner and repository name.",
+   "Which specific comment should I change?",
+   "The new text body is required.",
+   "I cannot edit PR reviews.",
+   "Confirm the comment ID with me.",
+   "Please provide the owner and repo.",
+   "I must not update PR reviews.",
+   "Ready to update the issue comment."
+  ],
+  "github__update_pull_request": [
+   "The pull number needs to be a specific integer.",
+   "I have the owner and repo details ready.",
+   "This update will modify the PR status.",
+   "Checking if the PR title is still current.",
+   "The repository name must match exactly.",
+   "Ensuring the branch name is valid.",
+   "The pull request must exist before updating.",
+   "Finalizing the update parameters for the action."
+  ],
+  "github__update_pull_request_branch": [
+   "Checking the pull request details now.",
+   "I need the owner, repo, and number.",
+   "The base branch is the target.",
+   "Fetching the latest commit.",
+   "Ready to merge updates.",
+   "Syncing the branch name.",
+   "Verifying the commit hash.",
+   "All inputs confirmed."
+  ],
+  "memory__create_entities": [
+   "I need to check the current list of entities in the graph.",
+   "Adding new nodes will expand our knowledge base significantly.",
+   "I should ensure all attributes match our schema standards.",
+   "Verifying the relationships before finalizing the additions.",
+   "Each new entity must have a unique identifier.",
+   "I'll draft the structure for these new records now.",
+   "Confirming that the user's intent aligns with our data strategy.",
+   "Ready to generate the entity definitions for creation."
+  ],
+  "memory__create_relations": [
+   "This topic links people to places.",
+   "The relationships need clear direction.",
+   "Active voice makes the text stronger.",
+   "I see a pattern of connections.",
+   "Every link must flow forward.",
+   "Time is a key factor here.",
+   "Places anchor these new ties.",
+   "Clear verbs define the action."
+  ],
+  "memory__add_observations": [
+   "I can add details about a person to my records.",
+   "This tool helps track new events for entities.",
+   "I'll update the knowledge graph with fresh data now.",
+   "Adding observations allows me to refine my understanding.",
+   "I'm preparing to record specific attributes for an entity.",
+   "New facts will be integrated into the existing structure.",
+   "I will ensure these observations are stored accurately.",
+   "Updating the graph helps maintain a complete history."
+  ],
+  "memory__delete_entities": [
+   "Removing these names will clear their connections immediately.",
+   "I'll ensure all linked data disappears with them.",
+   "This action permanently erases their history from the graph.",
+   "The system will void any remaining ties to these entries.",
+   "I'm ready to process this batch of deletions now.",
+   "All associated relations will vanish alongside the entities.",
+   "This operation cleans up the knowledge graph efficiently.",
+   "The specified names will be removed from our records."
+  ],
+  "memory__delete_observations": [
+   "I recall these entries are already archived from last week.",
+   "The user's request seems to conflict with current records.",
+   "My memory doesn't list those observations in the active database.",
+   "I think they were deleted during a routine cleanup.",
+   "Checking my logs shows no active records matching that description.",
+   "Perhaps the data was moved to a different storage location.",
+   "The system indicates those entries were never successfully created.",
+   "I believe the user is referring to a different dataset entirely."
+  ],
+  "memory__delete_relations": [
+   "I understand we need to remove connections from the memory graph.",
+   "Deleting these links will clean up redundant data.",
+   "The specific relations to remove are currently undefined.",
+   "Removing them now might break the context flow.",
+   "This action will permanently erase the specified bonds.",
+   "I'll process the deletion without external verification.",
+   "The graph structure will update automatically after this.",
+   "Ensuring no orphaned nodes remain is critical here."
+  ],
+  "memory__read_graph": [
+   "I'll scan the connections to identify all the nodes involved in this structure.",
+   "The nodes represent entities while the edges show their specific relationships to each other.",
+   "I see a clear path from the starting point through several linked items.",
+   "Each relationship carries a weight that indicates the strength of the connection.",
+   "The graph forms a complex web of interdependent pieces of information.",
+   "I'm tracking how data flows from one concept to another across the network.",
+   "This visualization helps me understand the overall topology of the knowledge base.",
+   "Every node serves as a unique identifier for a specific piece of data."
+  ],
+  "memory__search_nodes": [
+   "I'm thinking about what nodes might match this description.",
+   "Several entities in my knowledge base could fit this query.",
+   "I need to recall specific attributes for these concepts.",
+   "My internal graph suggests a few potential candidates.",
+   "I'm filtering results based on known relationships.",
+   "This topic connects to several established facts.",
+   "I'm verifying if any of these are already indexed.",
+   "I'm mentally mapping connections to find the right match."
+  ],
+  "memory__open_nodes": [
+   "I will explore the structure of the nodes first.",
+   "Their names seem to define their specific roles.",
+   "Connecting these points reveals important relationships.",
+   "Each name likely points to a distinct entity.",
+   "Understanding the graph layout is crucial now.",
+   "These nodes form the backbone of our data.",
+   "I need to visualize how they interact.",
+   "The connections will clarify the overall context."
+  ],
+  "puppeteer__puppeteer_navigate": [
+   "I can handle this request directly.",
+   "That sounds like a reasonable plan.",
+   "Let me verify the URL format.",
+   "This seems straightforward enough.",
+   "I need to ensure safety first.",
+   "I'll check my internal rules.",
+   "Nothing external is needed here.",
+   "I have all the info I need."
+  ],
+  "puppeteer__puppeteer_screenshot": [
+   "I need the element name to capture that image.",
+   "This screenshot will show exactly what's on screen.",
+   "The name argument is required to focus the view.",
+   "Capturing the viewport gives a clear overview of the page.",
+   "I must identify the target before I can record it.",
+   "This action freezes the current visual state instantly.",
+   "The specific name will determine which part is saved.",
+   "Without the name, I can't isolate the desired area."
+  ],
+  "puppeteer__puppeteer_click": [
+   "I need the specific element selector to perform the click action.",
+   "The browser will execute the command once the selector is provided.",
+   "This tool allows me to simulate a mouse click on web pages.",
+   "I'm ready to interact with the page once I have the target.",
+   "Clicking an element requires knowing exactly which one to target.",
+   "The server handles the actual execution of the click command.",
+   "Without a selector, I cannot determine where to click on the page.",
+   "I will trigger the interaction after receiving the necessary element details."
+  ],
+  "puppeteer__puppeteer_fill": [
+   "This input field needs a value to work properly.",
+   "The selector identifies exactly which box to update.",
+   "I must ensure the value matches the user's intent.",
+   "Validating that the field accepts the new text.",
+   "Positioning the cursor correctly before typing is crucial.",
+   "Confirming the value doesn't trigger any error states.",
+   "Checking if the field is currently focused.",
+   "Ensuring the text length fits within character limits."
+  ],
+  "puppeteer__puppeteer_select": [
+   "I need the specific element selector to find the target.",
+   "The value parameter tells me what to click on.",
+   "I must ensure the element is currently visible on screen.",
+   "If the page isn't loaded, the selection will fail.",
+   "Different selectors like ID or CSS can work here.",
+   "I should check if the value matches the element text.",
+   "Sometimes hidden elements prevent successful clicks.",
+   "I'll need to scroll if the target is off-screen."
+  ],
+  "puppeteer__puppeteer_hover": [
+   "I should focus on the element's current state before moving the cursor.",
+   "The user needs the exact location to target for this action.",
+   "I am considering how smooth the movement will appear to the viewer.",
+   "My next step is to identify the precise coordinates on the screen.",
+   "I need to ensure the hover doesn't trigger any unwanted clicks.",
+   "The selector will determine which specific part of the interface I touch.",
+   "I am visualizing the cursor stopping briefly before leaving the element.",
+   "I must keep my internal reasoning clean and strictly focused on the task."
+  ],
+  "puppeteer__puppeteer_evaluate": [
+   "I recall that this tool runs browser-based JavaScript directly.",
+   "It allows me to execute scripts inside a headless browser.",
+   "This capability enables deep inspection of web pages.",
+   "I understand it can manipulate DOM elements programmatically.",
+   "Such execution happens without a visible user interface.",
+   "The script runs in an isolated browser context.",
+   "I know this is useful for automated testing workflows.",
+   "It provides a way to simulate browser interactions."
+  ],
+  "sequential-thinking__sequentialthinking": [
+   "The problem scope is still unclear, so I need to keep refining my steps.",
+   "I'll branch out to consider alternative approaches before finalizing the solution.",
+   "My current hypothesis might need verification after this critical analysis step.",
+   "Revising the initial plan will help filter out irrelevant details effectively.",
+   "Uncertainty remains high; I must gather more context before proceeding.",
+   "This iterative process ensures the final answer is both robust and accurate.",
+   "Backtracking here could prevent a costly error in the later stages.",
+   "I'll adjust the total thought count based on new insights from this path."
+  ],
+  "time__get_current_time": [
+   "I know it's currently 3:00 PM here in New York.",
+   "The clock on my desk shows 4:15 PM local time.",
+   "I can't recall the time without checking the clock.",
+   "My internal clock indicates it's roughly 5:30 PM.",
+   "I remember the time was different when I arrived.",
+   "I know the time is around 6:00 PM today.",
+   "I think it's 7:20 PM based on my watch.",
+   "I recall the current time is quite late now."
+  ],
+  "time__convert_time": [
+   "I recall that timezones shift the sun's position across the globe.",
+   "My internal clock knows London is currently ahead of New York.",
+   "I can map the relationship between different geographic regions and their clocks.",
+   "Understanding daylight saving time changes the effective hours in many places.",
+   "I remember that UTC serves as the universal reference point.",
+   "The math involves adding or subtracting specific offsets from the source.",
+   "I've stored the mapping for major cities like Tokyo and Sydney.",
+   "Calculating the difference requires checking the local rule for each zone."
+  ]
+ },
+ "done": {
+  "everything__echo": [
+   "The message will be repeated exactly as you typed it back to you.",
+   "You will hear the input string echoed immediately by the system.",
+   "The tool simply reflects your typed words back to you unchanged.",
+   "Inputting a string results in that same string being returned.",
+   "The system outputs whatever text you provided in your request.",
+   "Your typed message will be mirrored back to you by the tool.",
+   "The tool functions by repeating your input string word for word.",
+   "You will receive the exact input string back as the output."
+  ],
+  "everything__get-annotated-message": [
+   "The tool retrieves metadata about messages using a message type argument.",
+   "It shows how annotations add descriptive information to content.",
+   "Annotations provide context like labels or tags for specific messages.",
+   "This feature helps distinguish between different kinds of message types.",
+   "Metadata is stored within the message structure itself.",
+   "Users can access details by specifying the message type.",
+   "Annotations enhance understanding by attaching extra data to content.",
+   "The system returns enriched message information based on the request."
+  ],
+  "everything__get-env": [
+   "Your server configuration is fully loaded and ready for use.",
+   "All necessary environment variables have been successfully retrieved.",
+   "Debugging is straightforward now that you have the full variable set.",
+   "Everything is configured correctly for this session.",
+   "You can proceed with confidence as all settings are active.",
+   "Your current environment is fully operational and accessible.",
+   "No further configuration steps are needed right now.",
+   "The server is functioning perfectly with all variables in place."
+  ],
+  "everything__get-resource-links": [
+   "Here are ten links to your files, folders, and notes across your system.",
+   "I can show you up to ten quick links to your favorite resources.",
+   "This feature displays ten direct links to your documents, images, and more.",
+   "You now have ten concise links to access your various file types.",
+   "Eight useful links to your resources are ready for your immediate use.",
+   "These ten links provide quick access to different kinds of files on your device.",
+   "I have generated ten links pointing to your stored resources and documents.",
+   "Your ten resource links are now available for rapid access to various files."
+  ],
+  "everything__get-resource-reference": [
+   "The tool retrieves a reference for a resource accessible by MCP clients.",
+   "It provides the necessary handle for clients to interact with a specific resource.",
+   "This utility returns a reference that enables MCP clients to access the resource.",
+   "The output is a resource reference designed for use by MCP clients.",
+   "Clients can use the returned reference to directly access the target resource.",
+   "It generates a reference that allows MCP clients to connect to the resource.",
+   "The tool supplies a reference that grants MCP clients access to the resource.",
+   "A resource reference for MCP client access is returned by this tool."
+  ],
+  "everything__get-structured-content": [
+   "This tool extracts structured data from a specific location for validation.",
+   "It provides formatted content along with a schema to verify client inputs.",
+   "Use it to retrieve organized information and its corresponding output structure.",
+   "The tool returns clean data and a schema from any given location.",
+   "You can validate client data by getting structured content and its schema.",
+   "This server fetches structured content and a validation schema from a location.",
+   "It delivers formatted data and an output schema for data verification.",
+   "Get organized content and its schema directly from the specified location."
+  ],
+  "everything__get-sum": [
+   "The sum is found by adding the two numbers together.",
+   "Add the first number to the second for the total.",
+   "Combine the values of a and b to get the answer.",
+   "The result equals a plus b in one step.",
+   "Calculate the total by summing both provided numbers.",
+   "To solve, simply add the two input numbers.",
+   "The final answer is the total of a and b.",
+   "Merge the two numbers to find their sum."
+  ],
+  "everything__get-tiny-image": [
+   "Here is a tiny MCP logo image for you.",
+   "I have retrieved the small MCP logo as requested.",
+   "The MCP logo image is ready to view now.",
+   "A small version of the MCP logo has been found.",
+   "This tiny image represents the MCP logo perfectly.",
+   "I can share the small MCP logo image with you.",
+   "The requested tiny MCP logo image is available here.",
+   "Here comes the small MCP logo image you asked for."
+  ],
+  "everything__gzip-file-as-resource": [
+   "Gzip compresses files to save space and speed up downloads.",
+   "This process creates a .gz file that can be downloaded later.",
+   "Compression reduces file size by removing unnecessary data.",
+   "You can use this method to attach files to messages.",
+   "Gzip is ideal for sending large files over slow connections.",
+   "The result is a smaller file ready for immediate use.",
+   "This technique ensures faster transfer times for your content.",
+   "Compressed resources are stored temporarily for later retrieval."
+  ],
+  "everything__toggle-simulated-logging": [
+   "Yes, the system is currently generating random log levels for testing purposes.",
+   "No, simulated logging is disabled right now and only real logs are active.",
+   "The toggle is currently off, so you will see no random log entries.",
+   "Random log levels are enabled, meaning simulated logs are flooding the output.",
+   "You can switch this feature on or off to control random log generation.",
+   "Without the toggle, logging remains at normal levels instead of simulating random ones.",
+   "Simulated logging is active, which means log entries have randomized severity levels.",
+   "If you need consistent logs, ensure the simulated logging toggle is turned off."
+  ],
+  "everything__toggle-subscriber-updates": [
+   "Updates are currently enabled, so you will receive all simulated resource notifications.",
+   "Updates are currently disabled, meaning no simulated notifications will reach you.",
+   "You can toggle this setting to start or stop receiving simulated updates.",
+   "The system is set to send updates by default unless otherwise configured.",
+   "Turning this off will silence all simulated resource subscription notifications.",
+   "This feature simulates incoming updates to test your notification preferences.",
+   "You have the option to pause simulated updates at any time.",
+   "Current status shows that simulated updates are active for this server."
+  ],
+  "everything__trigger-long-running-operation": [
+   "The server will process your request and return results shortly.",
+   "Your task is running in the background with live progress updates.",
+   "Check the dashboard for the current status of your operation.",
+   "The system is handling your long-running process efficiently now.",
+   "You'll see real-time progress bars as the operation completes.",
+   "All intermediate steps are being logged and tracked automatically.",
+   "The operation will finish and notify you upon completion.",
+   "We are currently executing your request with full progress visibility."
+  ],
+  "everything__simulate-research-query": [
+   "To simulate research, I would gather data, analyze it, and synthesize findings on your topic. This process demonstrates task-based operations with clear progress through multiple stages.",
+   "Simulating a research query involves gathering information, analyzing it thoroughly, and synthesizing the results into a cohesive summary.",
+   "A simulated research operation gathers and analyzes data before synthesizing a comprehensive answer, showing progress through distinct stages.",
+   "This tool demonstrates MCP task-based operations by gathering, analyzing, and synthesizing information with visible progress through each stage.",
+   "Simulating research means gathering relevant data, analyzing it deeply, and synthesizing the findings into a complete answer.",
+   "A research simulation gathers information, analyzes it, and synthesizes the results, demonstrating clear progress through multiple operational stages.",
+   "To simulate research, I would gather and analyze information before synthesizing a final result, showcasing task-based operations with progress.",
+   "Simulating a research query involves gathering data, analyzing it, and synthesizing the outcome, demonstrating task-based operations with clear stages."
+  ],
+  "fetch__fetch": [
+   "I have internet access now and can fetch the latest information for you.",
+   "Yes, I can now retrieve up-to-date content from any website you request.",
+   "With this new tool, I can get real-time data from the internet instantly.",
+   "I can now fetch URLs to provide you with the most current information available.",
+   "This update allows me to browse the web and answer your questions with fresh facts.",
+   "Now I can access the internet to fetch and summarize any page you need.",
+   "I am ready to use my new internet tool to get you the latest news.",
+   "You can now ask me to fetch specific URLs, and I will retrieve their contents."
+  ],
+  "filesystem__read_file": [
+   "The read_file tool is deprecated and should no longer be used.",
+   "Please use read_text_file instead to access file contents.",
+   "This tool is old and has been replaced by a newer version.",
+   "You should switch to read_text_file for reading files.",
+   "The read_file tool is no longer the recommended method.",
+   "Read_text_file is the modern replacement for read_file.",
+   "Discontinue using read_file and adopt read_text_file now.",
+   "File reading is now handled exclusively by read_text_file."
+  ],
+  "filesystem__read_text_file": [
+   "Use the head parameter to read only the first N lines of a file efficiently.",
+   "The tail parameter allows you to quickly access the last N lines of any text file.",
+   "This tool handles various text encodings automatically to ensure accurate content retrieval.",
+   "Detailed error messages help you understand why a file cannot be read successfully.",
+   "You can operate on files regardless of their extension using this versatile tool.",
+   "The tool is restricted to allowed directories to maintain system security and integrity.",
+   "Reading a file's complete contents is straightforward when you provide the correct path.",
+   "Combine head and tail parameters to focus on specific sections of large documents."
+  ],
+  "filesystem__read_media_file": [
+   "You can view the file's content directly from the system cache without needing to load it.",
+   "The file's metadata, such as its size and creation date, is available in the directory listing.",
+   "To access the file's binary data, you would need to initiate a read operation, but I cannot do that here.",
+   "This tool allows you to retrieve files securely within the allowed directory boundaries.",
+   "Images and audio files returned by this tool come with their specific MIME types.",
+   "Non-media files are treated as embedded resources when retrieved through this method.",
+   "You can safely read files in permitted folders using this secure tool.",
+   "The base64 encoding ensures the file content is safe to transmit in responses."
+  ],
+  "filesystem__read_multiple_files": [
+   "You can read multiple files at once to compare their contents efficiently.",
+   "This method saves time when analyzing or checking several files simultaneously.",
+   "Multiple files can be loaded together without stopping if one fails.",
+   "Use this approach for fast batch processing of text data.",
+   "It allows you to retrieve paths and content of many files in one go.",
+   "This tool is ideal for comparing differences between several documents quickly.",
+   "Reading files in batches is faster than opening them individually.",
+   "You can gather information from multiple sources in a single operation."
+  ],
+  "filesystem__write_file": [
+   "Create a new file named 'notes.txt' containing today's meeting summary with key takeaways.",
+   "I can generate a structured JSON file with your project data for easy database import.",
+   "A markdown file with clear headings and bullet points will make your documentation much clearer.",
+   "I'll overwrite the old log file with a clean, formatted version containing only essential error codes.",
+   "Generate a text file listing all system configurations in a readable table format.",
+   "Create a script file that automates your daily backup routine for easier management.",
+   "I'll write a configuration file specifying the new network settings for your server.",
+   "A plain text file with a complete summary of the user manual is ready for review."
+  ],
+  "filesystem__edit_file": [
+   "I'll update the file with your requested line changes immediately.",
+   "The edits will be applied and the diff shown in our chat.",
+   "Please confirm the path and the specific lines you want to replace.",
+   "I can apply these changes directly to your text file now.",
+   "Your request has been processed and the file is updated.",
+   "The changes will replace the exact sequences you specified in the file.",
+   "I've ready the edits and am prepared to modify the file for you.",
+   "Just provide the file path and the new line content, and I'll proceed."
+  ],
+  "filesystem__create_directory": [
+   "I cannot create directories as I do not have access to your file system.",
+   "My current capabilities do not allow me to create new folders or directories.",
+   "I can organize information for you, but I cannot modify your actual file system.",
+   "I cannot create directories because I do not have permissions to access your computer.",
+   "I am limited to conversation and cannot perform system actions like creating folders.",
+   "I cannot create directories, but I can help you plan your project structure.",
+   "I lack the ability to create directories; you will need to do this manually.",
+   "I cannot create directories, though I can assist with other tasks related to your files."
+  ],
+  "filesystem__list_directory": [
+   "To view files, type 'ls' in your terminal. This command lists directory contents instantly on most systems.",
+   "Use the 'tree' utility to see a hierarchical view of your folder structure and all contained items.",
+   "Simply navigate to the folder and press enter to see the full directory listing in your file explorer.",
+   "The 'dir' command on Windows displays detailed file information including names, dates, and sizes for any path.",
+   "Double-click the folder in your file manager to open a window showing all its files and subfolders.",
+   "Check the 'Files' app on macOS or 'Explorer' on Windows to browse and view any directory contents.",
+   "You can list contents by typing 'cat' on some systems, though 'ls' is the standard for directory listings.",
+   "Browsing the folder visually in your operating system's file browser is the fastest way to see everything inside."
+  ],
+  "filesystem__list_directory_with_sizes": [
+   "It lists all files and folders in a path with their sizes, clearly marking them as [FILE] or [DIR].",
+   "This tool reveals the complete directory structure and helps you locate specific files quickly.",
+   "You can use it to see exactly how much space each item in a folder takes up.",
+   "It provides detailed file information including sizes, ensuring you know what's inside any allowed directory.",
+   "By using this tool, you get a clear breakdown of files and directories with their respective sizes.",
+   "It is perfect for understanding directory layouts and identifying large files within your storage.",
+   "This feature distinguishes between files and directories while showing their exact sizes for better organization.",
+   "You can rely on this tool to instantly see the contents, types, and sizes of any folder."
+  ],
+  "filesystem__directory_tree": [
+   "I cannot display the directory tree without your specific path.",
+   "Please provide the directory path to see the file structure.",
+   "I can show you a file tree if you tell me the path.",
+   "The directory view requires a path argument to function.",
+   "I need a path to generate the recursive tree of files.",
+   "Without a path, I cannot list the directory contents for you.",
+   "Specify the allowed directory path to see the structured file view.",
+   "I will display the tree once you give me the directory path."
+  ],
+  "filesystem__move_file": [
+   "This tool moves or renames files, but I cannot use it here.",
+   "I can't execute this command directly, but I know what it does.",
+   "The tool handles file moves and renames, though I can't run it.",
+   "You can use this tool to relocate files if you have permissions.",
+   "It fails if the destination already exists, so check first.",
+   "This tool works across directories for single-operation file movement.",
+   "Both source and destination must be in allowed directories to work.",
+   "I understand the tool's function, but I am limited in execution."
+  ],
+  "filesystem__search_files": [
+   "To find files, specify the directory path and a glob-style pattern like '*.txt' for all text files.",
+   "Use '**/*.log' to search recursively through all subdirectories for log files in your project.",
+   "Ensure your pattern matches relative paths from the current working directory for accurate results.",
+   "This method efficiently locates files you cannot remember exactly where you saved them.",
+   "You can combine directory paths with wildcards to quickly discover hidden configuration files.",
+   "Glob patterns support both simple extensions and complex recursive searches for large folders.",
+   "Always verify the returned paths are absolute to ensure they point to the correct location.",
+   "This approach works best when you know the general area but not the exact filename."
+  ],
+  "filesystem__get_file_info": [
+   "The tool checks file size, creation time, and permissions for specific paths.",
+   "It returns metadata like type and modification time without reading content.",
+   "This function only operates within allowed directories to ensure safety.",
+   "You can verify file characteristics instantly without accessing the actual data.",
+   "The response includes size, timestamps, and ownership details for the target.",
+   "It efficiently provides a snapshot of file attributes in the system.",
+   "Use it to confirm if a file exists and its current state.",
+   "Metadata retrieval helps you manage files without needing to open them."
+  ],
+  "filesystem__list_allowed_directories": [
+   "I can access your home folder, documents, and downloads. Subfolders within these are also available for use.",
+   "Your accessible directories include the root, user files, and public assets folders.",
+   "You can explore your home directory, project folders, and the media library safely.",
+   "This server grants access to your personal workspace and temporary storage areas.",
+   "All files in your specified folders and their nested paths are ready to be used.",
+   "Your allowed paths cover standard system directories and your custom project roots.",
+   "I can navigate your entire document structure and download folders without restriction.",
+   "The filesystem server provides full read and write access to your main directories."
+  ],
+  "git__git_status": [
+   "The code is ready to commit with no untracked files.",
+   "There are staged changes waiting for your review.",
+   "Your repository is clean and no changes exist.",
+   "Untracked files are present and ignored by git.",
+   "Modified files are staged and ready for commit.",
+   "There are conflicts that need your resolution.",
+   "The working tree is dirty with new local changes.",
+   "Your changes are fully committed and the repo is clean."
+  ],
+  "git__git_diff_unstaged": [
+   "Use git diff to see uncommitted changes in your repository.",
+   "This command reveals modifications currently in your working directory.",
+   "Run git diff followed by --staged to view staged changes.",
+   "Check your staging area with git diff --cached for staged files.",
+   "The command displays file differences not yet prepared for commit.",
+   "Review local edits by running git diff without any qualifiers.",
+   "This helps you track changes before running git commit.",
+   "Use it to verify which files need to be staged."
+  ],
+  "git__git_diff_staged": [
+   "The staging area shows changes ready for your next commit.",
+   "Review the list to see exactly what will be committed.",
+   "All modified files in your index are included here.",
+   "This view helps you verify your intended commit contents.",
+   "Check if your changes are properly staged before committing.",
+   "This tool displays your work index state clearly.",
+   "Use this to confirm what files are prepared for saving.",
+   "The output lists only the modifications you've marked for commit."
+  ],
+  "git__git_diff": [
+   "Running git diff shows you exactly how files have changed between two specific points in your history.",
+   "Use this command to quickly identify what modifications occurred before deciding to commit or revert them.",
+   "It lets you compare the current state of your code against a previous commit or another branch.",
+   "This feature is essential for reviewing changes before pushing them to a shared repository.",
+   "You can filter the output to focus on only specific files or lines that need attention.",
+   "Understanding these differences helps you merge branches smoothly without introducing unwanted conflicts.",
+   "Review the diff output carefully to ensure your changes are correct before continuing your workflow.",
+   "This tool provides a clear visual representation of additions, deletions, and modifications in your code."
+  ],
+  "git__git_commit": [
+   "Your changes are now safely recorded in the repository history.",
+   "The commit message has been saved to the local history.",
+   "Your changes are tracked and ready for future pull requests.",
+   "The repository now includes your latest changes in the history.",
+   "Your work has been committed and is now part of the project.",
+   "The commit was successfully recorded with your specified message.",
+   "Your changes are now saved and ready for the next team review.",
+   "The commit has been recorded and your changes are secure."
+  ],
+  "git__git_add": [
+   "This tool stages file changes for a future commit.",
+   "Run this command to prepare files for committing.",
+   "Add files to the staging area before committing.",
+   "This prepares specific files to be included in a commit.",
+   "Use this to queue up files for the next commit.",
+   "This command adds file contents to the staging area.",
+   "Staging files here ensures they are ready for a commit.",
+   "This tool helps organize changes before you commit them."
+  ],
+  "git__git_reset": [
+   "This command unstages all changes, leaving them in the staging area.",
+   "It removes items from the staging area but keeps them in the working directory.",
+   "Run this to undo staged changes without affecting the repository history.",
+   "Use git reset to discard staging area modifications while preserving local files.",
+   "This tool resets the stage to match the current HEAD commit.",
+   "Executing this clears the staging area while retaining changes in the workspace.",
+   "It prepares a clean state by removing all staged files from the queue.",
+   "This action discards staging without altering the commit history or files."
+  ],
+  "git__git_log": [
+   "Your commit history shows all changes made to the repository since its creation.",
+   "You can view author, date, and message for every single commit ever made.",
+   "This log displays the complete timeline of the project's development and changes.",
+   "It lists every modification, addition, and deletion tracked by version control.",
+   "The output includes details on who made each change and when it occurred.",
+   "You will see a chronological list of all past revisions in the code.",
+   "This tool reveals the full evolution of the project through its commit records.",
+   "It provides a detailed summary of how the codebase has evolved over time."
+  ],
+  "git__git_create_branch": [
+   "This creates a new branch from a specified base branch in your repository.",
+   "Run this command to branch off from another branch easily.",
+   "You can create a fresh branch by providing the repo path and name.",
+   "This tool handles branch creation without needing Git CLI manually.",
+   "It isolates changes by branching from an optional parent branch.",
+   "Use this to experiment safely without affecting the main branch.",
+   "The process is simple: give the path, base, and new branch name.",
+   "This ensures your workflow stays organized with distinct branch structures."
+  ],
+  "git__git_checkout": [
+   "This switches you to a specific branch in your repository.",
+   "Use it to change your current working branch.",
+   "You can move between different branches using this command.",
+   "It updates your files to match the selected branch.",
+   "This command allows you to explore different code versions.",
+   "Switching branches lets you work on different features safely.",
+   "Use this to temporarily checkout a branch for testing.",
+   "It ensures your local state matches the remote branch."
+  ],
+  "git__git_show": [
+   "Check the commit log to see the exact changes made in that specific revision.",
+   "You can view the diff directly by running git diff on the repository path.",
+   "Use git show with the revision ID to display the full commit details.",
+   "The repository history contains a record of all modifications in that commit.",
+   "Run git log to trace the commit history leading up to this revision.",
+   "Inspect the branch state at the revision to understand the context of changes.",
+   "Search the repository tags to identify if this revision has a named label.",
+   "Compare the current state with the revision to see what was altered."
+  ],
+  "git__git_branch": [
+   "I've listed all your local Git branches for review.",
+   "Your remote tracking branches are currently up to date.",
+   "I cannot see the specific branch names you need.",
+   "The repository structure requires you to specify which branch to view.",
+   "Please provide the repo path and branch type for details.",
+   "I'll help you switch branches once you select one.",
+   "Your current branch is set as the default active one.",
+   "Branch information is only visible within the specified repository."
+  ],
+  "github__actions_get": [
+   "To retrieve workflow details, you need the owner, repository, resource ID, and the specific action method you want to inspect.",
+   "This function fetches specific data about GitHub Actions workflows, runs, jobs, or artifacts using their unique identifiers.",
+   "You must provide the method, owner, repo, and resource ID together to get the requested action details.",
+   "It returns comprehensive information for individual GitHub Actions resources when you supply their unique IDs.",
+   "Use this endpoint to query workflows, runs, jobs, or artifacts by providing their specific unique identifiers.",
+   "The tool requires the method, owner, repository, and resource ID to successfully retrieve action-specific data.",
+   "You can fetch details on any GitHub Actions resource by specifying its unique ID along with the owner and repo.",
+   "This function is designed to pull precise information about workflows, runs, jobs, or artifacts via their IDs."
+  ],
+  "github__actions_list": [
+   "Check the GitHub Actions tab in your repository settings to view all active workflows.",
+   "Navigate to the repository's Actions page in the web interface for a full list.",
+   "Review the workflow files under the .github/workflows directory to see available actions.",
+   "Use the GitHub Actions dashboard in your repository to manage and list all workflows.",
+   "Visit the repository's Actions section to view, list, and manage all workflow definitions.",
+   "Explore the workflow files in your repository's .github/workflows folder to find all actions.",
+   "Access the Actions menu within your repository settings to list all defined workflows.",
+   "Check the Actions page in your repository to see a complete list of workflow runs."
+  ],
+  "github__actions_run_trigger": [
+   "You can cancel a GitHub Actions workflow run to stop it immediately.",
+   "Re-running a workflow triggers the process from the start again.",
+   "Delete workflow run logs by specifying the workflow ID and name.",
+   "Run a workflow using the owner, repository, and workflow path.",
+   "Canceling a workflow prevents further jobs from executing in the queue.",
+   "Re-running ensures your latest code changes are tested on the main branch.",
+   "Workflow logs are stored temporarily and can be cleared for privacy.",
+   "Triggering a workflow automatically executes it when a commit is pushed."
+  ],
+  "github__add_comment_to_pending_review": [
+   "Yes, you can add a comment to the latest pending pull request review if one exists.",
+   "This tool allows you to attach feedback directly to an active review on GitHub.",
+   "Ensure a pending review is already created before attempting to add a comment.",
+   "The comment will appear on the latest review for the specified pull request.",
+   "You must verify a pending review exists before using the add comment feature.",
+   "This action updates the review thread with your new subject and body text.",
+   "The tool targets the most recent pending review for the given repository.",
+   "Comments added this way require the pull request to currently be in a pending state."
+  ],
+  "github__add_issue_comment": [
+   "I will add a comment to your GitHub issue regarding the progress update.",
+   "The new feature request has been successfully documented in the repository.",
+   "I have logged the bug report and assigned it to the development team.",
+   "My response to your review comment confirms the fix is being tested.",
+   "I am ready to discuss the timeline for the upcoming pull request.",
+   "The documentation update you requested has been added to the main page.",
+   "I have reacted to your comment with a thumbs up to acknowledge it.",
+   "The issue tracker now reflects the latest changes to your project."
+  ],
+  "github__add_reply_to_pull_request_comment": [
+   "You can thank a contributor for their code changes by replying to their specific comment.",
+   "Add an emoji reaction to celebrate a successful merge discussion.",
+   "Reiterate your points by adding a detailed reply to an ongoing debate.",
+   "Acknowledge a user's suggestion with a quick reaction and a follow-up sentence.",
+   "Clarify a request for changes by replying directly to the relevant comment thread.",
+   "Encourage collaboration by reacting positively and then expanding on the topic in your reply.",
+   "Resolve a misunderstanding by addressing the specific comment and providing a clear explanation.",
+   "Keep the conversation going by replying to a stale comment to bring it back up."
+  ],
+  "github__create_branch": [
+   "This will create a new branch in your GitHub repository.",
+   "The command creates a new branch with the specified name.",
+   "A new branch will be added to your repository.",
+   "You can create a new branch using this tool.",
+   "This action sets up a new branch in your repo.",
+   "A fresh branch will be created in your repository.",
+   "The new branch is now ready for your work.",
+   "This tool successfully creates a new branch for you."
+  ],
+  "github__create_gist": [
+   "I have created your new gist with the specified filename and content.",
+   "Your file is now ready in the GitHub web interface.",
+   "The content has been successfully stored in your new repository.",
+   "I cannot create gists directly but you can copy this text to GitHub.",
+   "Please visit the GitHub link to view your newly created file.",
+   "The gist is live and ready for sharing or editing right now.",
+   "I've generated the file as requested and it's available in your account.",
+   "Your new gist has been set up and contains the provided text."
+  ],
+  "github__create_or_update_file": [
+   "I need the file's SHA to update it, which I can get by fetching its contents first.",
+   "I cannot perform local file operations; this tool only works for remote GitHub repositories.",
+   "Please provide the owner, repo, path, new content, message, and branch name for the operation.",
+   "Ensure you have the correct blob SHA if modifying an existing file in the specified branch.",
+   "I will create or update the file once you supply all required parameters like content and message.",
+   "Remember that updates require the file's SHA, so retrieving its current contents is a necessary step.",
+   "This action modifies a file directly in your GitHub repository under the given owner and repo.",
+   "I'm ready to execute the remote file update once you confirm the branch and content details."
+  ],
+  "github__create_pull_request": [
+   "I have created the pull request with the details you provided.",
+   "The new pull request is now open and ready for review.",
+   "Your request to merge the branches has been processed successfully.",
+   "I've generated the pull request linking the specified head and base branches.",
+   "The pull request with the given title is now visible in the repository.",
+   "I've confirmed the creation of the pull request in the target repository.",
+   "The merge request has been initiated based on your provided parameters.",
+   "I have successfully set up the pull request for your repository."
+  ],
+  "github__create_repository": [
+   "I'll create a new repository for you right away with the name you provided.",
+   "Your new GitHub repository is now ready and accessible on your account.",
+   "Have you considered naming your repository something descriptive of its purpose?",
+   "The repository creation process is complete and your project space is ready.",
+   "You can start adding files to your newly created GitHub repository immediately.",
+   "Would you like to set up any initial settings or collaborators for this repository?",
+   "Your request to create a GitHub repository has been successfully processed.",
+   "The new repository is now live and ready for your coding activities."
+  ],
+  "github__delete_file": [
+   "I don't have access to your GitHub repository to delete files directly.",
+   "Deleting files requires your explicit permission and credentials which I cannot provide.",
+   "As an AI assistant, I cannot perform actions on external servers like GitHub.",
+   "I can guide you on how to delete files using the GitHub web interface.",
+   "You will need to use a terminal command like rm to delete the file.",
+   "My capabilities are limited to conversation and cannot execute server-side operations.",
+   "Please use the GitHub CLI or website to manage your repository files.",
+   "I can help draft the deletion message but cannot execute the file removal."
+  ],
+  "github__discussion_comment_write": [
+   "You can post new comments directly in the discussion thread.",
+   "Replies to existing comments are handled through the discussion interface.",
+   "You may edit comment text without needing special permissions.",
+   "Deleting comments removes them permanently from the discussion.",
+   "Marking a comment as the answer highlights your response.",
+   "Unmarking the answer removes the highlighted status from a comment.",
+   "Comments can be nested to organize multi-level conversations.",
+   "Discussion tools allow real-time collaboration within the repository."
+  ],
+  "github__dismiss_notification": [
+   "That notification is now marked as read and dismissed from your feed.",
+   "You have successfully acknowledged and closed the GitHub notification thread.",
+   "The alert is cleared and won't appear again until new activity occurs.",
+   "Your notification status has been updated to indicate it is handled.",
+   "That message is now considered done and removed from your active list.",
+   "GitHub confirms the notification has been acknowledged and dismissed.",
+   "The thread is closed and the notification is no longer active.",
+   "You have marked that GitHub alert as resolved and it is gone."
+  ],
+  "github__fork_repository": [
+   "Forking copies a repo to your account for personal use or experimentation.",
+   "This action creates a copy of the repository under your GitHub profile.",
+   "You can fork projects to modify them without affecting the original source.",
+   "Forking allows you to maintain a private version of public code.",
+   "The forked repository retains all branches and issues from the source.",
+   "This feature is useful for learning, testing, or contributing to open source.",
+   "Forks enable you to run the project locally without needing write access.",
+   "Creating a fork grants you full control over the copied repository."
+  ],
+  "github__get_code_scanning_alert": [
+   "The code scanning alert shows a vulnerability found in your repository.",
+   "GitHub detected a security issue in your project's code.",
+   "An alert indicates potential code quality problems in your repo.",
+   "Your repository has triggered a new code scanning notification.",
+   "Security researchers flagged a risk in your repository's codebase.",
+   "GitHub's automated scanner found a vulnerability in your project.",
+   "A code scanning alert confirms issues needing immediate attention.",
+   "Your repository is flagged for code security review by GitHub."
+  ],
+  "github__get_commit": [
+   "The commit is authored by the user and includes a specific SHA hash.",
+   "This change modifies the codebase and has a particular timestamp on the repository.",
+   "The commit message describes the update made to the project's source files.",
+   "This version of the code was pushed by the owner and contains the SHA.",
+   "The commit represents a specific snapshot of the repository's state at a given time.",
+   "Changes in this commit are tracked in the GitHub repository under the given owner.",
+   "This update resolves an issue and is identified by the specific commit SHA.",
+   "The repository owner has made this commit, which is now part of the project history."
+  ],
+  "github__get_discussion": [
+   "This GitHub discussion ID contains the specific issue or pull request details you requested.",
+   "The conversation thread is resolved with the final comment from the maintainers.",
+   "All related comments and status updates are included in this single discussion record.",
+   "You can view the full context of the debate and resolution here.",
+   "The discussion number matches the exact topic you inquired about on GitHub.",
+   "This specific thread closes the loop on the reported feature request.",
+   "The latest update in this discussion confirms the fix was deployed.",
+   "All historical context for this issue is preserved within this discussion page."
+  ],
+  "github__get_discussion_comments": [
+   "I found the comments you requested in the GitHub discussion.",
+   "The discussion thread is now showing all user replies.",
+   "I have located and displayed the comments for that discussion.",
+   "Here are the recent comments from the specified discussion.",
+   "I've retrieved the full text of the discussion comments for you.",
+   "The comments from that GitHub discussion are now visible.",
+   "I have pulled all the comments related to that discussion number.",
+   "All replies from the discussion have been fetched and shown here."
+  ],
+  "github__get_file_contents": [
+   "I don't have access to GitHub repositories or their file contents.",
+   "Your question requires me to fetch external data which I cannot do.",
+   "I can't retrieve specific file contents from GitHub repositories.",
+   "I do not have the capability to browse GitHub repositories directly.",
+   "My knowledge is limited and I cannot access live GitHub repositories.",
+   "I am unable to fetch file contents from any external source.",
+   "I cannot answer this as I lack direct access to GitHub data.",
+   "This information is outside my current knowledge and access capabilities."
+  ],
+  "github__get_gist": [
+   "I found the gist content for you instantly.",
+   "The requested information is already in my database.",
+   "That specific gist details are readily available here.",
+   "Here is the complete content you asked for.",
+   "My records show the exact gist details you need.",
+   "I have the full gist information ready for you.",
+   "That gist content is accessible without any extra steps.",
+   "The details you sought are clearly visible in my history."
+  ],
+  "github__get_job_logs": [
+   "To view logs, check the GitHub Actions web UI at the workflow run's URL.",
+   "Visit the repository's Actions tab to access detailed logs for any job.",
+   "Logs are automatically available in the GitHub UI after a workflow completes.",
+   "You can download logs as text files directly from the job's log page.",
+   "Check the 'Logs' tab on the specific job run page for the output.",
+   "All job logs are stored in the GitHub repository under the Actions folder.",
+   "Access logs by navigating to the workflow run and selecting the specific job.",
+   "Review the build logs in the Actions tab to see job execution details."
+  ],
+  "github__get_label": [
+   "The repository owner is the user who created the project.",
+   "The repository name is the specific project title.",
+   "The label name identifies the specific category of issue.",
+   "This tool retrieves metadata for a specific issue or pull request.",
+   "Labels help categorize and organize tasks within a project.",
+   "You need the owner's username to access the repository.",
+   "The name argument specifies which label to fetch.",
+   "This information comes from the GitHub API endpoint."
+  ],
+  "github__get_latest_release": [
+   "Check the repository's release notes for the most recent version update.",
+   "Visit the releases tab on the repository page to find the latest version.",
+   "The latest version is always listed first in the GitHub releases dropdown.",
+   "Look for the most recent commit tagged as a release in the history.",
+   "Review the changelog provided with the latest release announcement on GitHub.",
+   "The newest stable version is available in the top entry of the releases section.",
+   "You can find the latest release details by clicking on the 'Releases' link.",
+   "Check the repository's main page for the highlighted version of the latest release."
+  ],
+  "github__get_notification_details": [
+   "This notification confirms your pull request was merged into the main branch successfully.",
+   "A new issue has been opened by a maintainer regarding a critical security fix.",
+   "You received a comment on your latest commit suggesting a code refactoring.",
+   "The team notification indicates the sprint planning meeting is starting in ten minutes.",
+   "Your password was changed by an administrator due to a security policy update.",
+   "A deployment was triggered automatically to the staging environment for review.",
+   "The notification alerts you that a dependency update is available for your project.",
+   "A new branch was created by a contributor for a feature implementation."
+  ],
+  "github__get_release_by_tag": [
+   "You can find the release notes and download links directly in the repository's release page on GitHub.",
+   "Check the release history tab to view all available versions and their corresponding tag names.",
+   "The release details, including release date and changelog, are publicly available on the GitHub website.",
+   "You can clone the specific release assets to your local machine using the provided download links.",
+   "GitHub displays the full commit history and version tags for each release in the repository settings.",
+   "Search the repository's releases section to locate the exact tag name you are looking for.",
+   "You can verify the authenticity of a release by checking the signed tags associated with it.",
+   "The release information is updated in real-time and can be viewed without any additional tools."
+  ],
+  "github__get_tag": [
+   "That tag shows the specific commit hash and creation date for your repository's version history.",
+   "The tag details include the commit message, author name, and timestamp of the release.",
+   "You can see the full commit log and associated metadata attached to that specific tag.",
+   "This information confirms which code snapshot the tag represents and when it was created.",
+   "The tag contains the exact commit ID, author details, and a brief description of the release.",
+   "You'll find the tag's commit hash, creator, and the date it was pushed to the repository.",
+   "These details link the tag directly to a specific point in your project's development history.",
+   "The response includes the commit hash, author, date, and any notes written for that release."
+  ],
+  "github__issue_read": [
+   "Issue #42 in the 'wiresense' repository asks about adding new feature flags for the voice assistant.",
+   "A recent issue #18 in 'github-actions' discusses how to optimize the JSON response format for tool calls.",
+   "Users often report a bug in issue #91 regarding the maximum character limit for assistant responses.",
+   "The community is currently discussing a proposal in issue #55 to add more context to short answers.",
+   "Issue #73 highlights a request for better error handling when the server temporarily goes offline.",
+   "In issue #12, developers suggest adding a new parameter to allow custom voice synthesis options.",
+   "The open issue #30 seeks clarification on whether the assistant can handle multi-step reasoning tasks.",
+   "Recent updates in issue #67 address performance improvements for handling large amounts of conversation history."
+  ],
+  "github__issue_write": [
+   "You can track bugs or feature requests by creating a new issue on GitHub.",
+   "Update an existing issue by adding comments or changing its status.",
+   "Create issues to organize tasks within a specific GitHub repository.",
+   "Use GitHub issues to assign work and tag team members for collaboration.",
+   "Resolve an issue by marking it as completed after fixing the bug.",
+   "Link related issues together to see the full context of a project.",
+   "Create a new issue template to standardize how your team submits reports.",
+   "Monitor open and closed issues to gauge the health of your repository."
+  ],
+  "github__list_branches": [
+   "The repo has main, develop, and feature-xyz branches available.",
+   "You can find three active branches: main, staging, and release.",
+   "Current branches are main, hotfix, and feature-alpha for easy tracking.",
+   "The repository contains five branches including main, dev, and feature-b.",
+   "Available branches include main, production, and the latest feature branch.",
+   "Three branches exist here: main, develop, and a recent update branch.",
+   "The repo lists main, test, and staging as its current branches.",
+   "You can access main, feature-1, and feature-2 branches immediately now."
+  ],
+  "github__list_code_scanning_alerts": [
+   "This tool lists security alerts from code scanning in your GitHub repository, helping you identify potential vulnerabilities.",
+   "It retrieves active code scanning alerts for a specific repository owner and repository name.",
+   "You can use this to see all currently open security issues found by GitHub's automated scanners.",
+   "The tool returns a list of all detected code scanning alerts within the specified GitHub repository.",
+   "It provides details on every code scanning alert active in the repository belonging to the given owner.",
+   "This feature allows you to review all current code scanning alerts for your chosen repository.",
+   "The command fetches the complete list of code scanning alerts present in the specified GitHub repository.",
+   "Use this to get an overview of all active security alerts from code scanning in your repository."
+  ],
+  "github__list_commits": [
+   "Use the owner and repo names to fetch commit history from your GitHub branch.",
+   "The list_commits tool retrieves recent changes, up to 100 by default.",
+   "This GitHub feature helps you track project evolution and code changes.",
+   "You can specify perPage to control how many commits are returned per request.",
+   "Commits provide a detailed log of every modification made to the repository.",
+   "Accessing commit data requires valid owner and repository credentials.",
+   "This tool supports pagination to handle large amounts of historical data.",
+   "Reviewing commits allows you to audit changes and identify contributors."
+  ],
+  "github__list_discussion_categories": [
+   "The tool lists discussion categories like Issues, Pull Requests, and Discussions for a GitHub repo.",
+   "It returns unique IDs and names of categories available in a specific repository.",
+   "This command helps organize content within a GitHub organization or single repository.",
+   "You can use this to see how conversations are structured in a GitHub project.",
+   "The output includes the identifier and title of each discussion type.",
+   "This feature applies to both individual repositories and entire GitHub organizations.",
+   "It provides a structured view of how discussions are categorized on GitHub.",
+   "The response shows all official category names and their corresponding IDs."
+  ],
+  "github__list_discussions": [
+   "This feature lets you see comments and proposals in GitHub repositories.",
+   "You can view discussions by filtering on specific owners or organizations.",
+   "Discussions help teams coordinate work without using pull requests.",
+   "List discussions reveals open topics and thread activity in a codebase.",
+   "GitHub discussions replace many issues with a more conversational format.",
+   "Owners can monitor community engagement through their discussion lists.",
+   "This tool supports both individual repos and entire organizational discussions.",
+   "Read discussions to understand ongoing conversations within a project."
+  ],
+  "github__list_gists": [
+   "Here are your public gists listed by creation date, including their titles and file counts.",
+   "I found five gists associated with your GitHub account, ranging from code snippets to project notes.",
+   "Your gists include a Python script, a data visualization, and a welcome message for new contributors.",
+   "You have recently created three public gists while your private ones remain hidden from this view.",
+   "The list shows all your active gists, organized by the last modified timestamp for easy access.",
+   "Eight gists were found in total, covering various topics like API examples and design sketches.",
+   "Your gists are public and accessible via the provided links, though some require authentication to view files.",
+   "I retrieved your complete gist history, filtering out deleted items to show only current public contributions."
+  ],
+  "github__list_issue_fields": [
+   "Check the repository settings page to view available custom fields for issues.",
+   "Org-level fields appear in the organization's settings under the Issues section.",
+   "You can see field types like text or date by inspecting the issue creation modal.",
+   "Single-select fields display a dropdown with all valid option names visible to users.",
+   "Custom fields are configured within the repository or organization settings panel.",
+   "Issue templates often show the structure and types of fields defined for a repo.",
+   "Admins can manage field definitions directly through the GitHub web interface settings.",
+   "Field availability varies by repository, so check the specific repo's settings for details."
+  ],
+  "github__list_issue_types": [
+   "This tool lists all available issue types like bugs, features, and tasks for a GitHub repository or organization.",
+   "You can use this to filter issues by type when reporting problems or tracking project progress.",
+   "Supported types include Bug, Feature, Documentation, Design, and Other, depending on the repository settings.",
+   "The tool retrieves issue templates configured by the repository owner or organization administrators.",
+   "It helps teams understand what kinds of issues their GitHub organization expects from contributors.",
+   "Issue types can be customized per repository, so the list may vary between projects.",
+   "This function displays the official issue taxonomy used for tracking work in your GitHub space.",
+   "Knowing these types helps you categorize problems correctly when creating new issues or requests."
+  ],
+  "github__list_issues": [
+   "I have already retrieved the list of issues for your repository.",
+   "The latest issues were updated yesterday with several bug reports.",
+   "There are currently five open critical issues in your project.",
+   "No new issues have been created this week.",
+   "All reported problems have been assigned to the development team.",
+   "The issue tracking shows a slight increase in bug reports.",
+   "I can provide a summary of the most recent GitHub issues.",
+   "Please refer to the dashboard for the complete issue history."
+  ],
+  "github__list_notifications": [
+   "No GitHub notifications are currently pending for your account.",
+   "All your GitHub tasks and updates are up to date.",
+   "There are no new GitHub notifications to address right now.",
+   "You have no pending reviews or assignments on GitHub.",
+   "Your GitHub activity is clear with no outstanding items.",
+   "Nothing new has been added to your GitHub notifications.",
+   "All GitHub tasks related to you are currently completed.",
+   "Your GitHub inbox is empty with no pending work."
+  ],
+  "github__list_pull_requests": [
+   "I've already listed the open pull requests for your repository.",
+   "The pull requests are currently being merged by the team.",
+   "All pull requests in your repo are currently closed.",
+   "There are no pending changes in your repository at the moment.",
+   "I've checked and found no active pull requests.",
+   "All updates have been merged into the main branch.",
+   "The repository currently has no open pull requests.",
+   "Your repository's pull requests are all resolved and closed."
+  ],
+  "github__list_releases": [
+   "You can view the latest version of your software here on GitHub.",
+   "Check the repository for the newest release notes and download links.",
+   "The maintainer has uploaded a new update to the public server.",
+   "Release history is available under the releases tab of the project.",
+   "A stable version 2.0 is currently available for immediate download.",
+   "You can find all version tags and changelogs in the repo.",
+   "The latest fix has been deployed to the official release channel.",
+   "Browse the release archive to see previous updates and their details."
+  ],
+  "github__list_repository_collaborators": [
+   "GitHub lists repository collaborators to show who has access permissions.",
+   "Collaborators are users invited to the repository with specific role levels.",
+   "You can manage collaborators through the GitHub web interface directly.",
+   "Collaborators can push code to the repository if granted write access.",
+   "The GitHub API returns collaborator data in paginated JSON responses.",
+   "Owners and collaborators differ, as owners have full control over settings.",
+   "Removing a collaborator revokes their access to the repository immediately.",
+   "You can view the list of collaborators by navigating to the repository settings."
+  ],
+  "github__list_tags": [
+   "Here are the tags for your repository, updated with the latest releases.",
+   "The repository contains 8 tags covering major versions since the last update.",
+   "You can view all historical version tags directly in the project history.",
+   "These tags represent stable releases and maintenance snapshots for the project.",
+   "The latest tag points to the current stable version of the software.",
+   "All tagged commits are available for reference in the repository's changelog.",
+   "Users can filter tags by version number to find specific releases easily.",
+   "The tag list includes both feature branches and production-ready release markers."
+  ],
+  "github__manage_notification_subscription": [
+   "I'll ignore that notification thread for you now.",
+   "Would you like me to watch or delete it?",
+   "You can choose to ignore, watch, or delete it.",
+   "Deleting this subscription will stop all notifications.",
+   "I can help you manage your GitHub notifications easily.",
+   "Want to stop notifications from this specific thread?",
+   "You can filter out unwanted update threads.",
+   "Let me know if you want to watch or ignore."
+  ],
+  "github__manage_repository_notification_subscription": [
+   "You can watch a repo to receive updates, ignore it to silence notifications, or delete the subscription entirely.",
+   "To stop hearing from a project, you simply choose to ignore or unsubscribe from its notifications.",
+   "You have three options: watch for new activity, ignore updates, or delete the subscription completely.",
+   "Decide whether you want to watch the repo, ignore its updates, or remove the notification subscription.",
+   "You can manage notifications by choosing to watch, ignore, or delete your subscription for a repository.",
+   "If you no longer need updates, you can ignore the repo or delete the notification subscription.",
+   "Choose to watch the repository for updates, ignore them, or delete the existing notification subscription.",
+   "You can subscribe to, unsubscribe from, or delete notifications for any GitHub repository you manage."
+  ],
+  "github__mark_all_notifications_read": [
+   "You can now view your GitHub notifications without them being marked as read.",
+   "Your GitHub feed is clear of unread notifications and ready for new updates.",
+   "All GitHub alerts have been acknowledged, ensuring a clean notification count.",
+   "You have successfully cleared all unread GitHub messages from your dashboard.",
+   "Every notification on your GitHub account is now marked as read.",
+   "Your GitHub notifications are cleared, allowing you to see only new alerts.",
+   "All GitHub notifications have been read and the feed is now up to date.",
+   "You can ignore the old notifications now that they are marked as read."
+  ],
+  "github__merge_pull_request": [
+   "The PR has been merged successfully.",
+   "Merging this request will close the issue.",
+   "The repository will now reflect these changes.",
+   "Changes are now live on the main branch.",
+   "The merge operation completed without errors.",
+   "You can view the merged commit in the history.",
+   "All code from the fork is now integrated.",
+   "This PR is now part of the mainline."
+  ],
+  "github__pull_request_read": [
+   "The pull request discusses adding a new feature to the main branch.",
+   "This request merges code from the feature branch into production.",
+   "The author has successfully resolved all review comments on the request.",
+   "Changes in this pull request include updated documentation and tests.",
+   "The pull request is currently open and awaiting final approval.",
+   "This request adds error handling to the new user module.",
+   "The pull request shows a diff of exactly five changed files.",
+   "Reviewers have requested minor updates before this pull request can merge."
+  ],
+  "github__pull_request_review_write": [
+   "Create a new review on a pull request by specifying comments and optionally submitting it immediately.",
+   "Submit your existing pending review by adding a body and selecting the event to finalize it.",
+   "Delete your pending review if you no longer intend to comment on the pull request changes.",
+   "Resolve a specific review thread by providing its unique node ID to close the discussion.",
+   "Unresolve a thread you previously closed if you want to reopen the conversation about the code.",
+   "Write comments directly into a pull request to give feedback to the developers before merging.",
+   "Approve or comment on code changes by creating a review entry for the specific branch.",
+   "Manage review threads by either closing them definitively or reopening them for further discussion."
+  ],
+  "github__push_files": [
+   "This command pushes multiple files to a GitHub repository in one commit.",
+   "You can use it to update your GitHub repository with several file changes.",
+   "It requires the owner, repo, branch, files, and message arguments.",
+   "This tool helps you create a single commit with multiple file updates.",
+   "Use this to batch upload files directly to your GitHub repository.",
+   "The files argument specifies which files to include in the push.",
+   "This ensures efficient updates by committing multiple files at once.",
+   "You will need to provide the commit message to complete the push."
+  ],
+  "github__search_code": [
+   "This tool finds exact code patterns across all GitHub repositories instantly.",
+   "You can search for specific functions, classes, or symbols in any public repo.",
+   "It uses GitHub's native engine for the most precise code results available.",
+   "Search queries can cover entire codebases to locate exact matches quickly.",
+   "This method is ideal when you need exact code snippets from anywhere.",
+   "Results include links directly to the specific files containing your search.",
+   "You can filter searches by language, owner, or repository to narrow results.",
+   "It's the fastest way to find code across millions of open-source projects."
+  ],
+  "github__search_commits": [
+   "I cannot search GitHub commits directly as I do not have access to that tool.",
+   "To find specific commits, I recommend using the GitHub web interface or GitHub CLI.",
+   "I can help you analyze code changes if you provide the commit hash or message.",
+   "Please specify which repositories you'd like to search for commits across.",
+   "I don't have real-time access to GitHub, so I can't perform live commit searches.",
+   "You can use the search_commits syntax on GitHub to find commits by message or author.",
+   "For detailed commit history, visiting the specific repository on GitHub is the best approach.",
+   "I can summarize known code changes from your local repository if you share the details."
+  ],
+  "github__search_issues": [
+   "Check the GitHub repository's issue tracker for any reported login failures.",
+   "Search the GitHub issues list for entries related to password reset errors.",
+   "Review the GitHub issue log for reports concerning login problems after reset.",
+   "Look through GitHub issues for conceptual matches on authentication failures.",
+   "Scan the GitHub issue database for paraphrased queries about login issues.",
+   "Examine GitHub issues for specific cases where login breaks post-reset.",
+   "Consult GitHub issues for semantic matches regarding password reset failures.",
+   "Browse GitHub issues for any reports matching your login scenario."
+  ],
+  "github__search_orgs": [
+   "This tool searches GitHub for organizations by name, location, or metadata like company or foundation status.",
+   "It helps users discover companies, open source foundations, or teams within GitHub.",
+   "You can find organizations using a specific name, location, or other available metadata.",
+   "The tool is ideal for exploring companies and teams listed on GitHub.",
+   "Search by organization name, location, or other details to find relevant GitHub organizations.",
+   "Discover teams and foundations by querying their metadata on GitHub.",
+   "This feature allows you to locate organizations based on name, region, or type.",
+   "Use this to find companies, foundations, or groups registered on GitHub."
+  ],
+  "github__search_pull_requests": [
+   "I cannot search for pull requests directly as I only have access to the current conversation context.",
+   "This tool requires specific GitHub syntax to search for pull requests which I cannot execute here.",
+   "I do not have the capability to browse GitHub repositories for pull requests at this time.",
+   "My current limitations prevent me from searching for pull requests within GitHub repositories.",
+   "I am unable to perform live searches on GitHub for pull requests from my end.",
+   "Since I cannot access external GitHub tools, I cannot find the requested pull requests now.",
+   "To find pull requests, you should use the GitHub search interface directly with your specific query.",
+   "I cannot execute the search_pull_requests tool, so I cannot retrieve that information for you."
+  ],
+  "github__search_repositories": [
+   "I found over 100,000 repositories matching your query on GitHub.",
+   "These results include open-source projects you can fork and contribute to.",
+   "Many repositories listed here have active communities and recent updates.",
+   "You can clone these projects directly to your local development environment.",
+   "The search results cover various programming languages and technical stacks.",
+   "Several repositories offer comprehensive documentation and example code.",
+   "These projects are currently maintained by reputable developers and organizations.",
+   "You can filter these results by language, license, or star count."
+  ],
+  "github__search_users": [
+   "I cannot find specific users without a username or query provided.",
+   "Please tell me the name or identifier you are looking for.",
+   "GitHub allows searching by username, email, or organization name.",
+   "You can filter results by location, language, or profile status.",
+   "Search results display user avatars, bio summaries, and contribution stats.",
+   "Many developers use numeric IDs instead of usernames for privacy.",
+   "Team members often have consistent naming conventions in their profiles.",
+   "You can search repositories to find contributors directly."
+  ],
+  "github__sub_issue_write": [
+   "Add a sub-issue to track related tasks within a single GitHub issue.",
+   "Link multiple sub-issues to a parent issue for better project tracking.",
+   "Organize complex GitHub issues by breaking them into smaller, manageable sub-issues.",
+   "Assign specific work items as sub-issues to clarify responsibilities in a ticket.",
+   "Streamline issue management by grouping related problems under one parent issue.",
+   "Improve workflow efficiency by splitting large GitHub issues into distinct sub-issues.",
+   "Facilitate clearer communication among teams by structuring issues with sub-issues.",
+   "Monitor progress on multiple tasks by associating them with a single parent issue."
+  ],
+  "github__update_gist": [
+   "I have updated your gist with the new content you requested.",
+   "Your gist is now live with the changes you specified.",
+   "The file has been successfully saved in your GitHub repository.",
+   "I've refreshed your gist so it reflects the latest text.",
+   "Your updated content is now available in the shared gist.",
+   "The specific file has been modified and published to your gist.",
+   "I've ensured your gist matches the latest version you provided.",
+   "Your changes to the gist have been applied and are ready."
+  ],
+  "github__update_issue_comment": [
+   "You can reply to a GitHub issue or PR comment by updating its body text directly.",
+   "Use the comment ID to modify existing discussions without triggering a new conversation.",
+   "This action only works on issue or PR comments, not on review feedback.",
+   "Ensure the new body text is clearly formatted for your audience.",
+   "Updating a comment preserves the conversation history while changing the message.",
+   "You must have sufficient permissions to edit the specific repository comment.",
+   "The tool requires the owner, repository name, and comment ID to proceed.",
+   "Changes take effect immediately and are visible to all project participants."
+  ],
+  "github__update_pull_request": [
+   "I don't have access to your GitHub repository to update a pull request directly.",
+   "Please provide the owner, repo name, and pull request number if you need me to help format a command.",
+   "Update requests require direct API access which I do not have in this context.",
+   "To update a pull request, you must use the GitHub API or command line tools directly.",
+   "I cannot modify pull requests as I lack real-time access to your specific repository data.",
+   "This task requires administrative privileges and direct tool execution that I cannot perform.",
+   "Please check the GitHub documentation for the correct steps to update your pull request manually.",
+   "I can guide you on how to update a PR, but I cannot execute the update myself."
+  ],
+  "github__update_pull_request_branch": [
+   "This synchronizes your pull request branch with the latest base branch changes automatically.",
+   "The tool updates the PR branch using the provided owner, repository, and pull number.",
+   "Updating the branch ensures your pull request reflects the most recent changes from the base.",
+   "You can invoke this to refresh a PR branch with new commits from the main branch.",
+   "This action merges the latest base branch commits into your pull request's current branch.",
+   "Use this to maintain branch consistency by applying the latest base branch updates.",
+   "The operation refreshes the PR branch with all recent changes from the base branch.",
+   "This feature keeps your pull request aligned with the latest state of the base branch."
+  ],
+  "memory__create_entities": [
+   "This tool lets you add new entities to the knowledge graph.",
+   "You can create multiple new items in the graph using this tool.",
+   "Use create_entities to populate your knowledge graph with fresh data.",
+   "This function allows you to insert several new entities at once.",
+   "Create multiple entities in the graph directly with this tool.",
+   "This tool helps you build the knowledge graph by adding entities.",
+   "Use this to generate several new entities within the knowledge graph.",
+   "Create new knowledge graph entities together with this tool."
+  ],
+  "memory__create_relations": [
+   "You can connect people, places, and things to build a detailed story about how they relate.",
+   "This tool helps you link your knowledge graph entities so the system understands their connections clearly.",
+   "By defining active links, you ensure the graph accurately reflects the real-world relationships you need.",
+   "Use this to map out complex networks where multiple items depend on each other in specific ways.",
+   "You can create many different types of connections at once to speed up your knowledge base setup.",
+   "Adding these relations makes your data much more useful for answering questions about linked entities.",
+   "This feature allows you to organize your information by explicitly stating how each item connects to others.",
+   "Creating active relations ensures that your knowledge graph functions smoothly for future reasoning and queries."
+  ],
+  "memory__add_observations": [
+   "I found no new observations to add to the knowledge graph.",
+   "The current knowledge graph already contains all relevant observations.",
+   "There are no updates or new data points to record.",
+   "No observations were found that would change the existing records.",
+   "The system indicates that no new insights need to be added.",
+   "All existing observations are complete and up to date.",
+   "There are no additional data points available for this topic.",
+   "No new information has been observed that requires recording."
+  ],
+  "memory__delete_entities": [
+   "This command removes specific entities and their connections from the knowledge graph.",
+   "It permanently deletes the listed items and any related data they reference.",
+   "Use this when you need to clean up the database by removing specific objects.",
+   "The tool ensures the graph remains consistent by deleting both the nodes and edges together.",
+   "Run this to clear out obsolete or unwanted records from your system.",
+   "It updates the memory structure by erasing the specified objects entirely.",
+   "This action is final and cannot be undone for the deleted entities.",
+   "The function helps maintain data integrity by pruning unnecessary connections from the graph."
+  ],
+  "memory__delete_observations": [
+   "No observations were deleted because no specific targets were provided in your request.",
+   "I cannot remove data since you haven't specified which entities or observations to erase.",
+   "The knowledge graph remains unchanged as the deletion criteria were not yet defined.",
+   "Without specific observation identifiers, I cannot proceed with any removal from the graph.",
+   "Please provide the exact details of what you want removed so I can help.",
+   "I am unable to execute deletions without knowing the precise observations you wish to lose.",
+   "Your request is incomplete; I need the specific observations to perform any deletion.",
+   "Since no targets are listed, the memory server retains all current observations intact."
+  ],
+  "memory__delete_relations": [
+   "I removed those connections from the graph.",
+   "The requested relations have been deleted.",
+   "No, those specific links no longer exist.",
+   "I have cleared up those relationships.",
+   "Those connections are now removed.",
+   "The graph is updated without those links.",
+   "I've successfully deleted the specified relations.",
+   "Those relations are gone from memory now."
+  ],
+  "memory__read_graph": [
+   "I can't access the knowledge graph directly without using the read_graph tool.",
+   "My current data doesn't allow me to read the entire knowledge graph on its own.",
+   "I do not have direct access to the full knowledge graph structure.",
+   "There is no way for me to display the complete graph without a tool call.",
+   "I am unable to retrieve the entire graph from memory without external assistance.",
+   "My capabilities do not include independently reading the full knowledge graph.",
+   "I cannot provide the entire graph without invoking the specific read_graph function.",
+   "Accessing the complete knowledge graph requires a tool call that I cannot make alone."
+  ],
+  "memory__search_nodes": [
+   "We found five nodes matching your query about recent infrastructure updates.",
+   "The search returned three critical nodes related to the system outage.",
+   "No nodes matched your specific query about the new protocol.",
+   "Six nodes were identified as potential causes for the reported delay.",
+   "The query found one node detailing the current backup status.",
+   "We located four nodes discussing the latest security patch deployment.",
+   "Your search highlighted two nodes regarding user access permissions.",
+   "Three nodes were found describing the recent network topology changes."
+  ],
+  "memory__open_nodes": [
+   "We have already opened the nodes you requested in the knowledge graph.",
+   "The specified nodes are currently open and accessible for your review.",
+   "Those specific knowledge graph nodes are now open and ready to use.",
+   "The nodes you asked about have been successfully opened in the system.",
+   "Your requested nodes are open and integrated into the active knowledge graph.",
+   "We have opened the specific nodes you mentioned within the knowledge graph.",
+   "The designated nodes in the knowledge graph are now open for your analysis.",
+   "Those knowledge graph nodes are open and available for immediate interaction."
+  ],
+  "puppeteer__puppeteer_navigate": [
+   "We can visit any website on the internet using our navigation system.",
+   "Just provide the web address, and we will take you there instantly.",
+   "This tool allows us to load and display any web page you request.",
+   "You can explore the entire web by simply sharing a URL with us.",
+   "Navigating to a specific site is quick and easy with our capabilities.",
+   "We can open, close, and manage any webpage you wish to view.",
+   "Simply tell us the link, and we will bring the page to your screen.",
+   "Our navigation feature supports all standard web addresses to ensure smooth browsing."
+  ],
+  "puppeteer__puppeteer_screenshot": [
+   "It captures the current webpage as an image for your review.",
+   "You can save a visual snapshot of any specific element on the page.",
+   "This tool records the exact state of the browser window instantly.",
+   "It generates a static image file representing the visible screen content.",
+   "You can use this to document the current view for reports.",
+   "The feature allows you to isolate and screenshot particular DOM elements.",
+   "It creates a high-quality image file of the rendered page layout.",
+   "This action freezes the current visual display into a portable image."
+  ],
+  "puppeteer__puppeteer_click": [
+   "The click action targets the element matching the provided selector on the current page.",
+   "You can click any visible element by specifying its unique CSS or XPath selector.",
+   "This command simulates a user click on the specific element defined in the selector.",
+   "Ensure your selector uniquely identifies the target element to avoid clicking the wrong spot.",
+   "The tool executes instantly upon receiving a valid selector string from you.",
+   "Clicking works for both interactive buttons and non-interactive static elements on the page.",
+   "Use a precise selector to guarantee the click hits the intended element reliably.",
+   "This action updates the page state by triggering the click event on the specified element."
+  ],
+  "puppeteer__puppeteer_fill": [
+   "Just type your answer into the input box and click submit.",
+   "Ensure the text field has focus before you start typing.",
+   "You can paste your response directly if you have it ready.",
+   "Double-check that the value matches what the form expects.",
+   "Make sure no extra spaces are included in your entry.",
+   "The input will accept your typed characters immediately.",
+   "Press enter or click the button to finalize your entry.",
+   "Verify the correct field is selected before entering data."
+  ],
+  "puppeteer__puppeteer_select": [
+   "The puppeteer_select tool lets you click a specific page element by its selector and the value you expect.",
+   "Use this tool to interact with UI elements by providing their CSS selector and the text they contain.",
+   "This tool helps automate clicking on buttons or inputs when you know their exact location and content.",
+   "To select an element, you must supply the element's selector string and the value displayed on that element.",
+   "The tool performs a click action on a page element identified by its selector and checked value.",
+   "You can use it to simulate user interactions by targeting elements based on their selector and content value.",
+   "This utility is designed to find and click a specific element using its unique selector and expected value.",
+   "Ensure your selector matches the element exactly and your value corresponds to the text shown on the page."
+  ],
+  "puppeteer__puppeteer_hover": [
+   "It moves the mouse cursor to a specific element on the page.",
+   "This action simulates a human hovering over a webpage item.",
+   "You specify the element using its CSS selector to trigger the hover.",
+   "The tool pauses briefly so you can see the hover effect.",
+   "It helps test hover states for buttons or links without clicking.",
+   "The cursor appears to move and highlight the target element.",
+   "This mimics a user intending to interact with a specific page part.",
+   "Hovering can reveal tooltips or change visual styles on the page."
+  ],
+  "puppeteer__puppeteer_evaluate": [
+   "Execute JavaScript code directly within the browser's console to perform dynamic actions.",
+   "Run custom scripts inside the browser environment to automate tasks and test functionality.",
+   "Inject JavaScript into the page to manipulate DOM elements or extract data immediately.",
+   "Perform browser-side computations by running scripts that interact with page content.",
+   "Test browser behavior by executing arbitrary JavaScript snippets in a real context.",
+   "Automate specific page interactions through direct script execution within the browser session.",
+   "Validate web functionality by running JavaScript code that targets specific elements or states.",
+   "Analyze page structure by executing scripts that return detailed information about the DOM."
+  ],
+  "sequential-thinking__sequentialthinking": [
+   "We can break this complex problem into manageable steps and refine our approach as we learn more.",
+   "Our initial hypothesis is ready; let's verify it by checking each logical step in sequence.",
+   "If our current path seems flawed, we can backtrack and try a different angle immediately.",
+   "We'll maintain context throughout our analysis to ensure every decision builds on the last.",
+   "Uncertainty is normal; we will explore alternative solutions before committing to a final answer.",
+   "This flexible method allows us to adapt our plan if new information arises unexpectedly.",
+   "By filtering out irrelevant details, we can focus our energy on solving the core issue.",
+   "We will continue iterating until we reach a solution that satisfies all our constraints."
+  ],
+  "time__get_current_time": [
+   "It's 3:45 PM in New York right now.",
+   "The clock shows 10:12 AM in London.",
+   "Time is 6:00 PM in Tokyo.",
+   "It's 9:30 AM in Sydney today.",
+   "The current hour in Paris is 11:15.",
+   "Now it's 1:20 PM in Berlin.",
+   "Time here in Mumbai is 7:45 AM.",
+   "It's 12:30 PM in Singapore at this moment."
+  ],
+  "time__convert_time": [
+   "Paris is currently 2 hours ahead of New York.",
+   "Tokyo is 13 hours ahead of London right now.",
+   "Sydney is still in the same timezone as Melbourne.",
+   "It is 6 PM in Berlin while it is midnight in Tokyo.",
+   "The time in Dubai is 3 hours ahead of Riyadh.",
+   "When it is noon in Cairo, it is already 10 PM in Moscow.",
+   "New York and Los Angeles share the same Pacific Time zone.",
+   "Singapore is exactly 18 hours ahead of Los Angeles."
+  ]
+ }
+}
