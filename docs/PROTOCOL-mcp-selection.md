@@ -1009,3 +1009,111 @@ it may hold device local keys and must not be committed.
 The frozen MS-17a/17b data (continuations.json, state_texts.json,
 results, summaries) stays committed and is reusable by either
 resurrection path without regeneration.
+
+## MS-16b failure autopsy (post-hoc analysis of frozen data — no new eval data)
+
+Question: filesystem (pos 0.422) and git (pos 0.531) fail the deployment
+gate; time (0.719) and everything (0.656) pass. WHY — gate routing or
+planner selection?
+
+Method (read-only replay): spawned the same four servers, loaded the
+index from the hash-matched cache (b6ac5cf5 — built during the scored
+run; "INDEX SOURCE: hash" confirmed identical centroids/assignment), so
+`shortlist(utterance)` reproduces the exact manifest the planner saw.
+Recomputed shortlists for all 224 pos cases, joined with the frozen
+results rows. Replay artifacts in /tmp (replay_gate.py, replay_16b.jsonl,
+fail_dump.txt) — diagnostic only, matching the probe precedent; the
+committed record is this entry.
+
+Routing recall (want ∈ top-2-union shortlist): filesystem 62/64, time
+32/32, everything 59/64, git 56/64 — 210/224 overall (93.8%).
+
+Failure decomposition (mechanical, from the join):
+- filesystem: 37 fails = 35 selection + 2 routing; 16 nulls (14 routed)
+- git: 30 fails = 22 selection + 8 routing; 16 nulls (8 routed)
+- time: 9 fails = 9 selection + 0 routing; 5 nulls (5 routed)
+- everything: 22 fails = 17 selection + 5 routing; 12 nulls (8 routed)
+
+Finding 1 — the gate is exonerated. When a case fails, the wanted tool
+was ON the planner's manifest 79/94 times; routing misses are 15. The
+MS-12/MS-15 selector delivers at deployment scale. What fails is the
+4B planner's pick among visible siblings (or its null escape).
+
+Finding 2 — most selection "failures" are eval artifacts (qualitative
+read of all 94, my post-hoc judgment, NOT a scored measurement):
+- Deprecated wants: filesystem read_file says "DEPRECATED: Use
+  read_text_file instead" — 3 frozen wants; an ideal planner preferring
+  the canonical tool scores 0 on all three.
+- Defensible siblings: "Show me the commit history here." (want
+  git_show, model's git_log at least as correct); "List everything in
+  the Music folder." (want list_directory_with_sizes, plain
+  list_directory answers the user); "Can you remind me when it's 5 PM?"
+  (want time get_current_time, the model's native `reminder` pick is
+  the right assistant behavior); "Execute the research query now."
+  (want everything__simulate-research-query, the model picked the REAL
+  native ir_research).
+- Utterances without the discriminator: the show/diff/log triangle
+  ("What changes are in this commit?"), staged vs unstaged idioms.
+- Arg-grounding nulls: the eval is history-free, but utterances like
+  "read my notes file" carry no path; the production null contract
+  fires, and in production that is a clarifying turn, not a failure.
+- Demo-tool wants (everything server): get-annotated-message,
+  toggle-subscriber-updates, get-resource-reference are MCP demo
+  fixtures with demo descriptions.
+
+Adjudicated tally: ~75/94 failures eval-borne or defensible; ~19
+genuine planner failures, concentrated in the filesystem edit/write
+family (8 of fs's 16 nulls are edit/write utterances — the model
+under-triggers on mutations), git jargon ("stage" 5/5 -> git_status,
+"check out" -> git_branch), and verbatim-request nulls (convert_time,
+directory_tree). Under a hypothetical perfect planner (only the ~19
+fixed), filesystem would score 34/64 (0.53 — STILL failing), git
+44/64 (0.69 — passing), time 24/32, everything 44/64. The filesystem
+failure is substantially eval-borne: its frozen set wants a deprecated
+alias and ambiguous listing variants.
+
+Schema discipline where the planner did pick: 100% (scored run's
+schema_ok).
+
+## MS-16b-2 (registered before any generation): eval-recipe amendment B9
+
+Scope: change the EVAL GENERATION only. No gate code, no planner, no
+model, no description rewriting (desc rewriting is treatment — its own
+registration if ever). Bars and adjudication rule unchanged:
+pos >= 0.60 AND neg >= 20/24; PASS enables the server per the original
+MS-16b rule.
+
+Amendments (both registered here, before any new data):
+1. RECIPE_B9 (verbatim) amends B8 with self-containment + uniqueness:
+   'Write 8 short things a user might say to a voice assistant for this
+   tool. "directs": plain direct requests for what the tool does, do
+   not copy the tool name, max 14 words each. "indirects": goal-oriented
+   phrasings where the tool is implied but never named, max 16 words
+   each. Two rules: every utterance must be self-contained — include
+   the concrete details the tool needs (file or folder names, content
+   to write) so nothing needs a follow-up question; and phrase it so
+   THIS tool is the only reasonable choice among similar tools —
+   include what makes it distinct (sizes, recursion, staging,
+   conversion, whatever separates it). Reply with ONLY JSON:
+   {"directs": ["...", ...], "indirects": ["...", ...]}'
+2. Tool-level exclusion (mechanical, desc-based): a tool whose
+   description contains "DEPRECATED" is excluded from eval generation
+   (an alias of a canonical sibling; a case can only invite the wrong
+   pick). Applies to filesystem read_file. Demo/simulation tools are
+   NOT excluded — the everything server's content is what it is.
+
+Mechanics unchanged: one call per tool, build_prompt card format, temp
+0.8, max_tokens 560, seed 2 with one retry at seed+1 (MS-16c), id_slot
+5; frozen to evals/<server>.b9.json BEFORE any scoring, refuses
+overwrite, pos stride-sample cap 64, same 24 hand negatives verbatim.
+Runner: eval/results/verdict paths take the suffix from MCP_EVAL_SUFFIX
+(default empty = B8 files, byte-identical behavior). Scoring through
+the production gate over the COMBINED four-server manifest (the B8 run
+was combined — cross-server picks in the frozen rows confirm it; B9
+must match). All four servers regenerate: a recipe change re-freezes
+the eval set, and the two passing servers must face the same recipe
+for like-for-like comparison. The B8 frozen evals and results stay
+committed and untouched.
+
+Files: gen_eval.py + run_eval.py amendments committed before data;
+evals/<server>.b9.json; results/<server>.b9.{jsonl,verdict}.
