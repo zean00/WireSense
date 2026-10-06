@@ -156,3 +156,27 @@ CARRIED OVER byte-identical from run 1 (278 records). Decision: fix the union to
 hier records verbatim as results_run1_invalid_hier.jsonl (committed); rerun the
 four hier arms in full under the same rules. No arm definition, eval case, budget,
 or metric changes.
+
+## Amendment MS-12 (registered post-run-2, pre-sweep-data): granularity sweep + scale gradient
+
+Run 2 decomposition (analysis, not gate data): hier loss vs flat is entirely
+routing recall — hit rate 43.3–71.3% across hier arms (was the right tool in the
+shortlist at all), while pos_acc|hit is 75–91%, ABOVE flat's 66.5% overall
+(shortlists de-crowd the planner). pos_acc|miss = 0.000 in all arms. Cluster
+granularity (k=10, fixed by MS-3 heuristic) is therefore the load-bearing design
+parameter, and the verdict "hierarchy loses" could be an artifact of k.
+
+Registered follow-ups, both pre-data:
+1. k-sweep: hier-synth/top2 (best arm by overall accuracy) re-run with
+   k in {5, 8, 15, 25}, everything else identical. Runner gains env MCP_PROBE_K
+   (clustering k only). Question: does any k beat flat's 68.4% overall?
+   Note the monotone intuition this tests: smaller k means higher recall but
+   weaker de-crowding; k=1 degenerates toward flat-with-truncated-descriptions.
+2. H4 gradient (registered in MS-7, now runnable): flat vs hier-synth/top2 at
+   the best k from (1), on seed-0 SERVER subsets (np.random.RandomState(0)
+   shuffle of server names, cumulative prefix >= 25 and >= 50 tools; k for a
+   subset = round(sqrt(N_subset)), consistent with MS-3's rule). Cases whose
+   want-tool is not in the subset are DROPPED for positives/traps; all 24
+   negatives stay (bleed test is valid — and relatively harder — at every
+   size). Runner gains env MCP_PROBE_SUBSET=<N>. Question: does the
+   flat-vs-hier gap shrink or invert as the manifest shrinks?
