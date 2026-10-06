@@ -494,3 +494,15 @@ gate otherwise). Bar: pos_acc >= 0.60 AND neg_acc >= 20/24. Failing servers
 stay disabled; results append-only; frozen evals never edited. Regeneration
 of a server's eval (e.g. its tools/list changed) requires a new protocol
 amendment naming the reason.
+
+### MS-16a result (full 278, run of 2026-10-06)
+
+Prefixed names: acc 0.6763 (bare 0.7014), pos 168/254, neg 20/24, schema
+165/168. Paired vs bare: bare-only-right 19, prefixed-only-right 12, McNemar
+p = 0.2810 — no significant regression at 0.05. The model returned the
+prefixed form in 278/278 scored picks (zero bare-name replies): the namespace
+is contract-stable at this scale. VERDICT: adopt `{server}__{tool}` in
+production manifests, per the registered rule. (An earlier read of the first
+206 records, before the run finished, showed 0.6942/p=0.23 — noted only to
+flag that partial-file adjudication happened once and was discarded unacted;
+the verdict above is the complete-run number.)
