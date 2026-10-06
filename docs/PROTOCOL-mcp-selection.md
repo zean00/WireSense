@@ -192,3 +192,24 @@ invalid; nothing from them enters the verdict. Fix: delete the dead constant
 (single line), verify with a 40-vector probe (K=5 yields 5 centroids), rerun the
 full sweep per MS-12's text. Killing the in-flight background run counted as
 the infra-failure stop of MS-8.
+
+## Amendment MS-14 (registered post-gradient-flat, pre-hier-gradient): subset degeneracy + path bug
+
+Two findings from the gradient launch:
+1. Registered 25/50-tool server subsets are UNREACHABLE in this corpus: the
+   seed-0 server order starts with github (62 tools), so the smallest whole-
+   server prefix already exceeds both targets. Both "subsets" resolved to the
+   same 78-tool prefix (github, filesystem, fetch, sequential-thinking; 186
+   cases). Decision: the gradient is answered at N=78 and labeled as such; a
+   true 25-tool point would need tool-level subsetting (unregistered — not
+   done). Free bonus from the duplicate: two independent temp-0 flat runs on
+   identical prompts produced 0/186 differing verdicts — the pipeline is
+   deterministic at same-prompt temp 0, so arm differences on this eval are
+   configuration properties, not run noise.
+2. The two hier gradient runs crashed BEFORE any scored case: the arm name
+   contains a slash and was interpolated into the results path, pointing at a
+   nonexistent directory (infra-failure class per MS-8; flat runs completed).
+   Rerun: hier-synth/top2 k=5 at the N=78 subset only, path sanitized.
+Measured already (flat@78): acc 0.3602, pos 0.3765, neg 6/24, tokens 2870 —
+a one-server-dominated flat manifest collapses selection AND the null escape;
+recorded as a main result, not an outlier, pending the hier comparison.
