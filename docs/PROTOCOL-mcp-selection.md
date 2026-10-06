@@ -580,3 +580,41 @@ writes the default path unless MCP_PROBE_SUMMARY is set — same clobber class
 as the search-arm rerun). No data or verdict was affected (adjudication reads
 results_prefix.jsonl); the prefixed summary is preserved as summary_prefix.json
 and summary.json restored to the committed run-2 state.
+
+## Entry BD (registered before implementation): remote transport — Streamable HTTP, no auth
+
+User ask: support remote MCP servers. Scope registered BEFORE code:
+
+- Transport: Streamable HTTP (spec 2025-03-26) — POST one endpoint,
+  JSON-RPC; server answers either `application/json` or an SSE stream on
+  the same response; session id via the optional `Mcp-Session-Id` response
+  header, echoed back on later requests; DELETE ends the session. Legacy
+  2024-11-05 HTTP+SSE is NOT implemented (fallback only if a real server
+  demands it).
+- Auth DEFERRED (user decision): no headers/bearer/OAuth in this entry.
+  Only no-auth remote servers can connect; anything requiring a token
+  fails honestly at initialize. When auth lands it will reuse the
+  $ENV_NAME expansion rule.
+- Non-goals held: no GET SSE channel (server-initiated notifications),
+  no streaming results (read the full body, then parse).
+
+Design: `url` in a server's config selects remote mode; everything above
+the transport (tools/list contract, gate, namespace, confirm policy,
+supervisor/cooldown state machine) is unchanged — ZERO server.py edits
+expected. Remote `kill()` = best-effort DELETE + clear session; a mid-call
+404 (server restarted / session expired) gets ONE transparent re-init +
+retry, then the existing honest-failure line. `alive()` = session open
+and not down.
+
+Verification (in order, all before any enablement):
+1. Hand-rolled stateful streamable-HTTP server (stdlib, thread) in
+   tools/mcp_http_smoke.py: initialize+session-id, tools/list, tools/call,
+   one SSE-response call, session invalidation mid-session (client must
+   re-init transparently), DELETE honored.
+2. Regression: existing stdio smoke (tools/mcp_smoke.py) re-run must still
+   pass unchanged.
+3. Real-world probe: https://mcp.deepwiki.com/mcp (no auth, stateless,
+   SSE-response): initialize, tools/list, one real call. Logged, not
+   frozen — deployment-gate (MS-16b) applies before any real enablement.
+Prediction: no gate impact of any kind (tools/list content is
+transport-independent); new failure modes are network-level only.
