@@ -730,3 +730,23 @@ User explicitly asked to test camera control. Sequence, gentlest first:
 Both calls go through the same client path as entry BE (whitelist extended
 by this registration only). Every outcome recorded honestly, including
 "camera moved" if it does.
+
+### Entry BF results (run of 2026-10-06, camera 192.168.110.83)
+
+- handle_ptz_control(Left, 5%): MCPError in 0.2 s — server raised
+  "当前设备不支持云台控制" (device does not support PTZ control). No
+  movement.
+- focus_move(0.2 → 0.0 halt): MCPError in 0.3 s — ONVIF imaging service
+  answered "The requested VideoSource does not support imaging settings".
+  Motor never started; the halt leg was unnecessary.
+- Error path validated end-to-end for real: FastMCP wraps tool exceptions
+  as isError content; our client surfaced the device's own error text as
+  MCPError within 0.3 s.
+
+CONCLUSION: the camera is a fixed unit — no pan/tilt (no PTZ node) and no
+motorized focus/zoom (imaging refused per-source). This server offers it
+nothing beyond get_rtsp (working) / discovery (working) / deviceInfo
+(nulls quirk); the actuation tools can never do anything on this hardware.
+If streams-in-voice is the goal, the wrapper entry shrinks to: env-bound
+creds + get_rtsp + local snapshot (HTTP digest fetch of GetSnapshotUri,
+no MinIO), MS-16b gate before enablement.
