@@ -1,0 +1,2270 @@
+[
+ {
+  "id": "pos_everything__echo__direct",
+  "kind": "pos",
+  "utterance": "Just say hello back to me.",
+  "want": "echo",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__echo__indirect",
+  "kind": "pos",
+  "utterance": "Please repeat my last sentence back to me.",
+  "want": "echo",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__get-annotated-message__direct",
+  "kind": "pos",
+  "utterance": "Get me the annotated message.",
+  "want": "get-annotated-message",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__get-annotated-message__indirect",
+  "kind": "pos",
+  "utterance": "Show me the metadata attached to that content.",
+  "want": "get-annotated-message",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__get-env__direct",
+  "kind": "pos",
+  "utterance": "Show me all the environment variables on this server.",
+  "want": "get-env",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__get-env__indirect",
+  "kind": "pos",
+  "utterance": "I need to debug why my server settings aren't working.",
+  "want": "get-env",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__get-resource-links__direct",
+  "kind": "pos",
+  "utterance": "List ten resource links available on the system.",
+  "want": "get-resource-links",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__get-resource-links__indirect",
+  "kind": "pos",
+  "utterance": "Show me some things I can use to get more information.",
+  "want": "get-resource-links",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__get-resource-reference__direct",
+  "kind": "pos",
+  "utterance": "Give me the reference to this resource.",
+  "want": "get-resource-reference",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__get-resource-reference__indirect",
+  "kind": "pos",
+  "utterance": "I need to link my client to this specific resource.",
+  "want": "get-resource-reference",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__get-structured-content__direct",
+  "kind": "pos",
+  "utterance": "I want to see the structured content for that location.",
+  "want": "get-structured-content",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__get-structured-content__indirect",
+  "kind": "pos",
+  "utterance": "Show me the organized details about that place.",
+  "want": "get-structured-content",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__get-sum__direct",
+  "kind": "pos",
+  "utterance": "Add up 5 and 3.",
+  "want": "get-sum",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__get-sum__indirect",
+  "kind": "pos",
+  "utterance": "What is the total of 5 and 3?",
+  "want": "get-sum",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__get-tiny-image__direct",
+  "kind": "pos",
+  "utterance": "I need a small picture of the MCP logo.",
+  "want": "get-tiny-image",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__get-tiny-image__indirect",
+  "kind": "pos",
+  "utterance": "Can you show me the tiny logo for MCP?",
+  "want": "get-tiny-image",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__gzip-file-as-resource__direct",
+  "kind": "pos",
+  "utterance": "Please compress my file using gzip.",
+  "want": "gzip-file-as-resource",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__gzip-file-as-resource__indirect",
+  "kind": "pos",
+  "utterance": "I need to download this file as a compressed version.",
+  "want": "gzip-file-as-resource",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__toggle-simulated-logging__direct",
+  "kind": "pos",
+  "utterance": "Please turn on the simulated random logging.",
+  "want": "toggle-simulated-logging",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__toggle-simulated-logging__indirect",
+  "kind": "pos",
+  "utterance": "I need the system to generate random log levels now.",
+  "want": "toggle-simulated-logging",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__toggle-subscriber-updates__direct",
+  "kind": "pos",
+  "utterance": "Please turn off the simulated resource subscription updates.",
+  "want": "toggle-subscriber-updates",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__toggle-subscriber-updates__indirect",
+  "kind": "pos",
+  "utterance": "I'd like to stop getting simulated resource updates for now.",
+  "want": "toggle-subscriber-updates",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__trigger-long-running-operation__direct",
+  "kind": "pos",
+  "utterance": "Kick off the long job and tell me when it finishes.",
+  "want": "trigger-long-running-operation",
+  "server": "everything",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_everything__trigger-long-running-operation__indirect",
+  "kind": "pos",
+  "utterance": "Please take your time to finish that task and update me.",
+  "want": "trigger-long-running-operation",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_everything__simulate-research-query__direct",
+  "kind": "pos",
+  "utterance": "Tell me everything about the latest advancements in renewable energy.",
+  "want": "simulate-research-query",
+  "server": "everything",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_everything__simulate-research-query__indirect",
+  "kind": "pos",
+  "utterance": "What are the most promising new technologies for solving our energy crisis?",
+  "want": "simulate-research-query",
+  "server": "everything",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_fetch__fetch__direct",
+  "kind": "pos",
+  "utterance": "Fetch the front page of that blog and read me the headlines.",
+  "want": "fetch",
+  "server": "fetch",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_fetch__fetch__indirect",
+  "kind": "pos",
+  "utterance": "I need to know what's happening right now on that site.",
+  "want": "fetch",
+  "server": "fetch",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__read_file__direct",
+  "kind": "pos",
+  "utterance": "Can I read the contents of a file?",
+  "want": "read_text_file",
+  "server": "filesystem",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_filesystem__read_file__indirect",
+  "kind": "pos",
+  "utterance": "I need to know what's written in this document.",
+  "want": "read_text_file",
+  "server": "filesystem",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_filesystem__read_text_file__direct",
+  "kind": "pos",
+  "utterance": "Please read the contents of that file for me.",
+  "want": "read_text_file",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__read_text_file__indirect",
+  "kind": "pos",
+  "utterance": "I need to know what is written in this document.",
+  "want": "read_text_file",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__read_media_file__direct",
+  "kind": "pos",
+  "utterance": "Show me the image that's inside that file.",
+  "want": "read_media_file",
+  "server": "filesystem",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_filesystem__read_media_file__indirect",
+  "kind": "pos",
+  "utterance": "Pull up the photo I saved from the beach trip.",
+  "want": "read_media_file",
+  "server": "filesystem",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_filesystem__read_multiple_files__direct",
+  "kind": "pos",
+  "utterance": "Can you read several files at once for me?",
+  "want": "read_multiple_files",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__read_multiple_files__indirect",
+  "kind": "pos",
+  "utterance": "I need to compare and analyze a bunch of documents together.",
+  "want": "read_multiple_files",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__write_file__direct",
+  "kind": "pos",
+  "utterance": "Create a text file with this content.",
+  "want": "write_file",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__write_file__indirect",
+  "kind": "pos",
+  "utterance": "Save these notes into a new file.",
+  "want": "write_file",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__edit_file__direct",
+  "kind": "pos",
+  "utterance": "Update some text in a file.",
+  "want": "edit_file",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__edit_file__indirect",
+  "kind": "pos",
+  "utterance": "I need to fix a few lines in that document.",
+  "want": "edit_file",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__create_directory__direct",
+  "kind": "pos",
+  "utterance": "Create the folder for my new project files.",
+  "want": "create_directory",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__create_directory__indirect",
+  "kind": "pos",
+  "utterance": "I need to make a new directory for my work.",
+  "want": "create_directory",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__list_directory__direct",
+  "kind": "pos",
+  "utterance": "List everything in the folder I'm looking at.",
+  "want": "list_directory",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__list_directory__indirect",
+  "kind": "pos",
+  "utterance": "Show me all the files and folders in that directory.",
+  "want": "list_directory",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__list_directory_with_sizes__direct",
+  "kind": "pos",
+  "utterance": "List all files and folders with their sizes in a directory.",
+  "want": "list_directory_with_sizes",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__list_directory_with_sizes__indirect",
+  "kind": "pos",
+  "utterance": "Which of these files is eating my disk space?",
+  "want": "list_directory_with_sizes",
+  "server": "filesystem",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_filesystem__directory_tree__direct",
+  "kind": "pos",
+  "utterance": "What is the directory tree of my files?",
+  "want": "directory_tree",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__directory_tree__indirect",
+  "kind": "pos",
+  "utterance": "I want to see the full structure of my folders.",
+  "want": "directory_tree",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__move_file__direct",
+  "kind": "pos",
+  "utterance": "Can you move this file to another folder?",
+  "want": "move_file",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__move_file__indirect",
+  "kind": "pos",
+  "utterance": "I need to reorganize my files by moving them around.",
+  "want": "move_file",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__search_files__direct",
+  "kind": "pos",
+  "utterance": "Can you find all my photos from last summer?",
+  "want": "search_files",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__search_files__indirect",
+  "kind": "pos",
+  "utterance": "I need to locate that specific document I saved.",
+  "want": "search_files",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__get_file_info__direct",
+  "kind": "pos",
+  "utterance": "Show me details about this file.",
+  "want": "get_file_info",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__get_file_info__indirect",
+  "kind": "pos",
+  "utterance": "I need to know what this file is.",
+  "want": "get_file_info",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_filesystem__list_allowed_directories__direct",
+  "kind": "pos",
+  "utterance": "Which folders can this server access?",
+  "want": "list_allowed_directories",
+  "server": "filesystem",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_filesystem__list_allowed_directories__indirect",
+  "kind": "pos",
+  "utterance": "What files can I browse right now?",
+  "want": "list_allowed_directories",
+  "server": "filesystem",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_status__direct",
+  "kind": "pos",
+  "utterance": "Show me what files have changed in the repository.",
+  "want": "git_status",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_status__indirect",
+  "kind": "pos",
+  "utterance": "Is my working tree clean right now?",
+  "want": "git_status",
+  "server": "git",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_git__git_diff_unstaged__direct",
+  "kind": "pos",
+  "utterance": "What changes are in my uncommitted files?",
+  "want": "git_diff_unstaged",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_diff_unstaged__indirect",
+  "kind": "pos",
+  "utterance": "I want to see what I've changed but not saved yet.",
+  "want": "git_diff_unstaged",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_diff_staged__direct",
+  "kind": "pos",
+  "utterance": "Show my staged changes.",
+  "want": "git_diff_staged",
+  "server": "git",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_git__git_diff_staged__indirect",
+  "kind": "pos",
+  "utterance": "Tell me the changes ready to be committed.",
+  "want": "git_diff_staged",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_diff__direct",
+  "kind": "pos",
+  "utterance": "What changes are between these branches?",
+  "want": "git_diff",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_diff__indirect",
+  "kind": "pos",
+  "utterance": "Show me the differences in my code history.",
+  "want": "git_diff",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_commit__direct",
+  "kind": "pos",
+  "utterance": "Please commit my changes to the repository.",
+  "want": "git_commit",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_commit__indirect",
+  "kind": "pos",
+  "utterance": "I want to save these edits to the codebase.",
+  "want": "git_commit",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_add__direct",
+  "kind": "pos",
+  "utterance": "Please add the new files to the staging area.",
+  "want": "git_add",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_add__indirect",
+  "kind": "pos",
+  "utterance": "I need to get these changes ready for the next commit.",
+  "want": "git_add",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_reset__direct",
+  "kind": "pos",
+  "utterance": "I need to undo all my staged changes in the repo.",
+  "want": "git_reset",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_reset__indirect",
+  "kind": "pos",
+  "utterance": "I staged too much \u2014 clear the staging area but keep my edits.",
+  "want": "git_reset",
+  "server": "git",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_git__git_log__direct",
+  "kind": "pos",
+  "utterance": "Show me the git commit history.",
+  "want": "git_log",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_log__indirect",
+  "kind": "pos",
+  "utterance": "I need to see what changes were made recently.",
+  "want": "git_log",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_create_branch__direct",
+  "kind": "pos",
+  "utterance": "Create a git branch named feature-auth.",
+  "want": "git_create_branch",
+  "server": "git",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_git__git_create_branch__indirect",
+  "kind": "pos",
+  "utterance": "I need to create a new branch for this project.",
+  "want": "git_create_branch",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_checkout__direct",
+  "kind": "pos",
+  "utterance": "I need to switch to a different branch in my repository.",
+  "want": "git_checkout",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_checkout__indirect",
+  "kind": "pos",
+  "utterance": "Please change my working directory to the latest commit on the develop branch.",
+  "want": "git_checkout",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_show__direct",
+  "kind": "pos",
+  "utterance": "Show me the contents of this commit.",
+  "want": "git_show",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_show__indirect",
+  "kind": "pos",
+  "utterance": "I need to see what was in that specific commit.",
+  "want": "git_show",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_git__git_branch__direct",
+  "kind": "pos",
+  "utterance": "List the branches in my Git repository.",
+  "want": "git_branch",
+  "server": "git",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_git__git_branch__indirect",
+  "kind": "pos",
+  "utterance": "Show me all the different branches I have in my project.",
+  "want": "git_branch",
+  "server": "git",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__actions_get__direct",
+  "kind": "pos",
+  "utterance": "Get details about a specific GitHub Actions workflow run.",
+  "want": "actions_get",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__actions_get__indirect",
+  "kind": "pos",
+  "utterance": "Show me the status of that specific workflow I'm waiting on.",
+  "want": "actions_get",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__actions_list__direct",
+  "kind": "pos",
+  "utterance": "Can you list the GitHub Actions workflows in this repository?",
+  "want": "actions_list",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__actions_list__indirect",
+  "kind": "pos",
+  "utterance": "What are the active automation jobs running in this project?",
+  "want": "actions_list",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__actions_run_trigger__direct",
+  "kind": "pos",
+  "utterance": "Start a new GitHub workflow run for my repository.",
+  "want": "actions_run_trigger",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__actions_run_trigger__indirect",
+  "kind": "pos",
+  "utterance": "I need to trigger my automated deployment process on GitHub right now.",
+  "want": "actions_run_trigger",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__add_comment_to_pending_review__direct",
+  "kind": "pos",
+  "utterance": "Can you add a comment to the pending pull request review?",
+  "want": "add_comment_to_pending_review",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__add_comment_to_pending_review__indirect",
+  "kind": "pos",
+  "utterance": "Please leave a note on that open pull request I'm waiting for.",
+  "want": "add_comment_to_pending_review",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__add_issue_comment__direct",
+  "kind": "pos",
+  "utterance": "I want to add a comment to a GitHub issue.",
+  "want": "add_issue_comment",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__add_issue_comment__indirect",
+  "kind": "pos",
+  "utterance": "Reply to that open ticket with my findings.",
+  "want": "add_issue_comment",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__add_reply_to_pull_request_comment__direct",
+  "kind": "pos",
+  "utterance": "I need to reply to a comment on a pull request.",
+  "want": "add_reply_to_pull_request_comment",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__add_reply_to_pull_request_comment__indirect",
+  "kind": "pos",
+  "utterance": "Can you add a response to that discussion on the open pull request?",
+  "want": "add_reply_to_pull_request_comment",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__create_branch__direct",
+  "kind": "pos",
+  "utterance": "I want to create a new branch on GitHub.",
+  "want": "create_branch",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__create_branch__indirect",
+  "kind": "pos",
+  "utterance": "Please set up a new branch in my repository.",
+  "want": "create_branch",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__create_gist__direct",
+  "kind": "pos",
+  "utterance": "Please make a new gist with this file and content.",
+  "want": "create_gist",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__create_gist__indirect",
+  "kind": "pos",
+  "utterance": "I want to share these notes with my team online.",
+  "want": "create_gist",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__create_or_update_file__direct",
+  "kind": "pos",
+  "utterance": "Create a file on GitHub with this text.",
+  "want": "create_or_update_file",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__create_or_update_file__indirect",
+  "kind": "pos",
+  "utterance": "Can you add this note to my project file?",
+  "want": "create_or_update_file",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__create_pull_request__direct",
+  "kind": "pos",
+  "utterance": "Can you create a pull request on GitHub?",
+  "want": "create_pull_request",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__create_pull_request__indirect",
+  "kind": "pos",
+  "utterance": "I need to open a new pull request.",
+  "want": "create_pull_request",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__create_repository__direct",
+  "kind": "pos",
+  "utterance": "Help me make a new GitHub repository.",
+  "want": "create_repository",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__create_repository__indirect",
+  "kind": "pos",
+  "utterance": "I need to set up a new project on GitHub.",
+  "want": "create_repository",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__delete_file__direct",
+  "kind": "pos",
+  "utterance": "Please remove this file from my GitHub repository.",
+  "want": "delete_file",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__delete_file__indirect",
+  "kind": "pos",
+  "utterance": "I need to clean up that file from my project.",
+  "want": "delete_file",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__discussion_comment_write__direct",
+  "kind": "pos",
+  "utterance": "Add my reply to that GitHub discussion.",
+  "want": "discussion_comment_write",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__discussion_comment_write__indirect",
+  "kind": "pos",
+  "utterance": "Post a response in that community conversation.",
+  "want": "discussion_comment_write",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__dismiss_notification__direct",
+  "kind": "pos",
+  "utterance": "Mark that one GitHub notification as read.",
+  "want": "dismiss_notification",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__dismiss_notification__indirect",
+  "kind": "pos",
+  "utterance": "Clear that single notification from my inbox.",
+  "want": "dismiss_notification",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__fork_repository__direct",
+  "kind": "pos",
+  "utterance": "Create a copy of that GitHub repository for me.",
+  "want": "fork_repository",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__fork_repository__indirect",
+  "kind": "pos",
+  "utterance": "I need a backup of this project on my own account.",
+  "want": "fork_repository",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_code_scanning_alert__direct",
+  "kind": "pos",
+  "utterance": "Show me the details of that code scanning alert.",
+  "want": "get_code_scanning_alert",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__get_code_scanning_alert__indirect",
+  "kind": "pos",
+  "utterance": "Can you tell me if there are any recent security issues?",
+  "want": "get_code_scanning_alert",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_commit__direct",
+  "kind": "pos",
+  "utterance": "Can you tell me about this specific commit on GitHub?",
+  "want": "get_commit",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__get_commit__indirect",
+  "kind": "pos",
+  "utterance": "What changed in commit a1b2c3 on my repo?",
+  "want": "get_commit",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__get_discussion__direct",
+  "kind": "pos",
+  "utterance": "Pull up discussion number 42 from the acme/api repo.",
+  "want": "get_discussion",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__get_discussion__indirect",
+  "kind": "pos",
+  "utterance": "Bring up that community discussion thread again.",
+  "want": "get_discussion",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__get_discussion_comments__direct",
+  "kind": "pos",
+  "utterance": "List all comments on that GitHub discussion.",
+  "want": "get_discussion_comments",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__get_discussion_comments__indirect",
+  "kind": "pos",
+  "utterance": "Tell me everything people said in that thread.",
+  "want": "get_discussion_comments",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_file_contents__direct",
+  "kind": "pos",
+  "utterance": "I want to see the text inside a file from a GitHub repo.",
+  "want": "get_file_contents",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__get_file_contents__indirect",
+  "kind": "pos",
+  "utterance": "Read the CONTRIBUTING guide from the acme/api repo.",
+  "want": "get_file_contents",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__get_gist__direct",
+  "kind": "pos",
+  "utterance": "I want to see the content of a specific GitHub gist.",
+  "want": "get_gist",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__get_gist__indirect",
+  "kind": "pos",
+  "utterance": "Show me the text inside that GitHub gist I'm looking for.",
+  "want": "get_gist",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_job_logs__direct",
+  "kind": "pos",
+  "utterance": "Get the logs for a specific GitHub Actions job.",
+  "want": "get_job_logs",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__get_job_logs__indirect",
+  "kind": "pos",
+  "utterance": "Show me what happened during that recent workflow run.",
+  "want": "get_job_logs",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_label__direct",
+  "kind": "pos",
+  "utterance": "Show me the details of the 'bug' label in my repo.",
+  "want": "get_label",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__get_label__indirect",
+  "kind": "pos",
+  "utterance": "What information can I find about a specific label in that repo?",
+  "want": "get_label",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_latest_release__direct",
+  "kind": "pos",
+  "utterance": "What's the newest release of that project on GitHub?",
+  "want": "get_latest_release",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__get_latest_release__indirect",
+  "kind": "pos",
+  "utterance": "I need to know when the newest update came out.",
+  "want": "get_latest_release",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_notification_details__direct",
+  "kind": "pos",
+  "utterance": "Can you tell me the details of this GitHub notification?",
+  "want": "get_notification_details",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__get_notification_details__indirect",
+  "kind": "pos",
+  "utterance": "What should I know about this GitHub notification?",
+  "want": "get_notification_details",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_release_by_tag__direct",
+  "kind": "pos",
+  "utterance": "What shipped in release v2.1.0?",
+  "want": "get_release_by_tag",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__get_release_by_tag__indirect",
+  "kind": "pos",
+  "utterance": "What changes did the team ship in that version?",
+  "want": "get_release_by_tag",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__get_tag__direct",
+  "kind": "pos",
+  "utterance": "Can you tell me about this specific git tag?",
+  "want": "get_tag",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__get_tag__indirect",
+  "kind": "pos",
+  "utterance": "Look up tag v1.4.2 in the acme/api repo.",
+  "want": "get_tag",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__issue_read__direct",
+  "kind": "pos",
+  "utterance": "I want to know the details of a specific GitHub issue.",
+  "want": "issue_read",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__issue_read__indirect",
+  "kind": "pos",
+  "utterance": "What is the status and content of that bug report from the team?",
+  "want": "issue_read",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__issue_write__direct",
+  "kind": "pos",
+  "utterance": "Report a bug or ask a question on GitHub.",
+  "want": "issue_write",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__issue_write__indirect",
+  "kind": "pos",
+  "utterance": "Create an issue on a GitHub repository.",
+  "want": "issue_write",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_branches__direct",
+  "kind": "pos",
+  "utterance": "List the branches in this GitHub repository.",
+  "want": "list_branches",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_branches__indirect",
+  "kind": "pos",
+  "utterance": "Show me all the available branches for this project.",
+  "want": "list_branches",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_code_scanning_alerts__direct",
+  "kind": "pos",
+  "utterance": "List all code scanning alerts for this repository.",
+  "want": "list_code_scanning_alerts",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_code_scanning_alerts__indirect",
+  "kind": "pos",
+  "utterance": "Show me any recent issues found by our code scanners.",
+  "want": "list_code_scanning_alerts",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_commits__direct",
+  "kind": "pos",
+  "utterance": "What are the recent commits on this repository?",
+  "want": "list_commits",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_commits__indirect",
+  "kind": "pos",
+  "utterance": "Can you show me the latest changes made to the code?",
+  "want": "list_commits",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_discussion_categories__direct",
+  "kind": "pos",
+  "utterance": "Show me the discussion categories in this repository.",
+  "want": "list_discussion_categories",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_discussion_categories__indirect",
+  "kind": "pos",
+  "utterance": "I want to know what types of conversations are allowed here.",
+  "want": "list_discussion_categories",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_discussions__direct",
+  "kind": "pos",
+  "utterance": "List all discussions in this GitHub repository.",
+  "want": "list_discussions",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_discussions__indirect",
+  "kind": "pos",
+  "utterance": "Show me the conversations happening in this project.",
+  "want": "list_discussions",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_gists__direct",
+  "kind": "pos",
+  "utterance": "List all my GitHub gists.",
+  "want": "list_gists",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_gists__indirect",
+  "kind": "pos",
+  "utterance": "Show me the code snippets I've saved.",
+  "want": "list_gists",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_issue_fields__direct",
+  "kind": "pos",
+  "utterance": "Tell me what fields exist for this GitHub repository's issues.",
+  "want": "list_issue_fields",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_issue_fields__indirect",
+  "kind": "pos",
+  "utterance": "What information can I collect from the issue templates?",
+  "want": "list_issue_fields",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_issue_types__direct",
+  "kind": "pos",
+  "utterance": "Show me the issue types for this repository.",
+  "want": "list_issue_types",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_issue_types__indirect",
+  "kind": "pos",
+  "utterance": "What kinds of problems can I report here?",
+  "want": "list_issue_types",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_issues__direct",
+  "kind": "pos",
+  "utterance": "List all the open issues in my GitHub repo.",
+  "want": "list_issues",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_issues__indirect",
+  "kind": "pos",
+  "utterance": "Can you show me what problems are currently reported?",
+  "want": "list_issues",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_notifications__direct",
+  "kind": "pos",
+  "utterance": "Show me my GitHub notifications.",
+  "want": "list_notifications",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_notifications__indirect",
+  "kind": "pos",
+  "utterance": "What's waiting for my attention in my GitHub inbox?",
+  "want": "list_notifications",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__list_pull_requests__direct",
+  "kind": "pos",
+  "utterance": "What are the open pull requests in this repository?",
+  "want": "list_pull_requests",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_pull_requests__indirect",
+  "kind": "pos",
+  "utterance": "Can you show me all the pending code changes we're working on?",
+  "want": "list_pull_requests",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_releases__direct",
+  "kind": "pos",
+  "utterance": "List the latest releases for my GitHub repository.",
+  "want": "list_releases",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_releases__indirect",
+  "kind": "pos",
+  "utterance": "I want to see what new updates are available.",
+  "want": "list_releases",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__list_repository_collaborators__direct",
+  "kind": "pos",
+  "utterance": "Show me the people who have access to this GitHub repo.",
+  "want": "list_repository_collaborators",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_repository_collaborators__indirect",
+  "kind": "pos",
+  "utterance": "Who has write access to the acme/api repo?",
+  "want": "list_repository_collaborators",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__list_tags__direct",
+  "kind": "pos",
+  "utterance": "List all the tags for this GitHub repository.",
+  "want": "list_tags",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__list_tags__indirect",
+  "kind": "pos",
+  "utterance": "I need all the tagged versions of that repo.",
+  "want": "list_tags",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__manage_notification_subscription__direct",
+  "kind": "pos",
+  "utterance": "Stop watching that thread \u2014 I don't need its updates.",
+  "want": "manage_notification_subscription",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__manage_notification_subscription__indirect",
+  "kind": "pos",
+  "utterance": "Mute updates on the one thread I commented in.",
+  "want": "manage_notification_subscription",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__manage_repository_notification_subscription__direct",
+  "kind": "pos",
+  "utterance": "Unwatch the acme/api repository for me.",
+  "want": "manage_repository_notification_subscription",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__manage_repository_notification_subscription__indirect",
+  "kind": "pos",
+  "utterance": "Silence alerts from that repository entirely.",
+  "want": "manage_repository_notification_subscription",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__mark_all_notifications_read__direct",
+  "kind": "pos",
+  "utterance": "Please mark all my GitHub notifications as read.",
+  "want": "mark_all_notifications_read",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__mark_all_notifications_read__indirect",
+  "kind": "pos",
+  "utterance": "I'm done checking my GitHub alerts and need to clear them.",
+  "want": "mark_all_notifications_read",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__merge_pull_request__direct",
+  "kind": "pos",
+  "utterance": "Can you merge this pull request for me?",
+  "want": "merge_pull_request",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__merge_pull_request__indirect",
+  "kind": "pos",
+  "utterance": "I need to finish this code change by merging the PR now.",
+  "want": "merge_pull_request",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__pull_request_read__direct",
+  "kind": "pos",
+  "utterance": "I need to see the details of a specific pull request.",
+  "want": "pull_request_read",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__pull_request_read__indirect",
+  "kind": "pos",
+  "utterance": "What's the status of the PR that fixes the login bug?",
+  "want": "pull_request_read",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__pull_request_review_write__direct",
+  "kind": "pos",
+  "utterance": "Create a review on a pull request.",
+  "want": "pull_request_review_write",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__pull_request_review_write__indirect",
+  "kind": "pos",
+  "utterance": "Please check if this code change looks good.",
+  "want": "pull_request_review_write",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__push_files__direct",
+  "kind": "pos",
+  "utterance": "I need to send several files to my GitHub repository now.",
+  "want": "push_files",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__push_files__indirect",
+  "kind": "pos",
+  "utterance": "Please update my code on GitHub by pushing all my recent file changes.",
+  "want": "push_files",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__search_code__direct",
+  "kind": "pos",
+  "utterance": "Can you search GitHub for that specific code snippet?",
+  "want": "search_code",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__search_code__indirect",
+  "kind": "pos",
+  "utterance": "I need to find where that function is defined online.",
+  "want": "search_code",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__search_commits__direct",
+  "kind": "pos",
+  "utterance": "Find commits by john_doe mentioning the deploy fix.",
+  "want": "search_commits",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__search_commits__indirect",
+  "kind": "pos",
+  "utterance": "Which commits across my repos mention the memory leak?",
+  "want": "search_commits",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__search_issues__direct",
+  "kind": "pos",
+  "utterance": "Find issues mentioning crashes across my GitHub repos.",
+  "want": "search_issues",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__search_issues__indirect",
+  "kind": "pos",
+  "utterance": "I need to find existing bug reports about login problems.",
+  "want": "search_issues",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__search_orgs__direct",
+  "kind": "pos",
+  "utterance": "Find GitHub organizations working on climate tech.",
+  "want": "search_orgs",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__search_orgs__indirect",
+  "kind": "pos",
+  "utterance": "I need to find companies and teams on GitHub.",
+  "want": "search_orgs",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__search_pull_requests__direct",
+  "kind": "pos",
+  "utterance": "Find open PRs across GitHub that mention Kubernetes.",
+  "want": "search_pull_requests",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__search_pull_requests__indirect",
+  "kind": "pos",
+  "utterance": "Search the open source world for pull requests adding feature flags.",
+  "want": "search_pull_requests",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__search_repositories__direct",
+  "kind": "pos",
+  "utterance": "Show me GitHub repositories about artificial intelligence.",
+  "want": "search_repositories",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__search_repositories__indirect",
+  "kind": "pos",
+  "utterance": "I need to find a Python project for image recognition.",
+  "want": "search_repositories",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__search_users__direct",
+  "kind": "pos",
+  "utterance": "Help me find a GitHub user by name.",
+  "want": "search_users",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__search_users__indirect",
+  "kind": "pos",
+  "utterance": "I need to locate a developer on GitHub.",
+  "want": "search_users",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__sub_issue_write__direct",
+  "kind": "pos",
+  "utterance": "Can you add a sub-issue to an existing parent issue?",
+  "want": "sub_issue_write",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__sub_issue_write__indirect",
+  "kind": "pos",
+  "utterance": "Please help me track up on a parent issue by creating a sub-issue.",
+  "want": "sub_issue_write",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__update_gist__direct",
+  "kind": "pos",
+  "utterance": "Change a file in my GitHub gist.",
+  "want": "update_gist",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__update_gist__indirect",
+  "kind": "pos",
+  "utterance": "Revise the content of the gist I shared yesterday.",
+  "want": "update_gist",
+  "server": "github",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_github__update_issue_comment__direct",
+  "kind": "pos",
+  "utterance": "Change the text on a GitHub issue comment.",
+  "want": "update_issue_comment",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__update_issue_comment__indirect",
+  "kind": "pos",
+  "utterance": "Update the message inside a GitHub issue conversation.",
+  "want": "update_issue_comment",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__update_pull_request__direct",
+  "kind": "pos",
+  "utterance": "Change the title of pull request 456.",
+  "want": "update_pull_request",
+  "server": "github",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_github__update_pull_request__indirect",
+  "kind": "pos",
+  "utterance": "I need to change some details on an open pull request.",
+  "want": "update_pull_request",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_github__update_pull_request_branch__direct",
+  "kind": "pos",
+  "utterance": "Refresh my pull request branch with the latest base changes.",
+  "want": "update_pull_request_branch",
+  "server": "github",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_github__update_pull_request_branch__indirect",
+  "kind": "pos",
+  "utterance": "I need my PR to match the current state of the main branch.",
+  "want": "update_pull_request_branch",
+  "server": "github",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__create_entities__direct",
+  "kind": "pos",
+  "utterance": "Can you add new people and places to your records?",
+  "want": "create_entities",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__create_entities__indirect",
+  "kind": "pos",
+  "utterance": "Please help me organize my growing list of contacts and locations.",
+  "want": "create_entities",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__create_relations__direct",
+  "kind": "pos",
+  "utterance": "Link these people and companies together in my database.",
+  "want": "create_relations",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__create_relations__indirect",
+  "kind": "pos",
+  "utterance": "Please update my knowledge graph to show how these topics are connected.",
+  "want": "create_relations",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__add_observations__direct",
+  "kind": "pos",
+  "utterance": "Help me add new observations to the knowledge graph.",
+  "want": "add_observations",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__add_observations__indirect",
+  "kind": "pos",
+  "utterance": "I want to update the database with some new information.",
+  "want": "add_observations",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__delete_entities__direct",
+  "kind": "pos",
+  "utterance": "I want to remove these specific people from the memory.",
+  "want": "delete_entities",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__delete_entities__indirect",
+  "kind": "pos",
+  "utterance": "Please take those individuals out of the records for good.",
+  "want": "delete_entities",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__delete_observations__direct",
+  "kind": "pos",
+  "utterance": "Delete the old notes from my records.",
+  "want": "delete_observations",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__delete_observations__indirect",
+  "kind": "pos",
+  "utterance": "Please clear out those outdated entries for me.",
+  "want": "delete_observations",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__delete_relations__direct",
+  "kind": "pos",
+  "utterance": "Delete these connections from the knowledge graph.",
+  "want": "delete_relations",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__delete_relations__indirect",
+  "kind": "pos",
+  "utterance": "Remove the links between these people in my memory.",
+  "want": "delete_relations",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__read_graph__direct",
+  "kind": "pos",
+  "utterance": "Tell me everything in the knowledge graph.",
+  "want": "read_graph",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__read_graph__indirect",
+  "kind": "pos",
+  "utterance": "I need a full summary of all our data.",
+  "want": "read_graph",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__search_nodes__direct",
+  "kind": "pos",
+  "utterance": "Look up information about this topic in the database.",
+  "want": "search_nodes",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__search_nodes__indirect",
+  "kind": "pos",
+  "utterance": "Find out everything I need to know about this subject.",
+  "want": "search_nodes",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_memory__open_nodes__direct",
+  "kind": "pos",
+  "utterance": "I want to open these specific nodes in the knowledge graph.",
+  "want": "open_nodes",
+  "server": "memory",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_memory__open_nodes__indirect",
+  "kind": "pos",
+  "utterance": "Show me the details for those specific items I mentioned earlier.",
+  "want": "open_nodes",
+  "server": "memory",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_navigate__direct",
+  "kind": "pos",
+  "utterance": "Navigate to that website.",
+  "want": "puppeteer_navigate",
+  "server": "puppeteer",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_navigate__indirect",
+  "kind": "pos",
+  "utterance": "Open the URL in my browser.",
+  "want": "puppeteer_navigate",
+  "server": "puppeteer",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_screenshot__direct",
+  "kind": "pos",
+  "utterance": "Please take a screenshot of the current page.",
+  "want": "puppeteer_screenshot",
+  "server": "puppeteer",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_screenshot__indirect",
+  "kind": "pos",
+  "utterance": "I need a picture of what I'm seeing right now.",
+  "want": "puppeteer_screenshot",
+  "server": "puppeteer",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_click__direct",
+  "kind": "pos",
+  "utterance": "Click on that button for me.",
+  "want": "puppeteer_click",
+  "server": "puppeteer",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_click__indirect",
+  "kind": "pos",
+  "utterance": "I need to press that specific button now.",
+  "want": "puppeteer_click",
+  "server": "puppeteer",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_fill__direct",
+  "kind": "pos",
+  "utterance": "Please type this text into the input field.",
+  "want": "puppeteer_fill",
+  "server": "puppeteer",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_fill__indirect",
+  "kind": "pos",
+  "utterance": "I need to enter this information into the form.",
+  "want": "puppeteer_fill",
+  "server": "puppeteer",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_select__direct",
+  "kind": "pos",
+  "utterance": "Pick the 'Ship to Canada' option from the dropdown.",
+  "want": "puppeteer_select",
+  "server": "puppeteer",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_select__indirect",
+  "kind": "pos",
+  "utterance": "Help me pick an option from the list shown.",
+  "want": "puppeteer_select",
+  "server": "puppeteer",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_hover__direct",
+  "kind": "pos",
+  "utterance": "I want to hover over that specific element on the page.",
+  "want": "puppeteer_hover",
+  "server": "puppeteer",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_hover__indirect",
+  "kind": "pos",
+  "utterance": "Please move my cursor to that item to check if it responds.",
+  "want": "puppeteer_hover",
+  "server": "puppeteer",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_evaluate__direct",
+  "kind": "pos",
+  "utterance": "Run this JavaScript in the page and tell me the result.",
+  "want": "puppeteer_evaluate",
+  "server": "puppeteer",
+  "flavor": "direct",
+  "audited": true
+ },
+ {
+  "id": "pos_puppeteer__puppeteer_evaluate__indirect",
+  "kind": "pos",
+  "utterance": "I need to know what happens when I run code in the browser.",
+  "want": "puppeteer_evaluate",
+  "server": "puppeteer",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_sequential-thinking__sequentialthinking__direct",
+  "kind": "pos",
+  "utterance": "Think through this complex problem step by step.",
+  "want": "sequentialthinking",
+  "server": "sequential-thinking",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_sequential-thinking__sequentialthinking__indirect",
+  "kind": "pos",
+  "utterance": "Help me solve this tricky puzzle by breaking it down.",
+  "want": "sequentialthinking",
+  "server": "sequential-thinking",
+  "flavor": "indirect"
+ },
+ {
+  "id": "pos_time__get_current_time__direct",
+  "kind": "pos",
+  "utterance": "What is the time in New York?",
+  "want": "get_current_time",
+  "server": "time",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_time__get_current_time__indirect",
+  "kind": "pos",
+  "utterance": "Is it already 3pm here?",
+  "want": "get_current_time",
+  "server": "time",
+  "flavor": "indirect",
+  "audited": true
+ },
+ {
+  "id": "pos_time__convert_time__direct",
+  "kind": "pos",
+  "utterance": "Can I change this time from New York to London?",
+  "want": "convert_time",
+  "server": "time",
+  "flavor": "direct"
+ },
+ {
+  "id": "pos_time__convert_time__indirect",
+  "kind": "pos",
+  "utterance": "What time is it in London when it is noon here?",
+  "want": "convert_time",
+  "server": "time",
+  "flavor": "indirect"
+ },
+ {
+  "id": "neg_00",
+  "kind": "neg",
+  "utterance": "What's a deference span",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_01",
+  "kind": "neg",
+  "utterance": "Set a timer for 20 minutes",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_02",
+  "kind": "neg",
+  "utterance": "Remind me about the dentist on Friday",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_03",
+  "kind": "neg",
+  "utterance": "Make a note that the wifi password is on the fridge",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_04",
+  "kind": "neg",
+  "utterance": "How are you doing today",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_05",
+  "kind": "neg",
+  "utterance": "Write a haiku about autumn",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_06",
+  "kind": "neg",
+  "utterance": "What's 17 times 23",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_07",
+  "kind": "neg",
+  "utterance": "Tell me a joke",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_08",
+  "kind": "neg",
+  "utterance": "What's the weather in Jakarta",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_09",
+  "kind": "neg",
+  "utterance": "Good morning",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_10",
+  "kind": "neg",
+  "utterance": "What did you just say",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_11",
+  "kind": "neg",
+  "utterance": "Stop",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_12",
+  "kind": "neg",
+  "utterance": "Who made you",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_13",
+  "kind": "neg",
+  "utterance": "Say that again louder",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_14",
+  "kind": "neg",
+  "utterance": "I love this song",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_15",
+  "kind": "neg",
+  "utterance": "Are you real",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_16",
+  "kind": "neg",
+  "utterance": "Thank you",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_17",
+  "kind": "neg",
+  "utterance": "What's your favorite color",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_18",
+  "kind": "neg",
+  "utterance": "Explain quantum computing simply",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_19",
+  "kind": "neg",
+  "utterance": "Translate hello to French",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_20",
+  "kind": "neg",
+  "utterance": "Spell entrepreneurship",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_21",
+  "kind": "neg",
+  "utterance": "How do you make bread",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_22",
+  "kind": "neg",
+  "utterance": "Open the pod bay doors",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "neg_23",
+  "kind": "neg",
+  "utterance": "What's my name",
+  "want": null,
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_00",
+  "kind": "trap",
+  "utterance": "What time is it right now",
+  "want": "get_current_time",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_01",
+  "kind": "trap",
+  "utterance": "Convert 3pm Jakarta time to New York time",
+  "want": "convert_time",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_02",
+  "kind": "trap",
+  "utterance": "Commit all my changes with the message 'fix lint'",
+  "want": "git_commit",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_03",
+  "kind": "trap",
+  "utterance": "Save this snippet to a gist so I can share it",
+  "want": "create_gist",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_04",
+  "kind": "trap",
+  "utterance": "Fork the microsoft/vscode repository to my account",
+  "want": "fork_repository",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_05",
+  "kind": "trap",
+  "utterance": "What's the latest release version of sahals/wiresense",
+  "want": "get_latest_release",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_06",
+  "kind": "trap",
+  "utterance": "Merge pull request number 42",
+  "want": "merge_pull_request",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_07",
+  "kind": "trap",
+  "utterance": "Take a screenshot of the page at example.com",
+  "want": "puppeteer_screenshot",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_08",
+  "kind": "trap",
+  "utterance": "Open a browser to news.ycombinator.com and check the top story",
+  "want": "puppeteer_navigate",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_09",
+  "kind": "trap",
+  "utterance": "Show the files in my Documents folder",
+  "want": "list_directory",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_10",
+  "kind": "trap",
+  "utterance": "What do you remember about the Hoffmann project",
+  "want": "search_nodes",
+  "server": null,
+  "flavor": "hand"
+ },
+ {
+  "id": "trap_11",
+  "kind": "trap",
+  "utterance": "Pull the content of https://example.com and summarize it",
+  "want": "fetch",
+  "server": null,
+  "flavor": "hand"
+ }
+]

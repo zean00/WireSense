@@ -1,0 +1,1211 @@
+{
+ "everything__echo": [
+  "Say that again please",
+  "What did you just say?",
+  "Repeat that message",
+  "Tell me again",
+  "Say that over",
+  "Repeating that",
+  "Echo that for me",
+  "Say it back"
+ ],
+ "everything__get-annotated-message": [
+  "I have a note about my meeting.",
+  "Remember I need to call John.",
+  "Here is info about the trip.",
+  "Send me details on the project.",
+  "What about my birthday plans?",
+  "Check my status on the order.",
+  "I forgot to mention the party.",
+  "Do I have any pending tasks?"
+ ],
+ "everything__get-env": [
+  "What environment variables are set right now?",
+  "Show me my current system settings.",
+  "List all the env vars I can see.",
+  "Check my server configuration details.",
+  "Tell me what environment variables exist.",
+  "Debug my setup by showing env vars.",
+  "What variables are loaded on this server?",
+  "Display my current environment settings."
+ ],
+ "everything__get-resource-links": [
+  "Where are my notes?",
+  "What's in my calendar?",
+  "Show me my files.",
+  "I need my contacts.",
+  "List my documents.",
+  "Find my images.",
+  "Where are my downloads?",
+  "Show me my photos."
+ ],
+ "everything__get-resource-reference": [
+  "What can I tell you about this item?",
+  "I need a link to that thing.",
+  "Show me how to get to it.",
+  "Where is this file located?",
+  "Can you point me to that resource?",
+  "What's the address for this thing?",
+  "Tell me where to find this file.",
+  "I want to access that specific thing."
+ ],
+ "everything__get-structured-content": [
+  "Give me the structured content for this place",
+  "Show me the details about this location",
+  "Tell me about the content at this spot",
+  "Find structured data for this address",
+  "Get the info schema for this location",
+  "Return content details for this place",
+  "Show me what's at this location",
+  "Get structured info about this address"
+ ],
+ "everything__get-sum": [
+  "add 5 and 7 for me",
+  "what is 10 plus 3?",
+  "sum 20 and 40 please",
+  "add these two numbers",
+  "what's 15 plus 25?",
+  "calculate 100 and 200",
+  "add 8 and 9",
+  "tell me the sum of 3 and 5"
+ ],
+ "everything__get-tiny-image": [
+  "Send me that tiny MCP logo.",
+  "Show me the MCP icon.",
+  "What does the MCP logo look like?",
+  "Get a small picture of the MCP.",
+  "Can you show the tiny logo?",
+  "I need the MCP image now.",
+  "Display the small MCP icon.",
+  "Here is the tiny MCP logo."
+ ],
+ "everything__gzip-file-as-resource": [
+  "compress my photo to save space",
+  "make this file smaller with gzip",
+  "turn that image into a compressed resource",
+  "compress this document using gzip",
+  "turn my big file into a smaller one",
+  "gzip and save this file for me",
+  "compress this file so it downloads faster",
+  "make this resource smaller with gzip"
+ ],
+ "everything__toggle-simulated-logging": [
+  "Stop the random logs right now.",
+  "Turn off the fake logging.",
+  "Enable the simulated log output.",
+  "Disable the random message noise.",
+  "Show me the real logs instead.",
+  "Stop generating random log levels.",
+  "Turn on the simulated logging.",
+  "Switch the log mode to random."
+ ],
+ "everything__toggle-subscriber-updates": [
+  "Should I turn off notifications?",
+  "Can I pause those updates?",
+  "Disable the resource alerts.",
+  "Do I need these updates anymore?",
+  "Stop the simulated signals.",
+  "Turn off the status feeds.",
+  "Are updates still on?",
+  "Switch off the notifications."
+ ],
+ "everything__trigger-long-running-operation": [
+  "Where are my pending orders?",
+  "Show me the progress on that thing.",
+  "Check on my long job.",
+  "What's the status of my big task?",
+  "Give me an update on that operation.",
+  "Tell me how long my task has been running.",
+  "Is my long process still going?",
+  "Can you show me the progress bar?"
+ ],
+ "everything__simulate-research-query": [
+  "What did you find out about climate change?",
+  "Give me the latest news on the election results.",
+  "Summarize everything you know about the history of Rome.",
+  "Tell me about the newest inventions in space travel.",
+  "What are the key points about the new diet plan?",
+  "Research the causes and effects of global warming for me.",
+  "What do you know about the upcoming technology conference?",
+  "Find out everything there is to know about artificial intelligence."
+ ],
+ "fetch__fetch": [
+  "Can you look up the latest stock prices?",
+  "What's the weather going to be tomorrow?",
+  "I need to find the recipe for chocolate chip cookies.",
+  "Show me the current score of the football game.",
+  "What are the top 10 movies this weekend?",
+  "Can you tell me the definition of quantum physics?",
+  "Find out when the next full moon will be.",
+  "What's the best time to visit Paris in summer?"
+ ],
+ "filesystem__read_file": [
+  "Show me my grocery list",
+  "What's in the text file?",
+  "Read the notes I saved",
+  "Display the log output",
+  "Give me the recipe details",
+  "Show the diary entry",
+  "What does the config file say?",
+  "Read the instructions I wrote"
+ ],
+ "filesystem__read_text_file": [
+  "What did I write in my shopping list?",
+  "Show me the notes from yesterday's meeting.",
+  "Can you open that text file for me?",
+  "Read the recipe from my kitchen folder.",
+  "What are the last few lines of that log?",
+  "I need to see the first page of the report.",
+  "Tell me the contents of my contact list file.",
+  "Please read through that document for me."
+ ],
+ "filesystem__read_media_file": [
+  "Send me the photo from my photos.",
+  "Read the receipt I downloaded earlier.",
+  "Tell me what's in my notes file.",
+  "Show me the picture of my dog.",
+  "Open and read the PDF document.",
+  "Play the audio recording I saved.",
+  "Read the text message file to me.",
+  "Send the image file from my downloads."
+ ],
+ "filesystem__read_multiple_files": [
+  "Can I read these three files at once?",
+  "Show me the contents of all those logs.",
+  "Read this list of documents together.",
+  "I need to check those five reports now.",
+  "What's inside these files I just shared?",
+  "Combine and read these multiple text files.",
+  "Please open and read all my notes.",
+  "Give me the contents of these files together."
+ ],
+ "filesystem__write_file": [
+  "Save the meeting notes to my desktop.",
+  "Create a file called grocery list.",
+  "Write down my phone number on paper.",
+  "Make a file named project summary.",
+  "Type the recipe into a new document.",
+  "Save the email draft for later.",
+  "Create a file with today's weather report.",
+  "Write the shopping list on a file."
+ ],
+ "filesystem__edit_file": [
+  "Change that line in my notes file.",
+  "Replace the old date with today's date.",
+  "Update the contact info in my list.",
+  "Rewrite the instructions at the top.",
+  "Fix the typo in the recipe.",
+  "Add the new rule to the policy.",
+  "Modify the schedule for tomorrow.",
+  "Edit the error message in the log."
+ ],
+ "filesystem__create_directory": [
+  "Can I make a folder for my photos?",
+  "I need to set up a project directory.",
+  "Please create a new folder here.",
+  "Make sure the directory for my notes exists.",
+  "Could you set up a directory for my files?",
+  "I want to create a folder for my work.",
+  "Please ensure this directory path exists.",
+  "Can you make a new folder for me?"
+ ],
+ "filesystem__list_directory": [
+  "what files are in my downloads folder?",
+  "list the contents of my documents directory",
+  "show me everything in the pictures folder",
+  "tell me what's inside my home directory",
+  "give me a list of files in the temp folder",
+  "what directories and files are in my music folder?",
+  "show me the structure of my projects folder",
+  "list all files in the current folder"
+ ],
+ "filesystem__list_directory_with_sizes": [
+  "what files are in my downloads folder?",
+  "list my documents with their sizes",
+  "show me the contents of home",
+  "what's inside the pictures directory?",
+  "give me a list of my music files",
+  "check the sizes of files in desktop",
+  "what's in my documents folder?",
+  "list everything in my home directory"
+ ],
+ "filesystem__directory_tree": [
+  "show me the folder structure",
+  "what files are in my documents",
+  "list my project directories",
+  "navigate to the home folder",
+  "display the directory tree",
+  "what's inside my downloads",
+  "show me all subfolders",
+  "tree view of my files"
+ ],
+ "filesystem__move_file": [
+  "move the photo into the gallery folder",
+  "rename that document to invoice final",
+  "shift the files into the new backup",
+  "put the old notes into the trash",
+  "change the project folder name to v2",
+  "move the videos to the cloud storage",
+  "relocate the images to the downloads",
+  "rename this folder to archives now"
+ ],
+ "filesystem__search_files": [
+  "where are my backup files saved",
+  "find all photos from last month",
+  "show me the document in pdf",
+  "locate the old config file",
+  "search for any log files",
+  "what files are in the downloads folder",
+  "find the latest project readme",
+  "where did I put that image"
+ ],
+ "filesystem__get_file_info": [
+  "Tell me details about this document.",
+  "What's the file size for my notes?",
+  "Check the permissions on that image.",
+  "When was this project file created?",
+  "How big is the data file?",
+  "What type of file is that?",
+  "Show me the metadata for my photo.",
+  "Give me info on the report file."
+ ],
+ "filesystem__list_allowed_directories": [
+  "Which folders can I access on this server?",
+  "What directories are available for me to use?",
+  "Show me the list of allowed folders here.",
+  "What folders can this system actually reach?",
+  "I need to know which directories I can open.",
+  "List the folders I'm permitted to browse.",
+  "What are the safe directories I can access?"
+ ],
+ "git__git_status": [
+  "Are there any uncommitted changes in the repo?",
+  "Show me the status of my project folder.",
+  "Did I add or delete anything recently?",
+  "List all modified files in the repository.",
+  "Check if my branch is up to date.",
+  "Show me what's changed in the working tree.",
+  "Are there staged or unstaged changes?",
+  "Quickly tell me the status of this project."
+ ],
+ "git__git_diff_unstaged": [
+  "Check what files I've modified but haven't staged yet.",
+  "Show me the unstaged changes in my repository.",
+  "List my local uncommitted file changes.",
+  "What modifications are waiting to be committed?",
+  "Display the diff of my working directory changes.",
+  "Tell me which files I changed but didn't stage.",
+  "Show me the untracked and modified files.",
+  "Reveal my pending local changes before I commit."
+ ],
+ "git__git_diff_staged": [
+  "Check what changes are staged.",
+  "Show me the staged git diff.",
+  "List the staged commits.",
+  "Show me my pending changes.",
+  "Show the staged modifications.",
+  "Show me what's ready to commit.",
+  "Show the staged changes for me.",
+  "List the staged files in git."
+ ],
+ "git__git_diff": [
+  "show me the diff between these commits",
+  "what changed in the last two branches",
+  "display the differences between my local and main",
+  "list the changes since the last update",
+  "compare these two branches for me",
+  "what's different between the feature branch and master",
+  "show me the patch between these two revisions",
+  "difference between my current branch and the default"
+ ],
+ "git__git_commit": [
+  "I added some new files to git.",
+  "Please save these changes to my repo.",
+  "Commit these edits with the message 'fix'.",
+  "What should I call this new commit?",
+  "Save my changes to the repository now.",
+  "I'm ready to push these updates.",
+  "Please commit this batch of changes.",
+  "Let me commit these edits to the repo."
+ ],
+ "git__git_add": [
+  "Please add these files to the staging area",
+  "Add my new code changes",
+  "Stage the modified documents for commit",
+  "Put these updated files into staging",
+  "Add the new files to git",
+  "Stage my latest changes now",
+  "Add these files to the staging area",
+  "Please add these files to git staging"
+ ],
+ "git__git_reset": [
+  "Unstage all my git changes now.",
+  "Undo the staged commits please.",
+  "Revert all staged work in the repo.",
+  "Cancel the staged updates in git.",
+  "Stop staging these changes and reset.",
+  "Unstage everything I've committed so far.",
+  "Reset the staged files in this project.",
+  "Undo my recent staged git commits."
+ ],
+ "git__git_log": [
+  "Who changed files in my repository?",
+  "Show me the recent commit history.",
+  "List the latest changes to the code.",
+  "What was the last commit message?",
+  "Give me a log of recent updates.",
+  "Show me who pushed to the repo.",
+  "Tell me about recent commits here.",
+  "Run the commit log for this repo."
+ ],
+ "git__git_create_branch": [
+  "Can you make a new branch for this repo?",
+  "I need to create a branch from the main line.",
+  "Make a branch off of the current code.",
+  "Create a new branch for my project.",
+  "Set up a branch in this repository.",
+  "I want to branch out from the default.",
+  "Create a branch called my-feature please.",
+  "Make a new branch here for me."
+ ],
+ "git__git_checkout": [
+  "Can I switch to the development branch?",
+  "Change me to the production branch please.",
+  "Let's go to the master branch now.",
+  "Switch to the staging branch for me.",
+  "Move to the feature branch please.",
+  "Can I checkout the main branch?",
+  "Go to the hotfix branch now.",
+  "Let me switch to the test branch."
+ ],
+ "git__git_show": [
+  "what did i commit last week",
+  "show me the changes in my code",
+  "what's new in this branch",
+  "tell me about that last push",
+  "what did i change yesterday",
+  "show me the diff for that commit",
+  "what's in my latest commit",
+  "what changes did i just make"
+ ],
+ "git__git_branch": [
+  "I want to see all the git branches",
+  "Show me the list of branches for my repo",
+  "What are the available branches I can switch to?",
+  "List the local branches in my project",
+  "Can you show me all the remote branches?",
+  "What branches are currently checked out?",
+  "Give me a list of branches in the repository",
+  "Tell me all the branches for this repo"
+ ],
+ "github__actions_get": [
+  "Hey, show me the details of my last GitHub workflow run.",
+  "Can I check the specifics of this artifact I uploaded?",
+  "What are the details for that specific job in my repo?",
+  "Tell me about this workflow run I started earlier today.",
+  "Show me the info for a particular action in my GitHub project.",
+  "Can you get the details of that job ID from my repo?",
+  "I need to know what happened with this specific workflow run.",
+  "Hey, what are the specifics of that artifact I just created?"
+ ],
+ "github__actions_list": [
+  "Can you show me the GitHub actions in my repo?",
+  "List all the workflows I have on that repository.",
+  "What GitHub actions workflows are running right now?",
+  "Show me the list of workflows for my project.",
+  "Tell me what GitHub actions workflows exist here.",
+  "List the GitHub actions for this specific repository.",
+  "What GitHub actions workflows are available for my team?",
+  "Show me all the GitHub actions workflows I created."
+ ],
+ "github__actions_run_trigger": [
+  "Run that GitHub action I set up",
+  "Please trigger my workflow on the repo",
+  "Re-run the latest build job",
+  "Cancel the workflow I started earlier",
+  "Start the deployment action for my project",
+  "Delete the logs from that old run",
+  "Execute the automated test workflow now",
+  "Trigger the release pipeline for my app"
+ ],
+ "github__add_comment_to_pending_review": [
+  "Could you add this comment to my pending pull request?",
+  "Hey, please comment on that open PR for me.",
+  "I need to respond to my pending code review.",
+  "Can you leave a note on my latest pull request?",
+  "Please add a comment to the pending review on my repo.",
+  "What do I need to do to comment on my pending pull?",
+  "Could you post my update to the pending pull request?",
+  "Hey, I want to reply to my pending PR review."
+ ],
+ "github__add_issue_comment": [
+  "Did someone leave a message on that ticket?",
+  "Can you comment on the open issue?",
+  "What's the update on the reported bug?",
+  "Leave a note on the pull request?",
+  "Tag the team about this issue.",
+  "Add a comment to that GitHub issue.",
+  "Reply to the issue with a quick note.",
+  "Post a reaction on the open pull request."
+ ],
+ "github__add_reply_to_pull_request_comment": [
+  "Add a reply to my pull request comment.",
+  "React with an emoji to that PR comment.",
+  "Reply to the PR comment saying great job.",
+  "Put a reaction on this specific pull request comment.",
+  "Comment on the PR thread and add a reaction.",
+  "Reply to the open PR comment about the bug.",
+  "Add a reaction and a reply to that comment.",
+  "Post a reply to the latest pull request comment."
+ ],
+ "github__create_branch": [
+  "Create a branch called feature-login for us",
+  "I need a new branch named bug-fix",
+  "Can we make a branch called update-homepage?",
+  "Branch named refactoring-core please",
+  "Let's create a branch called hotfix-security",
+  "Make a new branch called deploy-staging",
+  "I want a branch named data-migration",
+  "Create a feature branch called user-profile"
+ ],
+ "github__create_gist": [
+  "Create a note about my grocery list.",
+  "Save a summary of today's meeting.",
+  "Write a quick poem for my friend.",
+  "Document my daily coffee routine.",
+  "Store the text of my latest idea.",
+  "Create a file with my travel itinerary.",
+  "Record a short update on my project.",
+  "Make a file containing my weekly schedule."
+ ],
+ "github__create_or_update_file": [
+  "create a new file on github for me",
+  "update this file on our github repo",
+  "put some code into the github file",
+  "modify the readme on github please",
+  "save this text to a file on github",
+  "change the content of the github file",
+  "write a new file to the github repo",
+  "edit the specific file on github now"
+ ],
+ "github__create_pull_request": [
+  "Send me a pull request to update the homepage.",
+  "Create a PR to fix the bug in the checkout.",
+  "Draft a PR to add the new login feature.",
+  "Make a pull request to merge the staging branch.",
+  "Please create a PR to update the documentation.",
+  "Can you open a PR for the latest design changes?",
+  "Generate a pull request to improve the search results.",
+  "Create a PR to resolve the API timeout issue."
+ ],
+ "github__create_repository": [
+  "create a new git repo please",
+  "make a fresh github project",
+  "start a new repository now",
+  "set up a new github repo",
+  "create a git project for me",
+  "make a new github project please",
+  "initiate a new github repository",
+  "build a new git repo"
+ ],
+ "github__delete_file": [
+  "Let's delete my old notes file.",
+  "I want to remove that project readme.",
+  "Can I get rid of this old config?",
+  "Delete the test script file please.",
+  "Remove that broken image file.",
+  "I need to trash the backup log.",
+  "Get rid of that old readme file.",
+  "Please delete the unused script file."
+ ],
+ "github__discussion_comment_write": [
+  "Who answered my previous question?",
+  "Mark this as the best answer.",
+  "This comment is no longer relevant.",
+  "I changed my mind on this.",
+  "Please add this comment to the thread.",
+  "Remove this outdated reply.",
+  "Who is the accepted answer?",
+  "Can you edit this comment?"
+ ],
+ "github__dismiss_notification": [
+  "Got it, let's read this.",
+  "Marked as read.",
+  "Done with that.",
+  "I see it.",
+  "Closed that thread.",
+  "That's all read now.",
+  "Checked it off.",
+  "Let's skip this."
+ ],
+ "github__fork_repository": [
+  "Share this project from GitHub with me.",
+  "Could you copy that GitHub repo for me?",
+  "Fork this GitHub repo and save it here.",
+  "I need a copy of that GitHub project.",
+  "Can you duplicate this GitHub repository now?",
+  "Make a fork of that GitHub project for me.",
+  "Copy this GitHub repo to my account.",
+  "Please fork this GitHub project and store it."
+ ],
+ "github__get_code_scanning_alert": [
+  "Where is my latest code scan alert?",
+  "Can you show me the recent GitHub alert?",
+  "Did the code scan find any issues?",
+  "Tell me about that specific code alert.",
+  "Show me the latest security warning.",
+  "What's the status of my code scan?",
+  "Can you pull up my scan results?",
+  "Where can I find my code alert details?"
+ ],
+ "github__get_commit": [
+  "what did you change in that last commit?",
+  "show me the details of this commit",
+  "who approved that recent code change?",
+  "tell me about that specific git commit",
+  "what was the status of that commit?",
+  "can you look up that git commit for me?",
+  "what files were modified in that commit?",
+  "give me the info for that commit"
+ ],
+ "github__get_discussion": [
+  "Hey, show me discussion 55 from the repo.",
+  "Pull up that GitHub comment from yesterday.",
+  "What's the latest update on the project?",
+  "Check issue number 12 for me.",
+  "Find the discussion about the bug fix.",
+  "Tell me what everyone said in that thread.",
+  "Grab the details for discussion 99 from the owner.",
+  "Show me the comments on that pull request."
+ ],
+ "github__get_discussion_comments": [
+  "What people said in that GitHub thread?",
+  "Show me the comments on discussion number five.",
+  "I want to see the replies to that post.",
+  "Who commented on that specific GitHub discussion?",
+  "What's everyone saying in that GitHub thread?",
+  "List all the comments for discussion number four.",
+  "Tell me about the comments in that GitHub discussion.",
+  "Show me the replies to discussion number three."
+ ],
+ "github__get_file_contents": [
+  "Check the readme file on the main branch",
+  "Show me the latest code changes in the repo",
+  "Can you read the project documentation for me?",
+  "What's inside the configuration file I need?",
+  "List the contents of the src folder please",
+  "Tell me what the main script does",
+  "Give me the full text of the home page",
+  "Show the latest commit message from the team"
+ ],
+ "github__get_gist": [
+  "what's inside this gist 12345?",
+  "show me the code from gist abc123",
+  "get the content of that github gist",
+  "read the notes in gist number 999",
+  "what does this gist say?",
+  "fetch the text from gist 456",
+  "display the contents of my github gist",
+  "open gist 789 and read it"
+ ],
+ "github__get_job_logs": [
+  "Who can I see the failed build logs for?",
+  "Show me the output from that job on GitHub.",
+  "I need the logs for a specific workflow run.",
+  "Can you pull the error logs for my repo?",
+  "Get me the details on why that job failed.",
+  "What are the logs for the most recent run?",
+  "Help me find out what went wrong in the job.",
+  "Retrieve the execution logs for my GitHub project."
+ ],
+ "github__get_label": [
+  "Can I see what label is on that ticket?",
+  "Tell me the label for issue number four.",
+  "What's the status label on my pull request?",
+  "Show me the color code for that bug report.",
+  "Which label applies to this feature request?",
+  "What label did you assign to that commit?",
+  "Can you tell me the priority label here?",
+  "What tag is used for that specific release?"
+ ],
+ "github__get_latest_release": [
+  "Check out the latest GitHub release for this project",
+  "What's the newest version on GitHub?",
+  "Show me the latest release for my repo",
+  "Where can I find the newest GitHub release?",
+  "Tell me about the latest GitHub update",
+  "What's the latest version from GitHub?",
+  "Get the newest release from GitHub",
+  "What did the latest GitHub release add?"
+ ],
+ "github__get_notification_details": [
+  "I need to check that GitHub notification.",
+  "Can you show me the details of that alert?",
+  "What exactly is happening in this notification?",
+  "Give me the full info on that GitHub message.",
+  "I want to see the details of that notification.",
+  "Tell me more about that GitHub alert.",
+  "What are the specifics of that notification?",
+  "I need the details on that GitHub update."
+ ],
+ "github__get_release_by_tag": [
+  "Got the release notes for v1.0?",
+  "Show me what's in the latest update.",
+  "Find the changelog for that beta version.",
+  "Tell me about the new features in 2.5.",
+  "Where can I download the latest patch?",
+  "Check the release info for the spring update.",
+  "Got the download link for the current version?",
+  "What changed in the October release?"
+ ],
+ "github__get_tag": [
+  "Show me the latest tag for that project.",
+  "What's the version number for my repo?",
+  "Can you look up tag 1.2 on my fork?",
+  "Tell me about the current release tag.",
+  "Who owns the tag on that repository?",
+  "Find the tag for my open source project.",
+  "What does the latest commit tag say?",
+  "Give me details on that specific git tag."
+ ],
+ "github__issue_read": [
+  "Look up issue number 101 on the GitHub repo.",
+  "Tell me what happened with that open bug.",
+  "Find details about issue 204 in the main project.",
+  "What's the status of that GitHub issue I opened?",
+  "Check the latest comments on issue 55 here.",
+  "Show me the description of GitHub issue 99.",
+  "I need to read issue 123 on the owner's repo.",
+  "Can you pull up the details for GitHub issue 405?"
+ ],
+ "github__issue_write": [
+  "Fix that bug in our project.",
+  "Update the tracking issue for the release.",
+  "Create a new issue about the login problem.",
+  "Add details to the open bug report.",
+  "Log a new issue regarding the server crash.",
+  "Modify the existing task for the feature.",
+  "Report the error in the code.",
+  "Create an issue for the pending fix."
+ ],
+ "github__list_branches": [
+  "what branches do you have for the project?",
+  "show me all the git branches please",
+  "which branches exist in the repository?",
+  "list the branches for our main repo",
+  "what are the available branches here?",
+  "can you show me the branch list?",
+  "what branches are available in this repo?",
+  "give me a list of all branches"
+ ],
+ "github__list_code_scanning_alerts": [
+  "Check for code scanning alerts on our repo.",
+  "Show me any recent code scanning alerts.",
+  "Are there any code scanning alerts showing?",
+  "List all code scanning alerts for this project.",
+  "Get the latest code scanning alerts.",
+  "Tell me about code scanning alerts.",
+  "Find any code scanning alerts here.",
+  "Display the current code scanning alerts."
+ ],
+ "github__list_commits": [
+  "Who are the recent commits?",
+  "Show me the latest changes.",
+  "List my recent commits on GitHub.",
+  "Give me the commit history.",
+  "What's new in the repo?",
+  "Show me the recent changes.",
+  "List the latest commits.",
+  "Who pushed to this branch?"
+ ],
+ "github__list_discussion_categories": [
+  "Hey, what discussion categories do you have?",
+  "Show me the topic groups for our repo.",
+  "List all the conversation topics we use.",
+  "Tell me what categories exist in this project.",
+  "What are the main discussion groups available?",
+  "Can you list the topic areas for us?",
+  "Show me the category options for this org.",
+  "What topics can we discuss here today?"
+ ],
+ "github__list_discussions": [
+  "Can you show me the open discussions for this repo?",
+  "List all the discussions in our main repository please.",
+  "Show me what people are discussing in this GitHub project.",
+  "I need to see the discussion list for this organization.",
+  "Tell me about the recent discussions in this repository.",
+  "What discussions are currently open for this project?",
+  "List the GitHub discussions for my team's repository.",
+  "Show me the discussion threads for this GitHub repo."
+ ],
+ "github__list_gists": [
+  "Show my GitHub gists",
+  "List my GitHub gists",
+  "Display my GitHub gists",
+  "What are my GitHub gists",
+  "Tell me about my GitHub gists",
+  "Print out my GitHub gists",
+  "Get my GitHub gists",
+  "Grab my GitHub gists"
+ ],
+ "github__list_issue_fields": [
+  "Tell me what fields GitHub uses for this project.",
+  "Show me the available input fields for a repo.",
+  "List all the options available in this GitHub issue.",
+  "What fields can I fill out for a GitHub issue?",
+  "Give me the field definitions for this organization.",
+  "I need to see the text and date fields in GitHub.",
+  "Show me which fields are allowed for GitHub issues.",
+  "What are the specific fields I can use here?"
+ ],
+ "github__list_issue_types": [
+  "what issue types does this repo allow",
+  "show me the available issue categories here",
+  "list the different ways we can create issues",
+  "what problem types can I report in this project",
+  "tell me the issue types for this organization",
+  "which issue templates are available for this repo",
+  "show me the supported issue formats for this project",
+  "what kinds of issues can I log here"
+ ],
+ "github__list_issues": [
+  "Can you show me the open bugs?",
+  "List all the issues in that repo.",
+  "I need to see the GitHub problems.",
+  "What are the known issues there?",
+  "Show me the error reports from GitHub.",
+  "List the trouble spots in that project.",
+  "Tell me about the GitHub issues.",
+  "Can you pull up the GitHub trouble list?"
+ ],
+ "github__list_notifications": [
+  "Show me what I need to do on GitHub next.",
+  "What are my pending tasks on GitHub?",
+  "Check my GitHub for any new updates or reminders.",
+  "List everything I need to attend to on GitHub.",
+  "What GitHub notifications should I pay attention to right now?",
+  "Tell me about my pending reviews and assignments on GitHub.",
+  "Show me a summary of my GitHub activity and tasks.",
+  "What is waiting for me on GitHub?"
+ ],
+ "github__list_pull_requests": [
+  "Who are the pending pull requests for?",
+  "Show me the open PRs in this repo",
+  "List all recent pull requests for my project",
+  "What changes are currently being merged?",
+  "Get the list of pull requests for this codebase",
+  "Show me the active pull requests here",
+  "What are the pending pull requests in this repo?",
+  "Tell me about the pull requests in this repo"
+ ],
+ "github__list_releases": [
+  "Who are the latest updates?",
+  "What's new in the project?",
+  "Tell me about the release history.",
+  "When did the last update happen?",
+  "Show me the version list.",
+  "Which versions are out?",
+  "Get me the changelog.",
+  "List all the versions."
+ ],
+ "github__list_repository_collaborators": [
+  "who are the people who contribute to this project?",
+  "show me the list of contributors to this repo.",
+  "can you list the people with access to this?",
+  "who else is working on this repository?",
+  "tell me the collaborators for this github project.",
+  "who has permission to edit this repository?",
+  "list everyone involved in this codebase.",
+  "show the team members for this repository."
+ ],
+ "github__list_tags": [
+  "what tags are in this repository",
+  "list all the git tags for our project",
+  "show me the available version tags",
+  "what tags have been pushed recently",
+  "tell me about the git tags here",
+  "what versions are tagged in this repo",
+  "list the tags for this github project",
+  "what are the current git tags"
+ ],
+ "github__manage_notification_subscription": [
+  "I'm ignoring updates on this thread.",
+  "Let me watch this notification again.",
+  "Please stop following this notification.",
+  "Turn off notifications for this topic.",
+  "I want to delete this alert.",
+  "Ignore all new messages here.",
+  "Stop watching this specific update.",
+  "Remove my subscription to this thread."
+ ],
+ "github__manage_repository_notification_subscription": [
+  "stop watching that code repo",
+  "unfollow my old github project",
+  "delete notifications for that git folder",
+  "ignore updates on my personal repo",
+  "stop getting alerts from that codebase",
+  "turn off notifications for my github repo",
+  "unwatch that repository on github",
+  "stop hearing from that git project"
+ ],
+ "github__mark_all_notifications_read": [
+  "I've read all my notifications",
+  "Stop showing me unread alerts",
+  "Mark everything as read here",
+  "Got it, all notifications read",
+  "Acknowledge all my notifications now",
+  "Clear out the unread messages",
+  "Read all my GitHub notifications",
+  "Done reading, mark them all read"
+ ],
+ "github__merge_pull_request": [
+  "I need to merge that code update.",
+  "Can you merge this pull request?",
+  "Please merge the branch for me.",
+  "Merge that fix I requested.",
+  "Go ahead and merge this change.",
+  "Is it okay to merge now?",
+  "Please merge the latest updates.",
+  "I want to merge this pull request."
+ ],
+ "github__pull_request_read": [
+  "Did you check out that latest pull request?",
+  "Can you tell me about pull number 104?",
+  "Who created that specific pull request?",
+  "Show me the details of pull request 205.",
+  "Is there anything new in that pull request?",
+  "Check pull request 120 for me.",
+  "What's the status of that pull request?",
+  "Tell me about pull request number 500."
+ ],
+ "github__pull_request_review_write": [
+  "submit my pending code review",
+  "leave a comment on this pull request",
+  "approve the pull request now",
+  "resolve the code review thread",
+  "delete my pending review on this",
+  "comment on the open pull request",
+  "submit my review for the code",
+  "mark this pull request as approved"
+ ],
+ "github__push_files": [
+  "Push all my code changes to GitHub.",
+  "Commit these files to the main branch.",
+  "Upload the project files to my repo.",
+  "Push my latest updates to GitHub.",
+  "Send these files to the repository now.",
+  "Commit all changes to the master branch.",
+  "Push my work to GitHub for everyone.",
+  "Add and commit these files to the repo."
+ ],
+ "github__search_code": [
+  "Find code for this function",
+  "Where can I find that class?",
+  "Search for that symbol",
+  "Look for that pattern",
+  "Find the exact line",
+  "Show me that function",
+  "Search for that variable",
+  "Find the code for this"
+ ],
+ "github__search_commits": [
+  "Find me commits about fixing bugs on github",
+  "Who changed the code yesterday in my repo",
+  "Show me recent changes to the main branch",
+  "Search for commits mentioning API updates",
+  "What did someone push last week to the project",
+  "List all commits with the word 'deploy' in them",
+  "Find commits by john_doe across all repos",
+  "Search for changes made after last Friday"
+ ],
+ "github__search_issues": [
+  "find login problems on github",
+  "show me bug reports",
+  "what issues exist about crashes",
+  "list problems with my repo",
+  "search for reported bugs",
+  "find error logs here",
+  "what issues are open",
+  "tell me about login failures"
+ ],
+ "github__search_orgs": [
+  "Which organizations are based in Austin?",
+  "Show me tech companies in Berlin.",
+  "What open source foundations are active?",
+  "Find companies that do AI.",
+  "List teams in New York.",
+  "Search for startups in London.",
+  "Who are the big tech orgs?",
+  "Find organizations in Tokyo."
+ ],
+ "github__search_pull_requests": [
+  "Check for open pull requests on our project.",
+  "Show me any pending code updates.",
+  "List all active pull requests now.",
+  "Find recent changes requested for review.",
+  "What are the current pull requests?",
+  "Search for open PRs in the repo.",
+  "Give me a list of pending merges.",
+  "Are there any pull requests waiting?"
+ ],
+ "github__search_repositories": [
+  "Help me find the best coding templates on GitHub.",
+  "Show me repos with good Python examples.",
+  "Where can I find a library for data visualization?",
+  "I need a repo that handles image processing.",
+  "Any open source projects for web scraping?",
+  "Find me a simple REST API starter kit.",
+  "Show me repositories about machine learning basics.",
+  "Where are the best tutorials for Docker?"
+ ],
+ "github__search_users": [
+  "Who are the developers on this GitHub project?",
+  "Find me users with the username developer123",
+  "Tell me who contributed to the code",
+  "Show me the team members for this repo",
+  "Who is the author of this library?",
+  "Find me users named John Smith",
+  "Who is the lead developer for this app?",
+  "Search for users in the open source team"
+ ],
+ "github__sub_issue_write": [
+  "add a sub-issue to parent issue one",
+  "create a sub-issue under issue number ten",
+  "break down issue five into sub-issues",
+  "make a sub-issue for issue two",
+  "add a new sub-issue to issue three",
+  "sub-issue issue four with a new one",
+  "link a sub-issue to parent issue seven",
+  "add sub-issue to issue nine"
+ ],
+ "github__update_gist": [
+  "Update that gist with my new notes",
+  "Change the content of my last post",
+  "Refresh this GitHub gist file",
+  "Edit the content in my shared gist",
+  "Update my gist with the latest info",
+  "Modify the text in my GitHub file",
+  "Fix the content of my current gist",
+  "Replace the gist content with new stuff"
+ ],
+ "github__update_issue_comment": [
+  "Thanks for the update, could you add this?",
+  "Hey, what do you say we change this?",
+  "Please fix this comment for me.",
+  "Can you edit that note on the issue?",
+  "I'd like to modify this reply.",
+  "Update this comment to say hello instead.",
+  "Could you change the text there?",
+  "Please alter this comment's body now."
+ ],
+ "github__update_pull_request": [
+  "Let's update pull request number 456.",
+  "I need to change the branch for PR 789.",
+  "Can we update that pull request now?",
+  "My pull request 123 needs a fix.",
+  "Please update the open pull request.",
+  "What if I update pull request 999?",
+  "Help me update the latest pull request.",
+  "Time to update PR number 555."
+ ],
+ "github__update_pull_request_branch": [
+  "Please sync this pull request branch with the base.",
+  "Update the PR branch to match the latest changes.",
+  "Sync my pull request with the base branch now.",
+  "Update this pull request's branch to the latest.",
+  "Sync the PR branch with the base branch, please.",
+  "Update the pull request branch to the latest changes.",
+  "Sync this pull request with the base branch.",
+  "Please update the PR branch to match the base."
+ ],
+ "memory__create_entities": [
+  "I need to add three new people to my family list.",
+  "Can you create a new project called vacation plans?",
+  "Please add a new event for next Monday's meeting.",
+  "I want to store details about my new pet dog.",
+  "Can you create a new contact for my boss?",
+  "Please add a new reminder for my dentist appointment.",
+  "I need to register a new product for our store.",
+  "Can you add a new location to our travel itinerary?"
+ ],
+ "memory__create_relations": [
+  "Add me to the family group",
+  "Connect my phone to my laptop",
+  "Make Sarah a colleague of John",
+  "Link my car to my garage",
+  "Associate my dog with my address",
+  "Tie my email to my profile",
+  "Relate my job to my company",
+  "Connect my credit card to my bank"
+ ],
+ "memory__add_observations": [
+  "Tell me about my daily habits.",
+  "What do I eat for breakfast?",
+  "How often do I exercise?",
+  "When was my last birthday?",
+  "Who lives in my house?",
+  "What time did I sleep last night?",
+  "Where did I go on vacation?",
+  "What are my favorite colors?"
+ ],
+ "memory__delete_entities": [
+  "erase these people from our history",
+  "remove all of these names",
+  "get rid of those entities",
+  "delete these entries now",
+  "wipe out these specific names",
+  "purge those records from memory",
+  "get rid of these folks",
+  "remove these items from the list"
+ ],
+ "memory__delete_observations": [
+  "remove these notes I made",
+  "get rid of my saved ideas",
+  "erase my recent thoughts",
+  "delete the stuff I wrote down",
+  "clear out my old records",
+  "get rid of those memories",
+  "remove my written thoughts",
+  "erase what I just recorded"
+ ],
+ "memory__delete_relations": [
+  "remove all my saved contacts from the system",
+  "get rid of those old connections",
+  "delete my forgotten friendships from memory",
+  "erase those relationship entries for me",
+  "take out my saved links from the graph",
+  "remove my old connections from the database",
+  "clear out those specific relations now",
+  "get rid of my saved relationship data"
+ ],
+ "memory__read_graph": [
+  "Can you show me the whole knowledge graph?",
+  "Display the entire graph for me please.",
+  "I need a visual of all the connections.",
+  "What does your knowledge graph look like?",
+  "Show me the full graph structure.",
+  "List all the nodes and edges here.",
+  "Give me a picture of the entire graph.",
+  "Draw the full knowledge graph now."
+ ],
+ "memory__search_nodes": [
+  "What do you know about my dog?",
+  "Who lives in my house?",
+  "Find details about my meeting.",
+  "Show me people in my schedule.",
+  "Who are my favorite friends?",
+  "What projects are in my list?",
+  "Search for my recent photos.",
+  "Who is attending my event?"
+ ],
+ "memory__open_nodes": [
+  "Show me my recent notes",
+  "Open my shopping list",
+  "Display my calendar events",
+  "Read my project details",
+  "List my contacts here",
+  "Show me my todo list",
+  "Open my travel plans",
+  "Display my workout schedule"
+ ],
+ "puppeteer__puppeteer_navigate": [
+  "Can you go to google.com?",
+  "Take me to my favorite website.",
+  "Open that link for me please.",
+  "Go over to amazon.com.",
+  "Load that page now.",
+  "Visit the homepage of my site.",
+  "Please navigate to the new blog.",
+  "Show me that specific webpage."
+ ],
+ "puppeteer__puppeteer_screenshot": [
+  "take a screenshot of this",
+  "capture the current page",
+  "show me a picture",
+  "save this image now",
+  "get a screenshot here",
+  "what does it look like?",
+  "capture the screen for me",
+  "please screenshot this page"
+ ],
+ "puppeteer__puppeteer_click": [
+  "tap that button for me",
+  "click the link in the middle",
+  "hit the save button",
+  "click on the picture",
+  "tap that big button",
+  "click the submit form",
+  "hit the close button",
+  "tap the settings gear"
+ ],
+ "puppeteer__puppeteer_fill": [
+  "Can I fill that box with my name?",
+  "Write 'hello' in the text field",
+  "Put today's date in that input",
+  "Enter my email address in the box",
+  "Type 'yes' into the form field",
+  "Fill out the username with my handle",
+  "What if I type my phone number?",
+  "Add 'done' to that text area"
+ ],
+ "puppeteer__puppeteer_select": [
+  "Find the button with the blue icon",
+  "Click on the red box in the corner",
+  "Open the settings menu option",
+  "Select the link to the home page",
+  "Tap the checkbox next to the name",
+  "Choose the item with the star symbol",
+  "Highlight the text in the second paragraph",
+  "Pick the option that says cancel out"
+ ],
+ "puppeteer__puppeteer_hover": [
+  "Can you hover over that link?",
+  "Move the cursor to the button",
+  "Hover my eyes at the red dot",
+  "Click on the icon",
+  "Show me what happens on that button",
+  "Move the mouse to the image",
+  "Can you highlight the text there?",
+  "Hover my eyes at the dropdown menu"
+ ],
+ "puppeteer__puppeteer_evaluate": [
+  "What text is inside this box right now?",
+  "Read the content of this page aloud for me.",
+  "Show me what is displayed on this screen.",
+  "Click this button and tell me what happens.",
+  "Extract the title from this website and say it.",
+  "What color is the background of this page?",
+  "Find the email address visible on this site.",
+  "Tell me exactly what is written here."
+ ],
+ "sequential-thinking__sequentialthinking": [
+  "Can you help me figure out this confusing problem?",
+  "I need to plan a project but keep changing my mind.",
+  "How do I break down this huge task into steps?",
+  "Let's think through this issue step by step.",
+  "I'm not sure if my first idea is right, help.",
+  "Can you guide me through a complex multi-step puzzle?",
+  "What are the steps to solve this tricky challenge?",
+  "Help me analyze this and find the best answer."
+ ],
+ "time__get_current_time": [
+  "What time is it now?",
+  "Tell me the current time.",
+  "Give me the time.",
+  "What's the time right now?",
+  "Can you tell me the time?",
+  "Do you know the time?",
+  "What time is it in New York?",
+  "Give me the time please."
+ ],
+ "time__convert_time": [
+  "When does my Tokyo meeting start?",
+  "What time is lunch in Paris?",
+  "I need to call London now.",
+  "Convert 2pm to Berlin time.",
+  "When is dinner in Tokyo?",
+  "What's the time in New York?",
+  "Tell me 9am in Sydney.",
+  "When does my flight leave in Tokyo?"
+ ]
+}
