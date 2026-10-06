@@ -507,7 +507,11 @@ re-passed the frozen eval at p=0.281) over >20 tools, flat below; risky
 tools park for a spoken confirm; index cached by tools/list hash. Per-server
 deployment gate (MS-16b, pos>=0.60 & neg>=20/24): time + everything PASS,
 filesystem (0.42) + git (0.53) FAIL and stay disabled. Live smoke green
-including mid-session server reconnect.
+including mid-session server reconnect. Remote servers too (entry BD):
+`"url"` selects Streamable HTTP — JSON or SSE answers, optional session id
+with one transparent re-init on expiry, DELETE on kill; auth deferred (no-auth
+endpoints only); probed live against mcp.deepwiki.com (3 tools, real call
+0.8 s).
 
 ## Status
 
