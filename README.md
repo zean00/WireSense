@@ -491,6 +491,15 @@ VERDICT: build MCP selection hierarchically but COARSELY — few domains
 near-duplicate disambiguation. Fine unsupervised hierarchies are the failure
 mode, and dominant-server flat manifests are the risk the gate removes.
 
+Follow-up (MS-15, same frozen eval): exposing tool search AS a tool was
+measured and rejected on both variants. Search-as-primary: 49.3% — the
+planner picks fine from returned schemas (90.4% when the target is among the
+top-8) but its 2-4-word queries only surface the target 51% vs 87.8% for
+embedding the utterance itself; the gate IS the search, keyed on the best
+query available. Gate+search-escape: 65.8% < 70.1% plain gate — the trigger
+fires on the wrong turns (45x on already-hit shortlists, 15/31 true misses)
+and merely offering the option costs ~4 points on turns that never use it.
+
 ## Status
 
 - [x] Architecture + component selection (this repo's docs)
