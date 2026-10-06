@@ -750,3 +750,20 @@ nothing beyond get_rtsp (working) / discovery (working) / deviceInfo
 If streams-in-voice is the goal, the wrapper entry shrinks to: env-bound
 creds + get_rtsp + local snapshot (HTTP digest fetch of GetSnapshotUri,
 no MinIO), MS-16b gate before enablement.
+
+## Entry BF2 (registered before actuation): raw ContinuousMove against the hollow PTZ stub
+
+Capability diagnostic (read-only, direct ONVIF, bypassing the MCP server):
+device DOES advertise PTZ XAddr (.../onvif/ptz_services) but GetNodes=[]
+and GetConfigurations=[] and neither profile carries a PTZConfiguration —
+user's Tuya hypothesis confirmed: motors are Tuya-protocol-driven, the
+ONVIF layer is a stub. Also: GetDeviceInformation all-null confirmed
+direct (camera quirk, not the MCP path); GetServices errors
+(Missing element IncludeCapability — shim's schema sloppiness); imaging
+service present but refused per-source earlier.
+
+Now testing whether the stub is dead or merely unadvertised: raw
+ptz.ContinuousMove(ProfileToken=PROFILE_0, PanTilt x=0.1 ~10% speed,
+y=0, Zoom 0) for ~1.5 s, then Stop. Outcomes recorded honestly either
+way; if it moves, a wrapper could drive PTZ via raw ONVIF despite the
+empty node registry.
