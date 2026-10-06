@@ -467,3 +467,30 @@ turns (45 hits vs 15 misses) and the standing option tax (~4 pts on
 non-escape turns) outweighs the recovered mass. If routing recall is ever the
 binding constraint again, the lever is a better utterance-side retriever, not
 model-mediated search.
+
+## Amendment MS-16 (registered pre-data): implementation checks for production
+
+MCP support is being implemented per the MS-12/15 verdicts. Two changes touch
+measured ground, so both are registered before the corresponding data exists.
+
+(a) NAMESPACING. Production manifests show MCP tools as `{server}__{tool}`
+(collision-free across servers and against the native six; matches the corpus
+and synth-pool keys). The frozen 278-case eval measured BARE names. Check:
+rerun the adopted arm (hier-synth/top2, k=5, top-2) with every manifest line's
+tool name prefixed `{server}__{name}`; scoring strips one trailing `__`-suffix
+before comparing to want. Routing is untouched (utterance-keyed). Adopt the
+prefixed form only if overall accuracy is within noise of the bare-name
+0.7014 (paired McNemar, no significant regression at 0.05); otherwise fall
+back to bare names + connect-time collision rejection. Runner flag:
+MCP_PROBE_PREFIX=1; results to a NEW file; existing results untouched.
+
+(b) PER-SERVER DEPLOYMENT GATE. A server is enabled in production config only
+after its own frozen eval passes: cases generated from the server's real
+tools/list with the registered MS-4 recipes (8 direct + 8 indirect positives
+per tool capped at 64 total, hand negatives reused), frozen at
+tools/mcp_eval/evals/<server>.json BEFORE any scoring, run on the SAME planner
+and the SAME selector mode production will use (flat for <=20-tool servers,
+gate otherwise). Bar: pos_acc >= 0.60 AND neg_acc >= 20/24. Failing servers
+stay disabled; results append-only; frozen evals never edited. Regeneration
+of a server's eval (e.g. its tools/list changed) requires a new protocol
+amendment naming the reason.
