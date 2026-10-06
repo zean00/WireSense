@@ -34,6 +34,8 @@ RESULTS = os.environ.get("MCP_PROBE_RESULTS",
 SUMMARY = os.environ.get("MCP_PROBE_SUMMARY",
                          os.path.join(HERE, "summary.json"))
 CANARY_N = int(os.environ.get("MCP_PROBE_CANARY", "0"))  # 0 = all cases
+K = int(os.environ.get("MCP_PROBE_K", "10"))  # MS-12 sweep parameter
+SUBSET = int(os.environ.get("MCP_PROBE_SUBSET", "0"))  # MS-12: 0 = all tools
 BUDGET = os.path.join(HERE, "C_budget.json")
 K = 10
 TOPN = {"top1": 1, "top2": 2}
@@ -157,6 +159,23 @@ def main():
     tools = load_tools()
     tools_by_name = {t["name"]: t for t in tools}
     cases = json.load(open(os.path.join(HERE, "eval_cases.json")))
+    sfx = ""
+    if SUBSET:
+        servers = sorted({t["server"] for t in tools})
+        order = np.random.RandomState(0).permutation(len(servers))
+        sub, total = set(), 0
+        for i in order:
+            n = sum(1 for t in tools if t["server"] == servers[i])
+            if total >= SUBSET:
+                break
+            sub.add(servers[i]); total += n
+        tools = [t for t in tools if t["server"] in sub]
+        snames = {t["name"] for t in tools}
+        cases = [c for c in cases if c["kind"] == "neg" or c["want"] in snames]
+        sfx += f"@sub{SUBSET}"
+        print(f"MS-12 subset {SUBSET}: servers={sorted(sub)} tools={len(tools)} cases={len(cases)} k={K}")
+    elif os.environ.get("MCP_PROBE_K"):
+        sfx += f"@k{K}"
     print(f"{len(tools)} tools, {len(cases)} cases, arms={arms}")
 
     if os.path.exists(BUDGET):
@@ -172,7 +191,7 @@ def main():
     if any(a.startswith("hier-desc") for a in arms):
         t0 = time.time()
         dvecs = [l2(embed(f"{t['name']}: {t['desc']}")) for t in tools]
-        cents, assign = kmeans(dvecs)
+        cents, assign = kmeans(dvecs, k=K)
         spaces["hier-desc"] = {"cents": cents, "assign": assign,
                                "vecs": np.stack(dvecs)}
         print(f"hier-desc space built in {time.time()-t0:.0f}s; "
@@ -184,7 +203,7 @@ def main():
         for t in tools:
             us = pools.get(f"{t['server']}__{t['name']}", [])[:8]
             svecs.append(l2(np.stack([l2(embed(u)) for u in us]).mean(0)))
-        cents, assign = kmeans(svecs)
+        cents, assign = kmeans(svecs, k=K)
         spaces["hier-synth"] = {"cents": cents, "assign": assign,
                                 "vecs": np.stack(svecs)}
         print(f"hier-synth space built in {time.time()-t0:.0f}s; "
@@ -238,7 +257,7 @@ def main():
                          "shortlist": len(short)}
                 d = directive_for(short, C)
             r = plan(c["utterance"], d)
-            rec = {"arm": arm, "case_id": c["id"], "kind": c["kind"],
+            rec = {"arm": arm + sfx, "case_id": c["id"], "kind": c["kind"],
                    "want": c["want"], **r, **({"route": route} if route else {})}
             if "plan" in r and r["plan"] is not None:
                 got = r["plan"]["tool"]
