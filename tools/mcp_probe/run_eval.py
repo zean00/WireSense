@@ -37,7 +37,6 @@ CANARY_N = int(os.environ.get("MCP_PROBE_CANARY", "0"))  # 0 = all cases
 K = int(os.environ.get("MCP_PROBE_K", "10"))  # MS-12 sweep parameter
 SUBSET = int(os.environ.get("MCP_PROBE_SUBSET", "0"))  # MS-12: 0 = all tools
 BUDGET = os.path.join(HERE, "C_budget.json")
-K = 10
 TOPN = {"top1": 1, "top2": 2}
 CS = [200, 160, 120, 100, 80]
 CEILING = 7168

@@ -180,3 +180,15 @@ Registered follow-ups, both pre-data:
    negatives stay (bleed test is valid — and relatively harder — at every
    size). Runner gains env MCP_PROBE_SUBSET=<N>. Question: does the
    flat-vs-hier gap shrink or invert as the manifest shrinks?
+
+## Amendment MS-13 (registered post-invalid-sweep, pre-sweep-rerun): dead-constant bug
+
+MS-12's first sweep (k=5, 8, 15 complete; 25 partial) is INVALID: a leftover
+`K = 10` constant three lines below the new env read overwrote MCP_PROBE_K at
+import, so every sweep arm silently ran k=10 — caught because all files were
+byte-identical in accuracy, token count AND route clusters (ids reaching 9 under
+a nominal k=5). Sweep files kept on disk outside the repo as run-1-sweep;
+invalid; nothing from them enters the verdict. Fix: delete the dead constant
+(single line), verify with a 40-vector probe (K=5 yields 5 centroids), rerun the
+full sweep per MS-12's text. Killing the in-flight background run counted as
+the infra-failure stop of MS-8.
