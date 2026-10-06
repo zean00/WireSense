@@ -573,3 +573,10 @@ through, mid-session server kill reconnects transparently. SMOKE PASS.
 Not enabled anywhere yet: config.example defaults off. The user's live
 config.json is untouched; the running web server still has pre-MCP code
 until its next restart.
+
+Hygiene note (post-BB, entry BC): the MS-16a prefixed rerun had also
+overwritten tools/mcp_probe/summary.json in the working tree (summarize()
+writes the default path unless MCP_PROBE_SUMMARY is set — same clobber class
+as the search-arm rerun). No data or verdict was affected (adjudication reads
+results_prefix.jsonl); the prefixed summary is preserved as summary_prefix.json
+and summary.json restored to the committed run-2 state.
