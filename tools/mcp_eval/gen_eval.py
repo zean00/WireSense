@@ -3,12 +3,13 @@
 
 Usage: gen_eval.py <server> [<server> ...]   (servers must be in SERVERS below)
 
-Per server: connect live, tools/list, one RECIPE_B8 call per tool (seed 2,
-modeled on the MS-4 recipe B text, registered 8 direct + 8 indirect), positives
-capped at 64 per server by deterministic stride sample, plus the probe's 24
-hand negatives copied verbatim. Frozen to evals/<server>.json BEFORE any
-scoring; an existing frozen file is never regenerated (house rule) — deletion
-requires a protocol amendment naming the reason.
+Per server: connect live, tools/list, one RECIPE_B9 call per tool (seed 2,
+B8 widened with self-containment + uniqueness per MS-16b-2; desc-bearing
+DEPRECATED tools excluded), positives capped at 64 per server by
+deterministic stride sample, plus the probe's 24 hand negatives copied
+verbatim. Frozen to evals/<server>.b9.json BEFORE any scoring; an existing
+frozen file is never regenerated (house rule) — deletion requires a
+protocol amendment naming the reason.
 """
 import datetime
 import json
@@ -29,6 +30,19 @@ RECIPE_B8 = ('Write 8 short things a user might say to a voice assistant for '
              'does, do not copy the tool name, max 14 words each. '
              '"indirects": goal-oriented phrasings where the tool is implied '
              'but never named, max 16 words each. Reply with ONLY JSON: '
+             '{"directs": ["...", ...], "indirects": ["...", ...]}')
+# MS-16b-2: B8 + self-containment + uniqueness (protocol MS-16b-2)
+RECIPE_B9 = ('Write 8 short things a user might say to a voice assistant for '
+             'this tool. "directs": plain direct requests for what the tool '
+             'does, do not copy the tool name, max 14 words each. '
+             '"indirects": goal-oriented phrasings where the tool is implied '
+             'but never named, max 16 words each. Two rules: every utterance '
+             'must be self-contained — include the concrete details the tool '
+             'needs (file or folder names, content to write) so nothing '
+             'needs a follow-up question; and phrase it so THIS tool is the '
+             'only reasonable choice among similar tools — include what '
+             'makes it distinct (sizes, recursion, staging, conversion, '
+             'whatever separates it). Reply with ONLY JSON: '
              '{"directs": ["...", ...], "indirects": ["...", ...]}')
 # verbatim copy of tools/mcp_probe/gen_eval.py HAND_NEG (frozen list)
 HAND_NEG = [
@@ -84,7 +98,7 @@ def parse_json_obj(text):
 def gen(card, seed=2, max_tokens=560):
     sys.path.insert(0, WEB)
     import server
-    prompt = server.build_prompt([], card, RECIPE_B8)
+    prompt = server.build_prompt([], card, RECIPE_B9)
     # MS-16c: the model can emit EOS mid-JSON on a specific card+seed
     # (diagnosed finish=stop with no closing brace) — one retry at seed+1
     for seed_i in (seed, seed + 1):
@@ -112,7 +126,7 @@ def main():
     assert wanted, "usage: gen_eval.py <server> ..."
     os.makedirs(os.path.join(HERE, "evals"), exist_ok=True)
     for name in wanted:
-        out_path = os.path.join(HERE, "evals", f"{name}.json")
+        out_path = os.path.join(HERE, "evals", f"{name}.b9.json")
         if os.path.exists(out_path):
             print(f"{name}: frozen eval already exists — leaving untouched")
             continue
@@ -122,10 +136,15 @@ def main():
         print(f"{name}: {len(srv.tools)} tools live")
         cases, fails = [], []
         for t in srv.tools:
+            desc = t.get("description") or ""
+            if "DEPRECATED" in desc.upper():
+                # MS-16b-2 exclusion: an alias of a canonical sibling can
+                # only invite the wrong pick; desc-based, mechanical
+                print(f"{name}: skipping {t['name']} (DEPRECATED)")
+                continue
             schema = t.get("inputSchema") or {}
             props = schema.get("properties") or {}
             req = [p for p in (schema.get("required") or []) if p in props]
-            desc = t.get("description") or ""
             card = (f'Tool "{t["name"]}" from server "{name}".\n'
                     f'Description: {desc}\n'
                     f'Required args: {", ".join(req) if req else "none"}')
@@ -152,7 +171,8 @@ def main():
         srv.kill()
         with open(out_path, "w") as f:
             json.dump({"server": name, "generated": datetime.date.today()
-                       .isoformat(), "recipe": RECIPE_B8, "seed": 2,
+                       .isoformat(), "recipe": RECIPE_B9, "recipe_name": "B9",
+                       "seed": 2,
                        "pos_cap": POS_CAP, "cases": pos}, f, indent=1)
         npos = sum(1 for c in pos if c["kind"] == "pos")
         print(f"{name}: FROZEN {npos} pos + {len(pos)-npos} neg -> {out_path}"

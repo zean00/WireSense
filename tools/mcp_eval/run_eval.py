@@ -24,6 +24,7 @@ from gen_eval import SERVERS  # noqa: E402  (same dir, run as a script)
 
 BAR_POS = 0.60
 BAR_NEG = 20  # of 24
+SUFFIX = os.environ.get("MCP_EVAL_SUFFIX", "")  # MS-16b-2: "b9" -> .b9.json
 
 
 def norm_got(got):
@@ -51,8 +52,9 @@ async def main():
           f"{len(gate.tools)} MCP tools + native")
 
     for name in wanted:
-        evals = json.load(open(os.path.join(HERE, "evals", f"{name}.json")))
-        res_path = os.path.join(HERE, "results", f"{name}.jsonl")
+        evals = json.load(open(os.path.join(HERE, "evals",
+                                            f"{name}{SUFFIX}.json")))
+        res_path = os.path.join(HERE, "results", f"{name}{SUFFIX}.jsonl")
         done = set()
         if os.path.exists(res_path):
             for line in open(res_path):
@@ -135,7 +137,8 @@ def adjudicate(name, res_path):
           f"(pos_acc>={BAR_POS} and neg>={BAR_NEG}/24)")
     verdict = {"pos": round(pa, 4), "neg": neg_ok, "neg_n": neg_n,
                "passed": passed}
-    with open(os.path.join(HERE, "results", f"{name}.verdict"), "a") as f:
+    with open(os.path.join(HERE, "results", f"{name}{SUFFIX}.verdict"),
+              "a") as f:
         f.write(json.dumps(verdict) + "\n")
 
 
