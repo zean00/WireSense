@@ -35,6 +35,8 @@ import deep_think
 import faces
 import browser_use
 import ir_use
+import mcp_client
+import mcp_gate
 
 LLAMA = "http://127.0.0.1:8998"
 PHONON = "ws://127.0.0.1:8010/v1/audio/stream"
@@ -81,6 +83,8 @@ TOOL_MANIFEST = {
 }
 MEMORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            "memory.json")
+MCP_INDEX_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "mcp_index.json")
 TREE_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                          "tools", "decision_tree.json")
 # face recognition (docs/PROTOCOL-face-recognition.md): opt-in, off by
@@ -184,12 +188,18 @@ THINK_NOCLOSE_REPLY = ("I thought it through, but ran out of room for a "
                        "clean answer.")
 
 
-def tool_manifest_directive() -> str:
+def native_manifest_lines():
+    """The native manifest lines exactly as tool_manifest_directive has
+    always rendered them — the no-MCP path stays byte-identical."""
     tools = dict(TOOL_MANIFEST)
     if FACE_ENABLED:
         tools.update(FACE_TOOLS)
-    lines = "\n".join(f"- {name}: {desc}" for name, desc in tools.items())
-    return ("Choose a tool for this request. Available tools:\n" + lines +
+    return [f"- {name}: {desc}" for name, desc in tools.items()]
+
+
+def tool_manifest_directive() -> str:
+    return ("Choose a tool for this request. Available tools:\n"
+            + "\n".join(native_manifest_lines()) +
             '\nReply with ONLY a JSON object: {"tool": "<name>", "args": {...}} '
             'or {"tool": null} if no tool fits. No other text.')
 
@@ -400,6 +410,8 @@ def deep_asr_repair(text):
 
 def validate_tool(name, args) -> dict:
     """Normalize + bound-check args; raises ValueError on any bad arg."""
+    if MCP_GATE is not None and name in MCP_GATE.by_name:
+        return MCP_GATE.validate_args(MCP_GATE.by_name[name], args)
     if name == "timer":
         secs = int(args.get("seconds"))
         if not 1 <= secs <= 86400:
@@ -540,6 +552,8 @@ KOKORO = None
 READOUT = None
 WALKER = None
 DEEP = None  # optional big-model think provider (web/config.json), or None
+MCP_SERVERS = None  # mcp_client.MCPServer list, or None (opt-in 'mcp' config)
+MCP_GATE = None     # mcp_gate.Gate; its directive_for swaps the manifest
 
 
 def norm_rows(x):
@@ -1787,7 +1801,9 @@ class Session:
             return parse_tool_json(r.json()["choices"][0]["text"])
 
         plan = None
-        for directive in (tool_manifest_directive(), TOOL_RETRY_DIRECTIVE):
+        d0 = (MCP_GATE.directive_for(utterance)
+              if MCP_GATE is not None else tool_manifest_directive())
+        for directive in (d0, TOOL_RETRY_DIRECTIVE):
             try:
                 plan = await gen_plan(directive, self.history)
             except Exception:
@@ -1800,13 +1816,18 @@ class Session:
             args = validate_tool(plan["tool"], plan["args"])
         except (ValueError, TypeError):
             return None, False
-        # M2 (protocol decisions 8-9): high-risk numeric tools never
-        # execute on the first utterance — park for a spoken read-back;
-        # the YES resolution runs the tool from respond()
-        if plan["tool"] in HIGH_RISK_TOOLS:
+        # M2 (protocol decisions 8-9): high-risk tools never execute on the
+        # first utterance — park for a spoken read-back; the YES resolution
+        # runs the tool from respond(). Native: the fixed set. MCP: the
+        # gate's per-tool confirm flag (write-heuristic, config override).
+        mcp_entry = (MCP_GATE.by_name.get(plan["tool"])
+                     if MCP_GATE is not None else None)
+        if plan["tool"] in HIGH_RISK_TOOLS or \
+                (mcp_entry is not None and mcp_entry["confirm"]):
             self.pending = {"kind": "tool", "tool": plan["tool"],
                             "args": args}
-            return readback_text(plan["tool"], args), False
+            return (readback_text(plan["tool"], args)
+                    or f"Just to confirm — run {plan['tool']}?"), False
         if plan["tool"] in DELEGATE_TOOLS:
             # Rev G (decision 29): the bounded job must stand on its own
             # words — re-plan history-free, accept only the same tool.
@@ -2158,6 +2179,16 @@ class Session:
             ok, detail = await asyncio.to_thread(
                 faces.forget, args["name"] or None)
             return detail
+        if MCP_GATE is not None and name in MCP_GATE.by_name:
+            e = MCP_GATE.by_name[name]
+            loop = asyncio.get_event_loop()
+            if not await loop.run_in_executor(None, e["server"].ensure_alive):
+                return f"{e['prefixed']} is offline right now"
+            try:
+                out = await e["server"].call_tool_async(e["name"], args)
+            except Exception as ex:
+                return f"{e['prefixed']} failed: {type(ex).__name__}"
+            return (out or "done")[:300]
         raise ValueError(name)  # validate_tool guards every caller
 
     async def run_detect(self, labels):
@@ -2414,6 +2445,7 @@ async def http_page(connection, request):
 
 async def main():
     global KOKORO, READOUT, WALKER, DEEP, FACE_ENABLED, FACE_AMBIENT
+    global MCP_SERVERS, MCP_GATE
     t0 = time.perf_counter()
     KOKORO = Kokoro(f"{MODELS}/kokoro-v1.0.onnx", f"{MODELS}/voices.npz")
     READOUT = DecideReadout()
@@ -2431,11 +2463,40 @@ async def main():
     else:
         print("face recognition: disabled (opt-in, web/config.json 'face')",
               flush=True)
+    # MCP (docs/PROTOCOL-mcp-selection.md implementation section): opt-in
+    # like face — absent/disabled config leaves both globals None and the
+    # manifest byte-identical to pre-MCP behavior
+    mcp_cfg = deep_think.load_config().get("mcp") or {}
+    if mcp_cfg.get("enabled"):
+        MCP_SERVERS = await asyncio.to_thread(mcp_client.from_config, mcp_cfg)
+        if MCP_SERVERS:
+            MCP_GATE = mcp_gate.Gate(
+                LLAMA, norm_router_text, native_manifest_lines(),
+                MCP_SERVERS, cache_path=MCP_INDEX_PATH,
+                build_prompt=build_prompt)
+            await asyncio.to_thread(MCP_GATE.build_index)
     print(f"kokoro + readout + decision tree loaded in "
           f"{time.perf_counter() - t0:.1f}s", flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=http_page,
                      max_size=2 ** 20, ping_interval=20):
         print(f"wiresense web on 0.0.0.0:{PORT}", flush=True)
+        if MCP_SERVERS:
+            asyncio.create_task(mcp_client.supervisor(MCP_SERVERS))
+
+            async def mcp_watch():
+                # tools/list content changed underneath us (server update,
+                # reconnect with different toolsets) -> rebuild the index
+                while True:
+                    await asyncio.sleep(60)
+                    try:
+                        if MCP_GATE.index_stale():
+                            print("[mcp] tools/list changed — rebuilding "
+                                  "index", flush=True)
+                            await asyncio.to_thread(MCP_GATE.build_index)
+                    except Exception as e:
+                        print(f"[mcp] watch: {type(e).__name__}: {e}",
+                              flush=True)
+            asyncio.create_task(mcp_watch())
         await asyncio.Future()
 
 

@@ -7,3 +7,4 @@ nohup.out
 web/memory.json
 web/config.json
 web/faces.json
+web/mcp_index.json

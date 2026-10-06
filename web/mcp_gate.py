@@ -122,7 +122,7 @@ class Gate:
                     continue
                 e = {"name": t["name"], "prefixed": f"{s.name}__{t['name']}",
                      "desc": t.get("description") or "", "server": s,
-                     "required": req,
+                     "schema": schema, "required": req,
                      "confirm": s.confirm if s.confirm is not None
                      else bool(RISKY_RE.search(t["name"]))}
                 self.tools.append(e)
@@ -133,6 +133,39 @@ class Gate:
 
     def risk(self, entry):
         return entry["confirm"]
+
+    def validate_args(self, entry, args):
+        """Required-args + type check against inputSchema, unknown keys
+        dropped, strings capped — the MCP counterpart of the native
+        validators. Raises ValueError on any violation."""
+        props = entry["schema"].get("properties") or {}
+        out = {}
+        for r in entry["required"]:
+            if r not in args or args[r] is None or args[r] == "":
+                raise ValueError(f"{entry['prefixed']} needs {r}")
+        for k, v in (args or {}).items():
+            if k not in props:
+                continue  # unknown keys never reach the server
+            t = props[k].get("type")
+            if t == "string" or (t is None and isinstance(v, str)):
+                out[k] = str(v)[:500]
+            elif t in ("number", "integer"):
+                try:
+                    out[k] = int(v) if t == "integer" else float(v)
+                except (TypeError, ValueError):
+                    raise ValueError(f"{entry['prefixed']}.{k} must be {t}")
+            elif t == "boolean":
+                if not isinstance(v, bool):
+                    raise ValueError(f"{entry['prefixed']}.{k} must be boolean")
+                out[k] = v
+            elif t == "array":
+                if not isinstance(v, list):
+                    raise ValueError(f"{entry['prefixed']}.{k} must be an array")
+                out[k] = [str(x)[:200] for x in v][:20]
+            else:
+                out[k] = v if isinstance(v, (str, int, float, bool)) \
+                    else str(v)[:200]
+        return out
 
     # --- embeddings / pools ------------------------------------------------
 
@@ -253,8 +286,9 @@ class Gate:
 
     def directive_for(self, utterance):
         """The tool_manifest_directive replacement: shortlist + native
-        tools, production contract, no extra options (MS-15 option tax)."""
-        if self.active():
+        tools, production contract, no extra options (MS-15 option tax).
+        Falls back to the flat MCP manifest when the index is absent."""
+        if self.active() and self.cents is not None:
             short, _ = self.shortlist(utterance)
             lines = [self._line(e) for e in short]
         else:
