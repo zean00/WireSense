@@ -983,3 +983,29 @@ selector-quality fork only; it does not rescue this verdict.
 Housekeeping: `snapshot.json` (tinytuya device dump from the BF2
 diagnostics) sits untracked at the repo root; left alone deliberately —
 it may hold device local keys and must not be committed.
+
+## MS-18 / MS-19 closure (decision recorded, no data generated)
+
+- **MS-19 (System-1 loop wiring: need-check readout at round boundaries
+  + mid-loop tool selection re-keyed on continuation text): CLOSED —
+  premise dead.** MS-17b failed its registered bars (tool recall 0.5207
+  vs 0.80); the registered fork applied verbatim: the deep_turn loop
+  keeps its model-driven markers (IR_TOOL / BROWSE_TOOL) as the sole
+  continuation signal. There is no readout left to wire. Resurrection
+  path, for the record: a TRAINED round-classification head (the arm-C
+  precedent — supervised over labeled live rounds), which is a
+  different mechanism class and would need its own registration from
+  scratch. Not justified by current evidence.
+- **MS-18 (RECIPE_C-augmented pools index): MOOT — its consumer is
+  gone.** Its sole purpose was closing the utterance->continuation
+  recall gap (0.888 -> 0.806, Jaccard 0.60) for continuation-keyed
+  queries against the gate index. The only component that ever issued
+  continuation queries was MS-19's mid-loop selector; with MS-19
+  closed, no runtime path queries the gate with model-state text.
+  Entry selection runs on utterances (recall 0.8884, shipped mechanism)
+  and needs no augmentation. Resurrection path: any future design that
+  feeds model-state text to the gate index.
+
+The frozen MS-17a/17b data (continuations.json, state_texts.json,
+results, summaries) stays committed and is reusable by either
+resurrection path without regeneration.
