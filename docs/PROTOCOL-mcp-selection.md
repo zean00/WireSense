@@ -644,3 +644,38 @@ before any real enablement; if it's ever enabled, its frozen eval gets
 generated from the live tools/list like any stdio server). Auth remains
 deferred: config has no headers field yet; a 401/403 at initialize fails
 honestly with the "auth required? (deferred, entry BD)" hint.
+
+## Entry BE (registered before any camera contact): probe onvif-mcp (user-supplied third-party server)
+
+User ask: test the MCP implementation against github.com/qianlima365/onvif-mcp
+and their ONVIF camera (creds known to the user; supplied per-call by the
+probe harness, never through the model).
+
+Source review BEFORE running (disclosed in full in the probe report):
+- every tool takes host/usr/pwd AS ARGUMENTS — real voice use would push
+  the camera password through the planner and (on risky tools) the spoken
+  readback; conflicts with the house secrets rule. Probe passes creds in
+  the harness call only.
+- snap_image_to_minio uploads camera frames to MINIO_ENDPOINT and returns
+  a URL via MINIO_PROXY_ENDPOINT (example defaults: third-party cloud
+  ai.isstech.com) — NOT CALLED, ever.
+- get_camera_list / get_camera_live hardcode a third party's creds
+  (admin:qwer1234@10.17.20.110) and an external stream URL — NOT CALLED.
+- handle_ptz_control physically moves the camera; focus_move likewise
+  (imaging service). NOT CALLED without an explicit user ask. Note:
+  handle_ptz_control does NOT match the RISKY_RE heuristic by name;
+  focus_move does ("move") — recorded for the report.
+- minio.py prints MINIO_SECRET_KEY to stdout at import (= the stdio
+  JSON-RPC channel); only reachable via the snap tool, so moot here.
+- handle_discover_devices is read-only WS-Discovery (also publishes a
+  harmless dummy service on the LAN) — allowed.
+
+Whitelist for this probe: tools/list; get_deviceInfo, get_rtsp,
+handle_discover_devices (read-only, against 192.168.110.83 or LAN-wide for
+discovery). Everything else refused by the probe script. Launcher:
+`uv run --directory <repo> main_stdio.py` (stdio transport; --directory
+keeps the client unmodified — no cwd support added for one probe).
+
+No MS-16b deployment gate in this entry: enablement is a separate decision
+given the findings; if wanted, the registered gate runs on the frozen eval
+generated from the live tools/list like any other server.
