@@ -1,0 +1,11 @@
+{
+ "hier-synth/top2@k5": {
+  "n": 278,
+  "acc": 0.7014,
+  "pos_acc": 0.6811,
+  "neg_acc": 0.9167,
+  "schema_valid_rate": 0.9711,
+  "mean_prompt_tokens": 2123.5,
+  "mean_ms": 1440.3
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "flat": {
+  "n": 278,
+  "acc": 0.6835,
+  "pos_acc": 0.6654,
+  "neg_acc": 0.875,
+  "schema_valid_rate": 0.9527,
+  "mean_prompt_tokens": 3738.8,
+  "mean_ms": 2204.8
+ },
+ "hier-desc/top1": {
+  "n": 278,
+  "acc": 0.4317,
+  "pos_acc": 0.3937,
+  "neg_acc": 0.8333,
+  "schema_valid_rate": 0.99,
+  "mean_prompt_tokens": 679.7,
+  "mean_ms": 668.0
+ },
+ "hier-desc/top2": {
+  "n": 278,
+  "acc": 0.4964,
+  "pos_acc": 0.4606,
+  "neg_acc": 0.875,
+  "schema_valid_rate": 0.9744,
+  "mean_prompt_tokens": 1305.4,
+  "mean_ms": 1013.5
+ },
+ "hier-synth/top1": {
+  "n": 278,
+  "acc": 0.482,
+  "pos_acc": 0.4409,
+  "neg_acc": 0.9167,
+  "schema_valid_rate": 0.9911,
+  "mean_prompt_tokens": 710.4,
+  "mean_ms": 676.2
+ },
+ "hier-synth/top2": {
+  "n": 278,
+  "acc": 0.5647,
+  "pos_acc": 0.5354,
+  "neg_acc": 0.875,
+  "schema_valid_rate": 0.9706,
+  "mean_prompt_tokens": 1289.6,
+  "mean_ms": 981.2
+ }
+}

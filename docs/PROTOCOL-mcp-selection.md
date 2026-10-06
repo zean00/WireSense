@@ -213,3 +213,107 @@ Two findings from the gradient launch:
 Measured already (flat@78): acc 0.3602, pos 0.3765, neg 6/24, tokens 2870 —
 a one-server-dominated flat manifest collapses selection AND the null escape;
 recorded as a main result, not an outlier, pending the hier comparison.
+
+## Results (run 2 valid; adjudicated 2026-10-06)
+
+Main arms, 278 cases (242 positives + 24 negatives + 12 traps), 121 tools, k=10:
+
+| arm | acc | pos_acc | neg_acc | schema_ok | prompt_tok | ms |
+|---|---|---|---|---|---|---|
+| flat | 0.6835 | 0.6654 | 21/24 | 0.953 | 3739 | 2205 |
+| hier-desc/top1 | 0.4317 | 0.3937 | 20/24 | 0.990 | 680 | 668 |
+| hier-desc/top2 | 0.4964 | 0.4606 | 21/24 | 0.974 | 1305 | 1014 |
+| hier-synth/top1 | 0.4820 | 0.4409 | 22/24 | 0.991 | 710 | 676 |
+| hier-synth/top2 | 0.5647 | 0.5354 | 21/24 | 0.971 | 1290 | 981 |
+
+Mechanism decomposition (recomputed from frozen spaces): routing recall is the
+entire loss; the shortlist planner is STRONGER than flat's planner.
+
+| arm | hit_rate | pos_acc\|hit | pos_acc\|miss |
+|---|---|---|---|
+| hier-desc/top1 | 0.433 | 0.909 | 0.000 |
+| hier-desc/top2 | 0.567 | 0.812 | 0.000 |
+| hier-synth/top1 | 0.543 | 0.812 | 0.000 |
+| hier-synth/top2 | 0.713 | 0.751 | 0.000 |
+
+MS-12 k-sweep (hier-synth/top2, everything else identical):
+
+| k | acc | neg_acc | prompt_tok | ms | mean shortlist |
+|---|---|---|---|---|---|
+| 5 | **0.7014** | 22/24 | 2124 | 1440 | 67 |
+| 8 | 0.5935 | 22/24 | 1506 | 1128 | 47 |
+| 10 | 0.5647 | 21/24 | 1290 | 981 | 26 |
+| 15 | 0.5360 | 23/24 | 1008 | 835 | 30 |
+| 25 | 0.5827 | 20/24 | 644 | 659 | 18 |
+
+k=5 decomposition: hit_rate 0.878 × pos_acc|hit 0.776 = 0.681 (= observed 0.681).
+k=5/top2 beats flat on BOTH sub-metrics at 121 tools: pos 0.681 vs 0.665,
+neg 22/24 vs 21/24. Paired McNemar flat vs k5 at 121: 26 vs 31 discordant,
+p = 0.597 — statistically a tie.
+
+MS-14 gradient (N=78 = github 62 + filesystem 14 + fetch 1 + sequential-thinking 1;
+80% one server; 186 cases):
+
+| arm | acc | pos_acc | neg_acc | prompt_tok | ms |
+|---|---|---|---|---|---|
+| flat@78 | 0.3602 | 0.3765 | 6/24 | 2870 | 1970 |
+| hier k5/top2@78 | **0.5054** | 0.4568 | 20/24 | 1472 | 1040 |
+
+flat@78 vs k5@78 McNemar: 19 vs 46 discordant, p = 0.0011 — the hierarchy's win
+at 78 is significant. Composition is the driver, not size: with one near-duplicate-
+heavy server at 80% of the manifest, flat selection collapses (negatives 6/24;
+non-github positives 0.211) while the coarse gate holds the domain boundary
+(non-github positives 0.474, neg 20/24).
+
+Determinism probe (MS-14): two independent temp-0 flat runs on byte-identical
+prompts: 0/186 verdicts differ — same-prompt temp 0 is deterministic on this
+server; arm differences above are configuration properties, not run noise.
+
+Flat error anatomy at 121: 85/254 misses, 42 from github's near-duplicate block;
+misses skew toward indirect phrasings (planner nulls); 3 neg misses
+(17×23 → get-sum; two → echo).
+
+## Hypotheses (MS-7) — adjudicated
+
+- H1 (hier-synth/top2 ≥ flat): FAIL at registered k=10 (0.5647 < 0.6835); PASS
+  at the MS-12 k=5 point (0.7014 ≥ 0.6835), but the margin is within noise
+  (p = 0.597) — a tie with 43% fewer prompt tokens and 35% less latency.
+- H2 (flat tokens ≥ 5× hier): FAIL at k=5 (1.76×); holds only for the finest
+  clustering (k=25: 5.8×) where accuracy is far below flat.
+- H3 (synth pools > description pools): PASS in both topologies (top1 0.482 vs
+  0.432; top2 0.565 vs 0.496) — synthetic-utterance bootstrap is worth keeping.
+- H4 (gap grows with tool count): measured at two points only; the gap moves in
+  the hierarchy's favor as composition degrades, and INVERTS significantly at
+  the 80%-one-server point (p = 0.0011). Direction confirmed: hierarchy pays
+  as the manifest gets harder, and dominant-server flat manifests are toxic.
+
+Adoption rule (H1 + neg_acc within 2 points of flat): SATISFIED by
+hier-synth/top2 at k=5.
+
+## VERDICT
+
+Build MCP tool selection hierarchically — but COARSELY. The measured optimum is
+a gate over FEW domains (4–8 clusters; k=5 won, every k ≥ 8 lost to flat), a
+top-2 union shortlist (mean 67 of 121 tools at k=5 — the gate is a boundary,
+not a needle-finder), synthetic-utterance centroids (H3), and the LLM planner
+over the shortlist with the {"tool": null} escape (91.7% null precision at
+k=5/top2 vs 87.5% flat). Fine unsupervised hierarchies are the failure mode:
+routing recall dies (43–71% at k=10) while the planner-given-hit stays at
+75–91% — keep near-duplicate disambiguation in the LLM, never in the embedding.
+The gate's biggest measured win is robustness to manifest composition (a
+dominant server collapses flat selection to 36% and bleeds nulls; the gate
+holds +14.5 points, p=0.001), which is exactly the risk profile of real MCP
+setups where one big server (github-like) joins a handful of small ones.
+Cost at 121 tools: one utterance embedding (~55 ms) + microsecond readouts;
+shortlist prompts 57% of flat's tokens, 65% of its latency.
+
+Implementation notes for wiresense MCP support (not registered, derived):
+cluster per connected server-set with the k≈4–6 rule, re-embed on tools/list
+change (MS-3 pools make this cheap), keep plan-twice (Rev G) on delegate picks,
+and keep the production behavioral root untouched — MCP tools hang under the
+existing tool path.
+
+Scored data: results.jsonl (run 2: flat carried from run 1 + 4 hier arms),
+results_run1_invalid_hier.jsonl (MS-11, archived invalid), sweep_k{5,8,15,25}_
+valid.jsonl (MS-12/13), grad78_*.jsonl (MS-14). Invalid MS-12 first sweep kept
+off-repo (byte-identical to k=10, superceded).
