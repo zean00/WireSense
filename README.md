@@ -517,10 +517,12 @@ and stay disabled — MS-16b's autopsy found the failures were eval-recipe
 utterances) re-ran the frozen-eval protocol: filesystem 0.64 PASS, git 0.64
 PASS, time 0.75 PASS, everything 0.44 FAIL (demo fixtures — the planner
 rightly prefers the real native tools), so the cleared three are live.
-That clearance is version-scoped: unpinned `npx -y` / `uvx` spawns flap
-package versions across restarts, and on a freshly-resolved ground
-filesystem FAILS the same bar the cached ground passed (PROTOCOL-
-mcp-selection.md, 2026-10-07 incident — pin versions, re-clear).
+That clearance is universe-scoped, not version-scoped: it was measured
+with the demo `everything` server connected (41 tools) while production
+runs 28 — and dropping those 13 tools reshuffles the gate's clusters.
+Filesystem FAILS the same bar on the production ground (0.5625) that it
+passes at 41 tools (0.6250, replicated; PROTOCOL-mcp-selection.md,
+2026-10-07 correction).
 Live smoke green including mid-session server reconnect. Remote servers too
 (entry BD): `"url"` selects Streamable HTTP — JSON or SSE answers, optional
 session id with one transparent re-init on expiry, DELETE on kill; auth

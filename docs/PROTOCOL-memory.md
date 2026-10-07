@@ -153,3 +153,29 @@ frames; facts and notes both surface in the digest.
 
 Deployment state: production server restarted on the adopted code (memory
 intercept + scoped plan directive + recall digest), 27/27 suite green.
+
+## CORRECTION (2026-10-07): the B4a retraction above has the wrong mechanism
+
+The retraction's CONCLUSION stands — arm 1's rejection was confounded, the
+"manifest growth costs 9 points" claim stays withdrawn, arm 2 stays
+adopted — but its stated cause ("unpinned npx/uvx spawns flap tool sets")
+is wrong, and so is the parallel incident entry in
+PROTOCOL-mcp-selection.md. No version flap occurred: single package
+versions across both days. The confound was the TOOL UNIVERSE: the
+registered MS-16b-2 gates ran with the demo `everything` server connected
+(41 tools); the B4a re-runs ran the production set (28 tools); the gate's
+k-means clusters reshuffled, moving filesystem from 0.625-0.6406 (41-tool
+ground, re-confirmed the same day with current code, results/*.b941) to
+0.5625 (28-tool ground). Full account in PROTOCOL-mcp-selection.md's
+correction section.
+
+The memory feature is exonerated four independent ways: arm-1 vs arm-2
+differ by 1 case on the same 28-tool ground; git/time are byte-identical
+across arms; the 41-tool replication passes filesystem with the complete
+memory code in place; and no memory code path executes on non-memory
+turns. Final B4a verdict: on the production ground, git PASS (0.7031),
+time PASS (0.7500), filesystem FAIL (0.5625) — a pre-existing ground
+mismatch between the registered clearance and production, exposed (not
+caused) by the memory re-runs. Resolution lives in
+PROTOCOL-mcp-selection.md: universe-scoped gates, and the user's
+park-or-remeasure call on filesystem.

@@ -1206,3 +1206,50 @@ user's live file): pin each MCP server version in the spawn command
 pinned ground as the new registered verdicts. Pinning makes the cached
 index and every future spawn agree by construction, which is what the
 cache hash assumed all along.
+
+## CORRECTION (2026-10-07, later the same day): the incident above is WRONG about the cause
+
+The "version flap" did not happen. npm and uv caches hold exactly one
+version of each server across both days (filesystem 2026.8.31, time/git
+2026.8.18; no newer releases exist), and the hash differences that
+motivated the incident entry were artifacts: ad-hoc payload hashes
+computed with a different scheme than the gate's `_signature()`, plus the
+cache file being overwritten between checks.
+
+The real ground difference — found by comparing per-case prompt_tokens
+(registered runs ~1470 tokens uniform; re-runs 659-989 variable) and
+confirmed by the registered run log (/tmp/ms16b2_run.log) — is the TOOL
+UNIVERSE:
+
+- Registered MS-16b-2 (Oct 6): `run_eval.py filesystem time git everything`
+  — all FOUR servers connected: 41 MCP tools, gate over 41.
+- B4a re-runs (Oct 7): `run_eval.py filesystem git time` — 3 servers,
+  28 tools, gate over 28. That IS the production set (everything was
+  never enabled in config), but it is NOT the ground the registered
+  verdicts were measured on.
+
+Decisive replication (results/*.b941.*, the frozen .b9 evals byte-copied
+under a diagnostic suffix, all four servers connected, current code):
+filesystem pos 40/64 (0.6250) PASS — versus 36/64 (0.5625) FAIL on 28
+tools. git 45/64 (0.7031) and time 24/32 (0.7500) are IDENTICAL on both
+grounds — git's +4 over registration is entirely the repo_path pin
+defaulting (0862a91), not the universe change. everything 0.4219 FAIL,
+consistent with registration.
+
+So the deployment-gate verdicts are UNIVERSE-scoped: the k=5/top-2
+clustering reshuffles when the connected set changes, and filesystem —
+14 of 28 tools, half the universe — loses ~4-5 pos cases at 28 tools that
+it passes at 41. The registered clearance certified a ground that
+production never runs.
+
+Consequences (supersede the incident entry's resolution path):
+1. Version pinning remains good hygiene but fixes nothing here; the pin
+   recommendation is withdrawn as a remedy for THIS failure.
+2. On the production ground (28 tools): git PASS (0.7031), time PASS
+   (0.7500), filesystem FAIL (0.5625 < 0.60). Per the PASS-enables policy
+   filesystem is out of compliance on the ground it actually runs in.
+   Options are the user's: park filesystem, or register and measure the
+   unmeasured 21-40-tool band (flat-over-28 as a candidate arm — the
+   frozen recipe measured flat only up to 20 tools), then re-freeze.
+3. Policy amendment for all future gates: a deployment gate must run over
+   the exact enabled production server set, never a superset.
