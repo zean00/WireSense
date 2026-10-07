@@ -1281,3 +1281,49 @@ Pre-committed decision rule (registered before any data):
 
 Baselines for comparison (already measured, same code, gate-28):
 fs 0.5625 FAIL / git 0.7031 PASS / time 0.7500 PASS, neg 21/24 each.
+
+## RESULTS (2026-10-07): flat-28 ADOPTED
+
+Measured on the frozen .b9 evals (byte-copied to .f28), the exact
+production set, current code — versus the gate-28 baselines (same code,
+same ground, this morning's re-runs):
+
+```
+           gate-28          flat-28           bar    verdict
+filesystem 0.5625 FAIL      0.6094 (39/64)    0.60   PASS
+git        0.7031 PASS      0.6875 (44/64)    0.60   PASS
+time       0.7500 PASS      0.7500 (24/32)    0.60   PASS
+neg        21/24 each       21/24 each        20/24  all PASS
+```
+
+Decision rule (pre-committed before data, above): all three clear ->
+ADOPT. MCP_FLAT_MAX is now 28, committed with this section. Production
+restarted on the flat selector; the capability suite re-run is the
+regression check.
+
+Honest margins, recorded as measured: filesystem clears by exactly ONE
+case (38/64 = 0.59375 would fail) — its compliance at this ground is
+fragile, and run-to-run noise has been +-1 case all week. git gives one
+case back to the flat manifest; time is untouched. The 29-40 band remains
+unmeasured — the gate still owns >28, and the registered fallback if
+filesystem drops below the bar on any future ground change is parking it.
+
+Runner note (disclosed): the first wrapper launch silently adjudicated
+the OLD unsuffixed results — MCP_EVAL_SUFFIX unset meant
+results/<server>.jsonl + evals/*.json, the MS-16 originals (fs 0.4219,
+the number that motivated this whole investigation) — instead of running
+the arm. The .f28 run is the genuine arm ("88 cases to run (0 done)" in
+the log). Second time the SUFFIX/resume interaction has manufactured a
+plausible-looking number from stale rows; the earlier instances are in
+the correction above.
+
+Regression check (registered adoption step): capability suite run 7 on
+the flat-28 selector — **27/27 PASS**, including the mid-session server
+reconnect scenario (time self-healed during the run). Production server
+restarted on the flat manifest (28 tools + native).
+
+Files: tools/mcp_eval/results/{filesystem,git,time}.f28.{jsonl,verdict};
+evals/*.f28.json are byte-copies of the frozen .b9 evals (the diagnostic
+suffix the runner requires); tools/mcp_eval/run_flat28.py is the
+registered wrapper (runtime MCP_FLAT_MAX override, frozen constant
+untouched during measurement).

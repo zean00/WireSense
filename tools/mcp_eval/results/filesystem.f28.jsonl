@@ -1,0 +1,88 @@
+{"case_id": "pos_filesystem__read_text_file__direct_0", "kind": "pos", "plan": {"tool": "filesystem__list_allowed_directories", "args": {}}, "prompt_tokens": 1258, "got": "list_allowed_directories", "ok": false}
+{"case_id": "pos_filesystem__read_text_file__direct_3", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "data log file"}}, "prompt_tokens": 1257, "got": "read_text_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__read_text_file__indirect_6", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "the particular file"}}, "prompt_tokens": 1259, "got": "read_text_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__read_text_file__indirect_9", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "text_file.txt"}}, "prompt_tokens": 1258, "got": "read_text_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__read_media_file__direct_13", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "backup"}}, "prompt_tokens": 1259, "got": "list_directory", "ok": false}
+{"case_id": "pos_filesystem__read_media_file__direct_16", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "."}}, "prompt_tokens": 1258, "got": "list_directory", "ok": false}
+{"case_id": "pos_filesystem__read_media_file__indirect_19", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1260, "got": null, "ok": false}
+{"case_id": "pos_filesystem__read_media_file__indirect_22", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "sales.csv"}}, "prompt_tokens": 1260, "got": "read_text_file", "ok": false}
+{"case_id": "pos_filesystem__read_media_file__indirect_25", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1260, "got": null, "ok": false}
+{"case_id": "pos_filesystem__read_multiple_files__direct_28", "kind": "pos", "plan": {"tool": "filesystem__read_multiple_files", "args": {"paths": ["settings.ini", "backup_2024.sql"]}}, "prompt_tokens": 1266, "got": "read_multiple_files", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__read_multiple_files__direct_32", "kind": "pos", "plan": {"tool": "filesystem__read_multiple_files", "args": {"paths": ["inventory.csv", "shipment_log.csv"]}}, "prompt_tokens": 1261, "got": "read_multiple_files", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__read_multiple_files__indirect_35", "kind": "pos", "plan": {"tool": "filesystem__read_multiple_files", "args": {"paths": ["feedback_forms.csv", "comments.md"]}}, "prompt_tokens": 1265, "got": "read_multiple_files", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__read_multiple_files__indirect_38", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1270, "got": null, "ok": false}
+{"case_id": "pos_filesystem__read_multiple_files__indirect_41", "kind": "pos", "plan": {"tool": "filesystem__read_multiple_files", "args": {"paths": ["docs_api.md", "schema_definitions.json"]}}, "prompt_tokens": 1264, "got": "read_multiple_files", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__write_file__direct_44", "kind": "pos", "plan": {"tool": "filesystem__write_file", "args": {"path": "script.py", "content": "import sys"}}, "prompt_tokens": 1262, "got": "write_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__write_file__direct_47", "kind": "pos", "plan": {"tool": "filesystem__write_file", "args": {"path": "/home/user_profile.json", "content": "user_id: 123"}}, "prompt_tokens": 1267, "got": "write_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__write_file__indirect_50", "kind": "pos", "plan": null, "prompt_tokens": 1271}
+{"case_id": "pos_filesystem__write_file__indirect_54", "kind": "pos", "plan": {"tool": "filesystem__write_file", "args": {"path": "agenda.txt", "content": "Discuss Q4"}}, "prompt_tokens": 1269, "got": "write_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__write_file__indirect_57", "kind": "pos", "plan": {"tool": "filesystem__write_file", "args": {"path": "backup_log.txt", "content": "backup complete"}}, "prompt_tokens": 1268, "got": "write_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__edit_file__direct_60", "kind": "pos", "plan": null, "prompt_tokens": 1261}
+{"case_id": "pos_filesystem__edit_file__direct_63", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "inventory.csv"}}, "prompt_tokens": 1261, "got": "read_text_file", "ok": false}
+{"case_id": "pos_filesystem__edit_file__indirect_66", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1262, "got": null, "ok": false}
+{"case_id": "pos_filesystem__edit_file__indirect_69", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1261, "got": null, "ok": false}
+{"case_id": "pos_filesystem__edit_file__indirect_73", "kind": "pos", "plan": null, "prompt_tokens": 1264}
+{"case_id": "pos_filesystem__create_directory__direct_76", "kind": "pos", "plan": {"tool": "filesystem__create_directory", "args": {"path": "logs_daily"}}, "prompt_tokens": 1257, "got": "create_directory", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__create_directory__direct_79", "kind": "pos", "plan": {"tool": "filesystem__create_directory", "args": {"path": "config_files"}}, "prompt_tokens": 1256, "got": "create_directory", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__create_directory__indirect_82", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1259, "got": null, "ok": false}
+{"case_id": "pos_filesystem__create_directory__indirect_85", "kind": "pos", "plan": {"tool": "filesystem__create_directory", "args": {"path": "workspace/new_folders"}}, "prompt_tokens": 1260, "got": "create_directory", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__create_directory__indirect_88", "kind": "pos", "plan": {"tool": "filesystem__create_directory", "args": {"path": "workflow_folders"}}, "prompt_tokens": 1259, "got": "create_directory", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_directory__direct_92", "kind": "pos", "plan": {"tool": "filesystem__directory_tree", "args": {"path": "."}}, "prompt_tokens": 1259, "got": "directory_tree", "ok": false}
+{"case_id": "pos_filesystem__list_directory__direct_95", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "backup"}}, "prompt_tokens": 1258, "got": "list_directory", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_directory__indirect_98", "kind": "pos", "plan": {"tool": "filesystem__directory_tree", "args": {"path": "."}}, "prompt_tokens": 1262, "got": "directory_tree", "ok": false}
+{"case_id": "pos_filesystem__list_directory__indirect_101", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "config"}}, "prompt_tokens": 1262, "got": "list_directory", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_directory__indirect_104", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "~"}}, "prompt_tokens": 1263, "got": "list_directory", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_directory_with_sizes__direct_107", "kind": "pos", "plan": {"tool": "filesystem__list_directory_with_sizes", "args": {"path": "/var/log"}}, "prompt_tokens": 1261, "got": "list_directory_with_sizes", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_directory_with_sizes__direct_110", "kind": "pos", "plan": {"tool": "filesystem__list_directory_with_sizes", "args": {"path": "/media/photos"}}, "prompt_tokens": 1261, "got": "list_directory_with_sizes", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_directory_with_sizes__indirect_114", "kind": "pos", "plan": {"tool": "filesystem__list_directory_with_sizes", "args": {"path": "."}}, "prompt_tokens": 1263, "got": "list_directory_with_sizes", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_directory_with_sizes__indirect_117", "kind": "pos", "plan": {"tool": "git__git_status", "args": {"repo_path": "."}}, "prompt_tokens": 1263, "got": "git_status", "ok": false}
+{"case_id": "pos_filesystem__list_directory_with_sizes__indirect_120", "kind": "pos", "plan": {"tool": "filesystem__list_directory_with_sizes", "args": {"path": "."}}, "prompt_tokens": 1262, "got": "list_directory_with_sizes", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__directory_tree__direct_123", "kind": "pos", "plan": {"tool": "filesystem__directory_tree", "args": {"path": "/home/user/docs"}}, "prompt_tokens": 1259, "got": "directory_tree", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__directory_tree__direct_126", "kind": "pos", "plan": {"tool": "filesystem__directory_tree", "args": {"path": "."}}, "prompt_tokens": 1258, "got": "directory_tree", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__directory_tree__direct_129", "kind": "pos", "plan": {"tool": "filesystem__directory_tree", "args": {"path": "/tmp"}}, "prompt_tokens": 1258, "got": "directory_tree", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__directory_tree__indirect_133", "kind": "pos", "plan": {"tool": "filesystem__directory_tree", "args": {"path": "."}}, "prompt_tokens": 1261, "got": "directory_tree", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__directory_tree__indirect_136", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "."}}, "prompt_tokens": 1260, "got": "list_directory", "ok": false}
+{"case_id": "pos_filesystem__move_file__direct_139", "kind": "pos", "plan": {"tool": "filesystem__move_file", "args": {"source": "old_document.txt", "destination": "new_filename.txt"}}, "prompt_tokens": 1258, "got": "move_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__move_file__direct_142", "kind": "pos", "plan": {"tool": "filesystem__move_file", "args": {"source": "config file path", "destination": "settings directory"}}, "prompt_tokens": 1258, "got": "move_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__move_file__direct_145", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1259, "got": null, "ok": false}
+{"case_id": "pos_filesystem__move_file__indirect_148", "kind": "pos", "plan": {"tool": "filesystem__move_file", "args": {"source": "big_dataset", "destination": "safe_storage"}}, "prompt_tokens": 1260, "got": "move_file", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__move_file__indirect_152", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1261, "got": null, "ok": false}
+{"case_id": "pos_filesystem__search_files__direct_155", "kind": "pos", "plan": {"tool": "filesystem__search_files", "args": {"path": "server", "pattern": "*log*"}}, "prompt_tokens": 1259, "got": "search_files", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__search_files__direct_158", "kind": "pos", "plan": {"tool": "filesystem__search_files", "args": {"path": "scripts", "pattern": "*.py"}}, "prompt_tokens": 1258, "got": "search_files", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__search_files__direct_161", "kind": "pos", "plan": {"tool": "filesystem__search_files", "args": {"path": "library", "pattern": "*.xml"}}, "prompt_tokens": 1258, "got": "search_files", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__search_files__indirect_164", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "archive"}}, "prompt_tokens": 1260, "got": "list_directory", "ok": false}
+{"case_id": "pos_filesystem__search_files__indirect_167", "kind": "pos", "plan": {"tool": "filesystem__search_files", "args": {"path": ".", "pattern": "*config*"}}, "prompt_tokens": 1260, "got": "search_files", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__get_file_info__direct_170", "kind": "pos", "plan": {"tool": "filesystem__read_text_file", "args": {"path": "/home/user/report.pdf"}}, "prompt_tokens": 1261, "got": "read_text_file", "ok": false}
+{"case_id": "pos_filesystem__get_file_info__direct_174", "kind": "pos", "plan": {"tool": "filesystem__get_file_info", "args": {"path": "/backup/db.sql"}}, "prompt_tokens": 1262, "got": "get_file_info", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__get_file_info__direct_177", "kind": "pos", "plan": {"tool": "filesystem__get_file_info", "args": {"path": "/downloads/video.mp4"}}, "prompt_tokens": 1263, "got": "get_file_info", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__get_file_info__indirect_180", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1261, "got": null, "ok": false}
+{"case_id": "pos_filesystem__get_file_info__indirect_183", "kind": "pos", "plan": {"tool": "filesystem__list_directory", "args": {"path": "/archive/2023"}}, "prompt_tokens": 1266, "got": "list_directory", "ok": false}
+{"case_id": "pos_filesystem__list_allowed_directories__direct_186", "kind": "pos", "plan": {"tool": "filesystem__list_allowed_directories", "args": {}}, "prompt_tokens": 1260, "got": "list_allowed_directories", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_allowed_directories__direct_189", "kind": "pos", "plan": {"tool": "filesystem__list_allowed_directories", "args": {}}, "prompt_tokens": 1260, "got": "list_allowed_directories", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_allowed_directories__direct_193", "kind": "pos", "plan": {"tool": "filesystem__list_allowed_directories", "args": {}}, "prompt_tokens": 1260, "got": "list_allowed_directories", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_allowed_directories__indirect_196", "kind": "pos", "plan": {"tool": "filesystem__list_allowed_directories", "args": {}}, "prompt_tokens": 1262, "got": "list_allowed_directories", "ok": true, "schema_ok": true}
+{"case_id": "pos_filesystem__list_allowed_directories__indirect_199", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1261, "got": null, "ok": false}
+{"case_id": "neg_00", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1255, "got": null, "ok": true}
+{"case_id": "neg_01", "kind": "neg", "plan": {"tool": "timer", "args": {"seconds": 1200, "label": "20 minutes"}}, "prompt_tokens": 1257, "got": "timer", "ok": false}
+{"case_id": "neg_02", "kind": "neg", "plan": {"tool": "reminder", "args": {"when": "Friday", "text": "Dentist appointment"}}, "prompt_tokens": 1257, "got": "reminder", "ok": false}
+{"case_id": "neg_03", "kind": "neg", "plan": {"tool": "note", "args": {"text": "The wifi password is on the fridge."}}, "prompt_tokens": 1260, "got": "note", "ok": false}
+{"case_id": "neg_04", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1254, "got": null, "ok": true}
+{"case_id": "neg_05", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1255, "got": null, "ok": true}
+{"case_id": "neg_06", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1258, "got": null, "ok": true}
+{"case_id": "neg_07", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1253, "got": null, "ok": true}
+{"case_id": "neg_08", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1255, "got": null, "ok": true}
+{"case_id": "neg_09", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1251, "got": null, "ok": true}
+{"case_id": "neg_10", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1254, "got": null, "ok": true}
+{"case_id": "neg_11", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1250, "got": null, "ok": true}
+{"case_id": "neg_12", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1252, "got": null, "ok": true}
+{"case_id": "neg_13", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1253, "got": null, "ok": true}
+{"case_id": "neg_14", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1253, "got": null, "ok": true}
+{"case_id": "neg_15", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1252, "got": null, "ok": true}
+{"case_id": "neg_16", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1251, "got": null, "ok": true}
+{"case_id": "neg_17", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1254, "got": null, "ok": true}
+{"case_id": "neg_18", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1254, "got": null, "ok": true}
+{"case_id": "neg_19", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1253, "got": null, "ok": true}
+{"case_id": "neg_20", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1251, "got": null, "ok": true}
+{"case_id": "neg_21", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1254, "got": null, "ok": true}
+{"case_id": "neg_22", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1254, "got": null, "ok": true}
+{"case_id": "neg_23", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 1253, "got": null, "ok": true}

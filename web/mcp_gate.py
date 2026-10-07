@@ -25,7 +25,10 @@ import time
 import numpy as np
 import requests
 
-MCP_FLAT_MAX = 20     # registered: flat is fine up to here
+MCP_FLAT_MAX = 28     # registered: flat clears all three deployment gates
+                      # at 28 tools on the production set (2026-10-07,
+                      # PROTOCOL-mcp-selection.md); the gate takes over
+                      # above — 29-40 remain unmeasured
 MCP_K = 5             # registered: k-sweep optimum at 121 tools
 MCP_TOPN = 2          # registered: top-2 union shortlist
 DESC_CAP = 200        # MS-2 budget C

@@ -508,7 +508,7 @@ and merely offering the option costs ~4 points on turns that never use it.
 MCP support is IMPLEMENTED and ENABLED (opt-in, web/config.json `"mcp"`;
 entries AT-BB): stdio client with process-group lifecycle and $ENV-only
 secrets, the coarse gate (k=5 top-2 synth-pool shortlist, `{server}__{tool}`
-namespace — MS-16a re-passed the frozen eval at p=0.281) over >20 tools,
+namespace — MS-16a re-passed the frozen eval at p=0.281) over >28 tools,
 flat below; risky tools park for a spoken confirm; index cached by
 tools/list hash. Per-server deployment gate (MS-16b, pos>=0.60 &
 neg>=20/24): time + everything PASS, filesystem (0.42) + git (0.53) FAIL
@@ -522,7 +522,10 @@ with the demo `everything` server connected (41 tools) while production
 runs 28 — and dropping those 13 tools reshuffles the gate's clusters.
 Filesystem FAILS the same bar on the production ground (0.5625) that it
 passes at 41 tools (0.6250, replicated; PROTOCOL-mcp-selection.md,
-2026-10-07 correction).
+2026-10-07 correction). Resolution: the never-measured 21-40-tool band got
+its first point — flat-28 clears all three bars (fs 0.6094, git 0.6875,
+time 0.7500; pre-registered decision rule), so `MCP_FLAT_MAX` is now 28,
+production runs the flat manifest, and the gate owns >28.
 Live smoke green including mid-session server reconnect. Remote servers too
 (entry BD): `"url"` selects Streamable HTTP — JSON or SSE answers, optional
 session id with one transparent re-init on expiry, DELETE on kill; auth
