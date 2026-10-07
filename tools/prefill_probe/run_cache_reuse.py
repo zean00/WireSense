@@ -179,7 +179,7 @@ def main():
             free = complete(base, prompt_for(final, history), 96,
                             stream=True)
             free.update({"arm": "FREE", "scenario": i, "rep": 0})
-            complete(base, prompt_for([], DISPOSER), 8)
+            complete(base, prompt_for(DISPOSER, []), 8)
             t0 = time.perf_counter()
             warm = complete(base, prompt_for("", history), 8)
             warm_ms = (time.perf_counter() - t0) * 1000
