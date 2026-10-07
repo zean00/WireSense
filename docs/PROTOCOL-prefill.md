@@ -99,3 +99,73 @@ gen_plan and TTS are outside the measured path (TTS first-chunk cost is
 additive and unmeasured here, per entry V). Ambient GPU load from the live
 production server is possible and uncontrolled. Probe slot 1 is never used
 by production, so measured commits queue behind nothing.
+
+## RESULTS (2026-10-07, tools/prefill_probe/results.json, 120 commits + 58 readouts)
+
+| arm/mode | TTFT ms median (p10–p90) | prompt_n med | prompt_ms med | cache_n |
+|---|---|---|---|---|
+| COMMIT/think_off | 74.0 (71.0–78.5) | 83 | 69.5 | 0 |
+| COMMIT/think_on | 78.5 (77.5–79.5) | 96 | 74.4 | 0 |
+| NOCACHE/think_off | 74.7 (72.9–78.1) | 83 | 69.0 | — |
+| NOCACHE/think_on | 78.7 (78.1–80.5) | 96 | 74.5 | — |
+| WARM/think_on | 67.8 (66.4–70.2) | 96 | 62.1 | 0 |
+
+Q1: commit→first token on the shipped path is ~74–79 ms, and it is ~95%
+prompt prefill (TTFT ≈ prompt_ms + ~4 ms): the full ~83–96-token prompt is
+evaluated every turn. cache_n = 0 on all 120 cache_prompt=true commits —
+the two-zone frozen prefix was served from the slot cache ZERO times.
+
+Q2 (re-open rule): WARM beats COMMIT by 10.6 ms TTFT, prompt_ms ratio 0.86.
+Rule requires ≥ 50 ms AND ≤ 0.8 — NOT met. RETIREMENT CONFIRMED on the
+shipped stack. Stronger: the delta is confounded and mechanistically empty —
+WARM ran last (order confound; controlled repeats below show a ~15 ms pure
+warm-up drift with cache_n=0), and WARM's own commits show cache_n=0, so the
+partial replays bought ZERO KV reuse: the warming mechanism the page
+credited delivered literally nothing on this stack.
+
+Identity: 8/8 exact across COMMIT/NOCACHE/WARM. Consistent with entry V's
+mechanism — greedy rewrites appear only when cache composition changes fp
+reduction order; here no reuse ever fired, so numerics never differed. The
+registered anomaly clause (COMMIT-vs-NOCACHE divergence) did not trigger.
+
+Readout per partial (descriptive D, n=58): embeddings 53.7 ms + head 2.1 ms
+= 55.9 ms median, p90 63.4 — the shipped decide layer computes the route on
+every partial, so the routing decision is ready before speech ends.
+
+## OBSERVATIONS (outside the registered arms; labeled per protocol; did not
+## alter the adjudication above)
+
+Controlled same-slot tests on the live server (pid 336728, flags -c 65536
+-np 8 -ctk/ctv q8_0, no --cache-reuse):
+
+1. Slot-cache reuse EXISTS on this build but did not fire for any
+   production-shaped request. Identical repeats of an 84- or 924-token
+   prompt reused (cache_n 80 / 920, prompt_ms 363→26 ms) — but only when
+   the PREVIOUS request had generated ≥4 tokens. Identical repeats after a
+   max_tokens=1 request never reused (30–84 tokens bracketed, 17 sizes).
+   The probe's shipped pattern — consecutive prompts sharing the system +
+   fixed-history prefix (~60–70 tokens), different user turn, realistic
+   generation — never reused (cache_n=0 in 120/120).
+2. Consequence for the shipped design: server.py's "system+history stays
+   warm" / "frozen prefix" comments and entry V's "26 of 44–53 tokens
+   served" do NOT hold on the current instance at shipped prompt sizes.
+   Every turn fully prefills; the two-zone discipline's value here is
+   keeping the prompt SHORT (~83–96 tokens → ~74–79 ms), not cache reuse.
+   Why a 1-token generation disables reuse on this build was not
+   reverse-engineered — recorded as an open server-behavior question.
+3. Warm-up drift: first-after-idle requests cost ~15 ms more regardless of
+   cache state (53→41 ms across identical no-reuse repeats), an order
+   confound for any sequential-arm timing probe. Entry V primed each arm
+   per scenario; this probe used one disposer per arm — insufficient. The
+   re-open rule's 50 ms bar absorbs it, but future timing protocols should
+   interleave arms or per-arm-primed slots.
+
+## DISCLOSURES
+
+Text replay, not live mic; routing/gen_plan/TTS outside the measured path;
+probe ran while the production web server was live (ambient GPU load,
+uncontrolled); arms sequential (order confound disclosed in OBSERVATIONS 3,
+absorbed by the 50 ms re-open bar); threshold bracket and reuse tests are
+post-hoc observations on the live server, labeled, non-adjudicating. The
+first probe launch crashed pre-data (cwd-relative MODELS path) — fixed and
+committed before any completion fired.
