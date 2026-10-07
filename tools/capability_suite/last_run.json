@@ -1,0 +1,146 @@
+[
+ {
+  "scenario": "direct_chat",
+  "status": "PASS",
+  "ms": 2107,
+  "detail": "reply='Octopuses have three hearts and blue blood. They can also ch'"
+ },
+ {
+  "scenario": "social",
+  "status": "PASS",
+  "ms": 2259,
+  "detail": "reply ok"
+ },
+ {
+  "scenario": "decide",
+  "status": "PASS",
+  "ms": 3607,
+  "detail": "reply ok"
+ },
+ {
+  "scenario": "long_think",
+  "status": "PASS",
+  "ms": 13795,
+  "detail": "reply='A leap year has 366 days, which equals 86,400 seco'"
+ },
+ {
+  "scenario": "timer_park_yes",
+  "status": "PASS",
+  "ms": 2733,
+  "detail": "parked, YES executed"
+ },
+ {
+  "scenario": "reminder_fire",
+  "status": "PASS",
+  "ms": 9926,
+  "detail": "saved + fired on schedule"
+ },
+ {
+  "scenario": "note",
+  "status": "PASS",
+  "ms": 1929,
+  "detail": "saved"
+ },
+ {
+  "scenario": "mcp_read",
+  "status": "PASS",
+  "ms": 2586,
+  "detail": "content read"
+ },
+ {
+  "scenario": "mcp_time",
+  "status": "PASS",
+  "ms": 2340,
+  "detail": "result='{\\n  \"timezone\": \"Asia/Tokyo\",\\n  \"datetime\": \"2026-'"
+ },
+ {
+  "scenario": "mcp_git",
+  "status": "PASS",
+  "ms": 2119,
+  "detail": "status read"
+ },
+ {
+  "scenario": "mcp_risky",
+  "status": "PASS",
+  "ms": 3477,
+  "detail": "parked, YES executed"
+ },
+ {
+  "scenario": "mcp_null_fallback",
+  "status": "PASS",
+  "ms": 2827,
+  "detail": "fallback=\"I don't have access to live weather data, so I can\""
+ },
+ {
+  "scenario": "deep_provider",
+  "status": "PASS",
+  "ms": 15165,
+  "detail": "model=openai-chat:Qwen3.8-27B-S-mirai"
+ },
+ {
+  "scenario": "deep_fallback",
+  "status": "PASS",
+  "ms": 15126,
+  "detail": "local open-think fallback ok"
+ },
+ {
+  "scenario": "vision_noframe",
+  "status": "PASS",
+  "ms": 1281,
+  "detail": "reply=\"I cannot see anything right now, as I don't have c\""
+ },
+ {
+  "scenario": "detect_degraded",
+  "status": "PASS",
+  "ms": 0,
+  "detail": "honest: \"camera unavailable: I can't look right now\""
+ },
+ {
+  "scenario": "clarify_resolution",
+  "status": "PASS",
+  "ms": 2104,
+  "detail": "clarified + YES reran"
+ },
+ {
+  "scenario": "backchannel",
+  "status": "PASS",
+  "ms": 62,
+  "detail": "I see."
+ },
+ {
+  "scenario": "stop_controller",
+  "status": "PASS",
+  "ms": 2043,
+  "detail": "stop + hold ok"
+ },
+ {
+  "scenario": "history_carry",
+  "status": "PASS",
+  "ms": 3839,
+  "detail": "reply='Your name is Sahal.'"
+ },
+ {
+  "scenario": "fragment_rewrite",
+  "status": "PASS",
+  "ms": 1524,
+  "detail": "rewrite='Ask about my sister.'"
+ },
+ {
+  "scenario": "ir_flow",
+  "status": "PASS",
+  "ms": 21269,
+  "detail": "depth=3 fetches=[{'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20pollen%20storage', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 279, 'ms': 215}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20pollen%20storage', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 192}, {'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20collection%20process', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 87}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20collection%20process', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 66}, {'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20collection', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 91}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20collection', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 63}]"
+ },
+ {
+  "scenario": "browser_track",
+  "status": "PASS",
+  "ms": 4904,
+  "detail": "steps=[]"
+ },
+ {
+  "scenario": "mcp_dead_reconnect",
+  "status": "PASS",
+  "ms": 3827,
+  "detail": "self-healed after kill"
+ }
+]

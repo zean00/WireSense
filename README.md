@@ -500,18 +500,38 @@ query available. Gate+search-escape: 65.8% < 70.1% plain gate — the trigger
 fires on the wrong turns (45x on already-hit shortlists, 15/31 true misses)
 and merely offering the option costs ~4 points on turns that never use it.
 
-MCP support is IMPLEMENTED (opt-in, web/config.json `"mcp"`; entries AT-BB):
-stdio client with process-group lifecycle and $ENV-only secrets, the coarse
-gate (k=5 top-2 synth-pool shortlist, `{server}__{tool}` namespace — MS-16a
-re-passed the frozen eval at p=0.281) over >20 tools, flat below; risky
-tools park for a spoken confirm; index cached by tools/list hash. Per-server
-deployment gate (MS-16b, pos>=0.60 & neg>=20/24): time + everything PASS,
-filesystem (0.42) + git (0.53) FAIL and stay disabled. Live smoke green
-including mid-session server reconnect. Remote servers too (entry BD):
-`"url"` selects Streamable HTTP — JSON or SSE answers, optional session id
-with one transparent re-init on expiry, DELETE on kill; auth deferred (no-auth
-endpoints only); probed live against mcp.deepwiki.com (3 tools, real call
-0.8 s).
+MCP support is IMPLEMENTED and ENABLED (opt-in, web/config.json `"mcp"`;
+entries AT-BB): stdio client with process-group lifecycle and $ENV-only
+secrets, the coarse gate (k=5 top-2 synth-pool shortlist, `{server}__{tool}`
+namespace — MS-16a re-passed the frozen eval at p=0.281) over >20 tools,
+flat below; risky tools park for a spoken confirm; index cached by
+tools/list hash. Per-server deployment gate (MS-16b, pos>=0.60 &
+neg>=20/24): time + everything PASS, filesystem (0.42) + git (0.53) FAIL
+and stay disabled — MS-16b's autopsy found the failures were eval-recipe
+(planner couldn't resolve paths), and MS-16b-2 (RECIPE_B9, self-contained
+utterances) re-ran the frozen-eval protocol: filesystem 0.64 PASS, git 0.64
+PASS, time 0.75 PASS, everything 0.44 FAIL (demo fixtures — the planner
+rightly prefers the real native tools), so the cleared three are live.
+Live smoke green including mid-session server reconnect. Remote servers too
+(entry BD): `"url"` selects Streamable HTTP — JSON or SSE answers, optional
+session id with one transparent re-init on expiry, DELETE on kill; auth
+deferred (no-auth endpoints only); probed live against mcp.deepwiki.com
+(3 tools, real call 0.8 s).
+
+## Capability coverage suite (2026-10-07)
+
+`tools/capability_suite/run_suite.py`: 24 scenarios driving the FULL turn
+pipeline (`Session.respond()` — router, intercepts, dispatch, flows, TTS,
+history, metrics) with a fake WebSocket over real llama/MCP/deep-think/IR/
+browser. Final run **24/24** (`docs/PROTOCOL-capability-suite.md`). It paid
+for itself four times: tool utterances misroute at the root (knife edges —
+now `TOOL_INTENT_RE` intercept), "think hard about X" routed IR (now
+`DEEP_RE` intercept), the git server demands `repo_path` a speaker can't
+know (now defaulted from the `--repository` pin), and the manifest planner
+bled history into a wrong tool call with MCP live (weather→time, MS-20
+battery: last-2 history adopted, 12/12). Known wart: the browser agent
+wanders when the question targets non-visible structure ("main heading")
+and ends honestly stuck; audio-in/STT/camera/face stay out of suite scope.
 
 ## Status
 

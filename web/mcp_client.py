@@ -66,6 +66,7 @@ class MCPServer:
                      else list(cfg["cmd"]) + list(cfg.get("args") or []))
         self.env = expand_env(cfg.get("env"), self.name)
         self.confirm = cfg.get("confirm")  # True/False override; None = heuristic
+        self.repository = self._pinned_repo(self.argv or [])
         self.call_timeout = float(cfg.get("timeout_s", 30))
         self.tools = []        # verbatim tools/list entries
         self.down = True
@@ -76,6 +77,20 @@ class MCPServer:
         self._id = 0
         self._last_start = 0.0
         self._log = None
+
+    @staticmethod
+    def _pinned_repo(args):
+        """The server's --repository pin, if any. Capability-suite finding
+        (2026-10-07): this mcp-server-git build requires repo_path on
+        git_status even when the server was started with --repository, and
+        a spoken 'show the git status' can't know the path — the gate
+        defaults the arg from this (mcp_gate.Gate.validate_args)."""
+        for i, a in enumerate(args):
+            if a == "--repository" and i + 1 < len(args):
+                return args[i + 1]
+            if a.startswith("--repository="):
+                return a.split("=", 1)[1]
+        return None
 
     # --- transport -------------------------------------------------------
 

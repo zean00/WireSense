@@ -187,6 +187,39 @@ TOOL_RETRY_DIRECTIVE = ('Your last reply was not valid tool JSON. Reply with '
 THINK_NOCLOSE_REPLY = ("I thought it through, but ran out of room for a "
                        "clean answer.")
 
+# Explicit tool-intent intercept (coverage-suite finding, 2026-10-07):
+# tool frames sit on knife edges at the root — the pool's own verbatim
+# ref "Set a timer for 10 minutes." wins think vs browser by 0.001 and
+# flips on "10 seconds"; file/git frames cross to browser even when
+# ADDED to the think pool (record-router consistency gate refuses them:
+# 3 ref-set iterations, each broke a different sig). Measured-inseparable
+# frames ship as intercepts (the local-page/search precedent), so these
+# noun-explicit shapes force think.tool. LOCAL_PAGE_RE (.html) still wins
+# first — opening a served page is browser, not filesystem.
+TOOL_INTENT_RE = re.compile(
+    r"\bgit\s+(?:status|log|diff|branch|show)\b"
+    r"|\b(?:read|check)\b[^.?!]{0,25}?\bfiles?\b"
+    r"|\bfiles?\b[^.?!]{0,20}?\b(?:contents?|inside)\b"
+    r"|\bwhat(?:'s| is)? the time\b[^.?!]{0,25}?\bin\b"
+    r"|\bwhat time (?:is it|will it be)\b[^.?!]{0,25}?\bin\b"
+    r"|\b(?:set|start)\b[^.?!]{0,10}?\b(?:timer|countdown|alarm)\b"
+    r"|\b(?:make|take) a note\b|\bnote down\b"
+    r"|\bremind me\b", re.I)
+
+# Explicit deep-think intent (suite finding, 2026-10-07): "Think hard about
+# X" routes ir (0.89 conf) and "think really hard before you answer" routes
+# decide, while "Ponder this carefully" reaches deep — the think-hard
+# vocabulary scatters across research-flavored classes. Same measured
+# class as the intercepts above; the vocabulary is explicit, so force the
+# root deep class (provider turn with open-think fallback). Checked after
+# TOOL_INTENT_RE: "think hard, then set a timer" is a tool turn.
+DEEP_RE = re.compile(
+    r"\bthink(?:ing)?\s+(?:really\s+|very\s+|extra\s+)?hard\b"
+    r"|\bthink\s+(?:this|it)\s+through\b"
+    r"|\bponder\b|\brack\s+your\s+brain\b"
+    r"|\bdeep(?:ly)?\s+think(?:ing)?\b", re.I)
+
+
 
 def native_manifest_lines():
     """The native manifest lines exactly as tool_manifest_directive has
@@ -1162,6 +1195,22 @@ class Session:
                 spec = dict(WALKER.cfg["nodes"]["root"]["classes"]["ir"])
                 cls, spec["_class"] = "ir", "ir"
                 note = "ir intercept"
+            elif spec.get("action") != "vision" \
+                    and TOOL_INTENT_RE.search(utterance):
+                # explicit tool intent (see TOOL_INTENT_RE): force the
+                # think subtree's tool class directly — same intercept
+                # class as the two above; vision stays camera-owned
+                spec = dict(WALKER.cfg["nodes"]["root"]["classes"]["think"])
+                spec.update(WALKER.cfg["nodes"]["think"]["classes"]["tool"])
+                cls, spec["_class"] = "think.tool", "tool"
+                note = "tool intercept"
+            elif spec.get("action") != "vision" \
+                    and DEEP_RE.search(utterance):
+                # explicit deep-think intent (see DEEP_RE); after the tool
+                # intercept so "think hard, then set a timer" stays a tool
+                spec = dict(WALKER.cfg["nodes"]["root"]["classes"]["deep"])
+                cls, spec["_class"] = "deep", "deep"
+                note = "deep intercept"
             if spec.get("action") == "subtree":
                 # the same embedding walks the child node (numpy only);
                 # the child's action params win, its feedback key refines
@@ -1805,7 +1854,14 @@ class Session:
               if MCP_GATE is not None else tool_manifest_directive())
         for directive in (d0, TOOL_RETRY_DIRECTIVE):
             try:
-                plan = await gen_plan(directive, self.history)
+                # MS-20 (PROTOCOL-deep-agents.md, adopted 2026-10-07): plan
+                # on the last 2 history pairs. Full history bled — "What's
+                # the weather in Jakarta?" fired time__get_current_time and
+                # the readback hallucinated weather (suite run 3) — and
+                # history-free mis-picked timer for "Remind me to stretch in
+                # five seconds" (suite run 4). Battery: H 11/12, L2 12/12,
+                # N 11/12 wrong-executions on exactly those two frames.
+                plan = await gen_plan(directive, self.history[-2:])
             except Exception:
                 return None, False
             if plan is not None:
@@ -1820,6 +1876,8 @@ class Session:
         # first utterance — park for a spoken read-back; the YES resolution
         # runs the tool from respond(). Native: the fixed set. MCP: the
         # gate's per-tool confirm flag (write-heuristic, config override).
+        # (Rev G kept this plan call history-carrying; MS-20 measured the
+        # grown manifest bleeding on it and adopted last-2 — see above.)
         mcp_entry = (MCP_GATE.by_name.get(plan["tool"])
                      if MCP_GATE is not None else None)
         if plan["tool"] in HIGH_RISK_TOOLS or \
@@ -1831,11 +1889,10 @@ class Session:
         if plan["tool"] in DELEGATE_TOOLS:
             # Rev G (decision 29): the bounded job must stand on its own
             # words — re-plan history-free, accept only the same tool.
-            # History bleed into the plan prompt is measured (the
-            # battery caught it: weather -> ir_research 1/1 with session
-            # history, {"tool": null} 2/2 without; browser_flow went
-            # history-free for the same bleed). The four existing tools
-            # keep their single history-carrying plan call untouched.
+            # (History bleed into the plan prompt is measured: the Rev G
+            # battery caught weather -> ir_research with session history;
+            # MS-20 later adopted last-2 for the manifest plan call. The
+            # delegate re-plan itself stays fully history-free.)
             try:
                 plan2 = await gen_plan(tool_manifest_directive(), [])
             except Exception:

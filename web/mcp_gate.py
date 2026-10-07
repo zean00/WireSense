@@ -140,6 +140,18 @@ class Gate:
         validators. Raises ValueError on any violation."""
         props = entry["schema"].get("properties") or {}
         out = {}
+        # a server pinned with --repository owns its repo: a spoken request
+        # ("show the git status") cannot carry the path (the planner emits
+        # "." or nothing), so default the arg from the pin instead of
+        # failing validation — a RELATIVE repo_path is meaningless for a
+        # stdio server spawned from an arbitrary cwd (capability suite,
+        # 2026-10-07; this mcp-server-git build requires repo_path even
+        # when pinned)
+        if "repo_path" in entry["required"] \
+                and getattr(entry["server"], "repository", None):
+            given = (args or {}).get("repo_path")
+            if not given or not os.path.isabs(str(given)):
+                args = {**(args or {}), "repo_path": entry["server"].repository}
         for r in entry["required"]:
             if r not in args or args[r] is None or args[r] == "":
                 raise ValueError(f"{entry['prefixed']} needs {r}")
