@@ -1253,3 +1253,31 @@ Consequences (supersede the incident entry's resolution path):
    frozen recipe measured flat only up to 20 tools), then re-freeze.
 3. Policy amendment for all future gates: a deployment gate must run over
    the exact enabled production server set, never a superset.
+
+## REGISTERED (2026-10-07): flat-28 arm for the unmeasured 21-40-tool band
+
+Motivation (same-day correction above): the frozen recipe measured flat
+only up to 20 tools (MCP_FLAT_MAX=20) and the gate beyond — never the
+21-40 band. Production runs 28; filesystem fails the gate there (0.5625)
+while passing richer-manifest grounds. The candidate is flat.
+
+Arm: MCP_FLAT_MAX treated as 28 for the measurement (runtime override in
+a diagnostic wrapper; the frozen constant is untouched pending
+adjudication); the exact production server set (filesystem, git, time =
+28 MCP tools); frozen .b9 evals byte-copied to diagnostic suffix .f28;
+current code (repo_path defaulting, memory feature) — identical to the
+gate-28 re-runs, so this isolates the selector.
+
+Pre-committed decision rule (registered before any data):
+- ADOPT MCP_FLAT_MAX=28 iff filesystem pos >= 0.60 AND git pos >= 0.60
+  AND time pos >= 0.60, each with neg >= 20/24, on the frozen evals.
+- On adoption: constant committed, production server restarted, capability
+  suite re-run as the regression check (27/27 expected).
+- If any bar fails: NO adoption; git/time stay on the gate at 28 (they
+  already pass it); parking filesystem is recommended to the user (config
+  edit on their call). The flat-28 numbers are recorded either way — the
+  band is then measured, negative result included.
+- No bar changes, no eval edits, no new selector machinery in this arm.
+
+Baselines for comparison (already measured, same code, gate-28):
+fs 0.5625 FAIL / git 0.7031 PASS / time 0.7500 PASS, neg 21/24 each.
