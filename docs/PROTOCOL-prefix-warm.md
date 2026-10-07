@@ -181,3 +181,68 @@ tokens. Registered path if prompts ever grow: restart llama-server with
 --cache-reuse (or a build whose common-prefix serve fires on divergent
 continuation) — user-owned action, the running server is root-owned —
 then re-run this protocol before implementing anything.
+
+## AMENDMENT — large-context run to the platform ceiling
+(pre-registered 2026-10-07, committed before any large-context data)
+
+Motivation: the user asked whether the probe reaches 50K–100K-token
+contexts; it reached 734 (INCIDENT 2). This amendment extends the
+measured range as far as THIS instance allows.
+
+Platform facts discovered pre-data (server mechanics, not experiment
+data): /props reports default_generation_settings.n_ctx = 8192 — with
+`-np 8` the 65,536 context is divided across slots, so EVERY slot
+(including probe slot 1 and all production slots) caps at 8192 tokens
+per request. Consequence, disclosed up front: prompts of 16K–100K
+tokens are unreachable on this instance without a restart
+(`-np 1 -c 65536` or a larger `-c`, model-permitting) — user-owned.
+Beyond the new top rung the curve remains extrapolation; what this
+amendment buys is whether ms/token stays linear to ~10× the old max.
+
+Design (frozen):
+
+- Fixture: tools/prefill_probe/large_fixture.py — deterministic
+  (index arithmetic, no RNG; 200 dialogue pairs, combo cycle 840 > 200,
+  no repeats). sha256 of the fixture text:
+  b42bde63a0108bc0ccbfedfd7f3c2f5312c948d4aa1d05a5d363ad4cb20b84c4.
+  The runner asserts this hash before firing anything and aborts on
+  drift.
+- Ladder in token space: targets {1024, 2048, 4096, 7680} prompt tokens
+  (largest ≤ 8192 − 128 headroom for the mt=96 generation). Runner
+  bisections the pair count per target against /tokenize on the
+  longest entry-V final; actual prompt_n recorded per rung and used in
+  adjudication. Pre-sized pre-data (no completions fired): rungs land at
+  25/51/104/196 pairs → prompt_n ≈ 1012 / 2002 / 4058 / 7651 (finals
+  range ±9 tokens).
+- Arms, interleaving, records: identical to part 2 — COLD / FREE /
+  WARM per (rep, scenario), 3 reps × 8 entry-V finals, think-off,
+  disposer/populator/warm mt=8, commits mt=96 streaming (stream flag in
+  the body — the incident-1 fix), slot 1. Per-commit: wall TTFT,
+  prompt_n, prompt_ms, cache_n, predicted_n, text, warm_ms, warm_cache_n.
+- Launch assertions: slot n_ctx == 8192 and every rung's prompt_n ≤
+  8064, else abort before writing data.
+- Runtime: ~15 min estimated (each arm re-prefills the full history;
+  ~5 full prefills per (rep, scenario) at the top rung).
+
+Decision rules (pre-registered):
+
+- D1 DESCRIPTIVE HEADLINE: the COLD TTFT curve across the four rungs;
+  marginal ms/token per rung; LSQ fit with the prior data point (734)
+  included for reference. Extrapolation beyond 7651 labeled as such.
+- D2 RE-OPEN CLAUSE: if ANY FREE or WARM commit shows cache_n > 0 at
+  any rung, the rewind-never-fires conclusion does not scale — flag
+  prominently and re-adjudicate case 2 under the original R1 rules at
+  the largest rung (WARM ≤ COLD − 100 ms AND ≤ FREE + 10 ms at the two
+  largest rungs, AND WARM ≤ COLD + 10 ms at the 49-token rung).
+- D3 R3 CONFIRMATION: WARM − COLD < 25 ms at every rung → case 2 stays
+  dead on this build at scale; expected outcome given part 1 and the
+  492/492 cache_n=0 record; no production change; page untouched.
+- Output identity across arms reported, not gated; a WARM-vs-COLD
+  divergence rate > 25% at any rung is flagged prominently regardless.
+
+Disclosures: think-off only; synthetic generated dialogue (more
+repetitive than natural conversation; adjudication uses actual
+prompt_n); ambient GPU load from the live production server possible;
+no audio/TTS path; the largest rung exercises ~94% of the slot's 8192
+context — any server-side context-shift warnings in
+/tmp/llama-server.log around that rung would be disclosed if found.
