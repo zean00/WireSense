@@ -86,3 +86,8 @@ the mic gate state machine end-to-end, real camera frames, face recognition
 - run 4: 22/24 (after DEEP_RE + repo_path fix; reminder regression from
   the history-free candidate exposed)
 - run 5 (final, L2 adopted + pinned-repo fix): **24/24 PASS**
+- run 6 (memory feature, B4b of PROTOCOL-memory.md): 24→27 scenarios
+  (remember_store / remember_recall_fresh / remember_forget — a fresh
+  Session proves digest-only recall with no history). **27/27 PASS.**
+  Same run re-exercised all prior classes on the arm-2 manifest (shared
+  TOOL_MANIFEST byte-identical to the MS-16b-2-validated state).

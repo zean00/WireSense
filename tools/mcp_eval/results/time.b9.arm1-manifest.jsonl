@@ -1,0 +1,56 @@
+{"case_id": "pos_time__get_current_time__direct_0", "kind": "pos", "plan": {"tool": "time__get_current_time", "args": {"timezone": "America/New_York"}}, "prompt_tokens": 818, "got": "get_current_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__get_current_time__direct_1", "kind": "pos", "plan": {"tool": "time__get_current_time", "args": {"timezone": "Europe/London"}}, "prompt_tokens": 818, "got": "get_current_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__get_current_time__direct_2", "kind": "pos", "plan": {"tool": "time__get_current_time", "args": {"timezone": "Asia/Tokyo"}}, "prompt_tokens": 819, "got": "get_current_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__get_current_time__direct_3", "kind": "pos", "plan": {"tool": "time__get_current_time", "args": {"timezone": "Europe/Paris"}}, "prompt_tokens": 819, "got": "get_current_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__get_current_time__direct_4", "kind": "pos", "plan": {"tool": "time__get_current_time", "args": {"timezone": "Australia/Sydney"}}, "prompt_tokens": 818, "got": "get_current_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__get_current_time__direct_5", "kind": "pos", "plan": {"tool": "time__get_current_time", "args": {"timezone": "Europe/Berlin"}}, "prompt_tokens": 817, "got": "get_current_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__get_current_time__direct_6", "kind": "pos", "plan": {"tool": "time__get_current_time", "args": {"timezone": "Asia/Kolkata"}}, "prompt_tokens": 817, "got": "get_current_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__get_current_time__direct_7", "kind": "pos", "plan": {"tool": "time__get_current_time", "args": {"timezone": "America/Sao_Paulo"}}, "prompt_tokens": 819, "got": "get_current_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__get_current_time__indirect_8", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 823, "got": null, "ok": false}
+{"case_id": "pos_time__get_current_time__indirect_9", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "America/New_York", "time": "8:00 PM", "target_timezone": "Europe/London"}}, "prompt_tokens": 828, "got": "convert_time", "ok": false}
+{"case_id": "pos_time__get_current_time__indirect_10", "kind": "pos", "plan": {"tool": "ir_research", "args": {"query": ["Tokyo stock market", "open now"], "question": "Is it open?", "depth": 1}}, "prompt_tokens": 824, "got": "ir_research", "ok": false}
+{"case_id": "pos_time__get_current_time__indirect_11", "kind": "pos", "plan": {"tool": "ir_research", "args": {"query": ["Sydney", "sunrise", "today"], "question": "when is the sunrise", "depth": 1}}, "prompt_tokens": 822, "got": "ir_research", "ok": false}
+{"case_id": "pos_time__get_current_time__indirect_12", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 922, "got": null, "ok": false}
+{"case_id": "pos_time__get_current_time__indirect_13", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "UTC", "time": "now", "target_timezone": "Asia/Kolkata"}}, "prompt_tokens": 821, "got": "convert_time", "ok": false}
+{"case_id": "pos_time__get_current_time__indirect_14", "kind": "pos", "plan": {"tool": null, "args": {}}, "prompt_tokens": 822, "got": null, "ok": false}
+{"case_id": "pos_time__get_current_time__indirect_15", "kind": "pos", "plan": {"tool": "ir_research", "args": {"query": ["Rio power grid", "stability"], "question": "is it currently stable", "depth": 1}}, "prompt_tokens": 884, "got": "ir_research", "ok": false}
+{"case_id": "pos_time__convert_time__direct_16", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "America/New_York", "time": "3:00 PM", "target_timezone": "Asia/Tokyo"}}, "prompt_tokens": 819, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__direct_17", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "EST", "time": "8:00 AM", "target_timezone": "GMT"}}, "prompt_tokens": 821, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__direct_18", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "UTC", "time": "2024-12-01 15:30", "target_timezone": "Europe/Berlin"}}, "prompt_tokens": 833, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__direct_19", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "Europe/London", "time": "9:45 PM", "target_timezone": "America/New_York"}}, "prompt_tokens": 823, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__direct_20", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "UTC", "time": "12:00", "target_timezone": "Europe/Paris"}}, "prompt_tokens": 538, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__direct_21", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "UTC", "time": "6:30 PM", "target_timezone": "Asia/Tokyo"}}, "prompt_tokens": 822, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__direct_22", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "UTC", "time": "2025-01-01 00:00", "target_timezone": "Australia/Sydney"}}, "prompt_tokens": 832, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__direct_23", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "GMT", "time": "7:00 AM", "target_timezone": "Asia/Tokyo"}}, "prompt_tokens": 822, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__indirect_24", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "UTC", "time": "08:00", "target_timezone": "Asia/Tokyo"}}, "prompt_tokens": 822, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__indirect_25", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "America/New_York", "time": "15:00", "target_timezone": "Europe/Paris"}}, "prompt_tokens": 821, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__indirect_26", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "EST", "time": "6 PM", "target_timezone": "Asia/Tokyo"}}, "prompt_tokens": 823, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__indirect_27", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "America/New_York", "time": "10:00", "target_timezone": "Europe/Berlin"}}, "prompt_tokens": 824, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__indirect_28", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "Asia/Tokyo", "time": "9:00", "target_timezone": "Europe/London"}}, "prompt_tokens": 822, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__indirect_29", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "America/New_York", "time": "20:00", "target_timezone": "Australia/Sydney"}}, "prompt_tokens": 824, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__indirect_30", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "EST", "time": "3:00 PM", "target_timezone": "Tokyo"}}, "prompt_tokens": 824, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "pos_time__convert_time__indirect_31", "kind": "pos", "plan": {"tool": "time__convert_time", "args": {"source_timezone": "America/New_York", "time": "18:00", "target_timezone": "Europe/Paris"}}, "prompt_tokens": 823, "got": "convert_time", "ok": true, "schema_ok": true}
+{"case_id": "neg_00", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 816, "got": null, "ok": true}
+{"case_id": "neg_01", "kind": "neg", "plan": {"tool": "timer", "args": {"seconds": 1200, "label": "20 minutes"}}, "prompt_tokens": 878, "got": "timer", "ok": false}
+{"case_id": "neg_02", "kind": "neg", "plan": {"tool": "reminder", "args": {"when": "Friday", "text": "Dentist appointment"}}, "prompt_tokens": 818, "got": "reminder", "ok": false}
+{"case_id": "neg_03", "kind": "neg", "plan": {"tool": "note", "args": {"text": "The wifi password is on the fridge."}}, "prompt_tokens": 1024, "got": "note", "ok": false}
+{"case_id": "neg_04", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 815, "got": null, "ok": true}
+{"case_id": "neg_05", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 816, "got": null, "ok": true}
+{"case_id": "neg_06", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 916, "got": null, "ok": true}
+{"case_id": "neg_07", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 911, "got": null, "ok": true}
+{"case_id": "neg_08", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 816, "got": null, "ok": true}
+{"case_id": "neg_09", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 812, "got": null, "ok": true}
+{"case_id": "neg_10", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 815, "got": null, "ok": true}
+{"case_id": "neg_11", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 908, "got": null, "ok": true}
+{"case_id": "neg_12", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 813, "got": null, "ok": true}
+{"case_id": "neg_13", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 911, "got": null, "ok": true}
+{"case_id": "neg_14", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 814, "got": null, "ok": true}
+{"case_id": "neg_15", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 813, "got": null, "ok": true}
+{"case_id": "neg_16", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 812, "got": null, "ok": true}
+{"case_id": "neg_17", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 815, "got": null, "ok": true}
+{"case_id": "neg_18", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 875, "got": null, "ok": true}
+{"case_id": "neg_19", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 814, "got": null, "ok": true}
+{"case_id": "neg_20", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 812, "got": null, "ok": true}
+{"case_id": "neg_21", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 815, "got": null, "ok": true}
+{"case_id": "neg_22", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 912, "got": null, "ok": true}
+{"case_id": "neg_23", "kind": "neg", "plan": {"tool": null, "args": {}}, "prompt_tokens": 814, "got": null, "ok": true}

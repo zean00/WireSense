@@ -110,6 +110,11 @@ rewrite failures.
   fire back through `tool_event`), and a confirmation sentence is generated.
   Reminders persist: each gets a uuid and `fired` mark, and a fresh session
   re-arms unfired future ones from `memory.json` on hello (past-due dropped).
+  Memory capture is the newest branch (`docs/PROTOCOL-memory.md`):
+  "remember this…" / "forget…" forces a dedicated remember / forget / note
+  manifest; facts persist in `memory.json` and recall rides the answer turn
+  as a one-line digest — works from a brand-new session, never the system
+  block, never history (the MS-20 lesson).
   A null plan or two invalid JSONs falls back to an honest brief answer
   (weather → "I don't have access to live weather data"), so tool-request
   misroutes degrade gracefully. E2E: `make test-voice` (11 cases, 11/11).
@@ -512,6 +517,10 @@ and stay disabled — MS-16b's autopsy found the failures were eval-recipe
 utterances) re-ran the frozen-eval protocol: filesystem 0.64 PASS, git 0.64
 PASS, time 0.75 PASS, everything 0.44 FAIL (demo fixtures — the planner
 rightly prefers the real native tools), so the cleared three are live.
+That clearance is version-scoped: unpinned `npx -y` / `uvx` spawns flap
+package versions across restarts, and on a freshly-resolved ground
+filesystem FAILS the same bar the cached ground passed (PROTOCOL-
+mcp-selection.md, 2026-10-07 incident — pin versions, re-clear).
 Live smoke green including mid-session server reconnect. Remote servers too
 (entry BD): `"url"` selects Streamable HTTP — JSON or SSE answers, optional
 session id with one transparent re-init on expiry, DELETE on kill; auth
@@ -520,10 +529,12 @@ deferred (no-auth endpoints only); probed live against mcp.deepwiki.com
 
 ## Capability coverage suite (2026-10-07)
 
-`tools/capability_suite/run_suite.py`: 24 scenarios driving the FULL turn
+`tools/capability_suite/run_suite.py`: 27 scenarios driving the FULL turn
 pipeline (`Session.respond()` — router, intercepts, dispatch, flows, TTS,
 history, metrics) with a fake WebSocket over real llama/MCP/deep-think/IR/
-browser. Final run **24/24** (`docs/PROTOCOL-capability-suite.md`). It paid
+browser. Final run **27/27** (`docs/PROTOCOL-capability-suite.md`; 24→27
+with the memory feature: store / fresh-session digest recall / forget).
+It paid
 for itself four times: tool utterances misroute at the root (knife edges —
 now `TOOL_INTENT_RE` intercept), "think hard about X" routed IR (now
 `DEEP_RE` intercept), the git server demands `repo_path` a speaker can't

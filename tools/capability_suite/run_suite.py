@@ -3,12 +3,14 @@
 — the FULL turn pipeline (router -> intercepts -> dispatch -> flow -> TTS ->
 history -> metrics) — over every capability the server exposes.
 
-Scenarios (24): direct/social/decide llm turns, think.long_think open-think,
-native timer (high-risk park + YES), reminder (relative fire), note, MCP read/
-time/git/risky-park/null-fallback/dead-reconnect, deep turn (provider + local
-fallback), vision without camera, detect without camera, judge clarify +
-resolution, backchannel, mid-task stop controller, history carry, fragment
-rewrite, IR research track, browser track (skipped if playwright missing).
+Scenarios (27): direct/social/decide llm turns, think.long_think open-think,
+native timer (high-risk park + YES), reminder (relative fire), note,
+remember (capture intercept) + recall via digest in a fresh session +
+forget, MCP read/time/git/risky-park/null-fallback/dead-reconnect, deep
+turn (provider + local fallback), vision without camera, detect without
+camera, judge clarify + resolution, backchannel, mid-task stop controller,
+history carry, fragment rewrite, IR research track, browser track (skipped
+if playwright missing).
 
 Not covered here (needs a real audio/camera client): VAD/STT/audio-in, the
 Phonon ASR loop, real camera frames, face recognition (opt-in, disabled),
@@ -196,6 +198,43 @@ async def sc_note(s, ws):
     assert tc and tc[0]["tool"] == "note", tc
     assert "note saved" in tc[0]["result"], tc[0]["result"]
     return "saved"
+
+
+async def sc_remember_store(s, ws):
+    ws.clear()
+    await s.respond("Remember that I'm allergic to peanuts")
+    r = ws.of("route")
+    assert r and r[0]["mode"] == "think.tool" \
+        and r[0].get("note") == "memory intercept", r
+    tc = ws.of("tool_call")
+    assert tc and tc[0]["tool"] == "remember", tc
+    mem = json.load(open(MEM))
+    assert any(i.get("type") == "fact"
+               and "peanut" in i.get("text", "").lower() for i in mem), mem
+    assert ws.of("response_done")[0]["text"].strip(), "no confirm reply"
+    return "fact stored"
+
+
+async def sc_remember_recall(s, ws):
+    # fresh session: the recall must come from the digest alone (no history)
+    ws.clear()
+    ws2 = FakeWS()
+    s2 = server.Session(ws2)
+    await s2.respond("What allergies do I have?")
+    assert not ws2.of("tool_call"), "recall is an llm turn, not a tool"
+    reply = ws2.of("response_done")[0]["text"]
+    assert "peanut" in reply.lower(), f"digest not honored: {reply[:80]}"
+    return f"recalled via digest: {reply[:44]!r}"
+
+
+async def sc_remember_forget(s, ws):
+    ws.clear()
+    await s.respond("Forget what I said about peanuts")
+    tc = ws.of("tool_call")
+    assert tc and tc[0]["tool"] == "forget", tc
+    mem = [i for i in json.load(open(MEM)) if i.get("type") == "fact"]
+    assert not any("peanut" in i.get("text", "").lower() for i in mem), mem
+    return f"removed: {tc[0]['result'][:44]!r}"
 
 
 async def sc_mcp_read(s, ws):
@@ -433,6 +472,9 @@ SCENARIOS = [
     ("timer_park_yes", 120, None),
     ("reminder_fire", 60, None),
     ("note", 120, None),
+    ("remember_store", 120, None),
+    ("remember_recall_fresh", 120, None),
+    ("remember_forget", 120, None),
     ("mcp_read", 120, None),
     ("mcp_time", 120, None),
     ("mcp_git", 120, None),
@@ -472,6 +514,12 @@ async def main():
             fn = sc_reminder_fire
         elif name == "note":
             fn = sc_note
+        elif name == "remember_store":
+            fn = sc_remember_store
+        elif name == "remember_recall_fresh":
+            fn = sc_remember_recall
+        elif name == "remember_forget":
+            fn = sc_remember_forget
         elif name == "mcp_read":
             fn = sc_mcp_read
         elif name == "mcp_time":

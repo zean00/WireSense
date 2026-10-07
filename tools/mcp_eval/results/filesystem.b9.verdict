@@ -1,1 +1,5 @@
 {"pos": 0.6406, "neg": 20, "neg_n": 24, "passed": true}
+{"pos": 0.6406, "neg": 20, "neg_n": 24, "passed": true}
+{"pos": 0.5469, "neg": 21, "neg_n": 24, "passed": false}
+{"pos": 0.5625, "neg": 21, "neg_n": 24, "passed": false}
+{"pos": 0.5625, "neg": 21, "neg_n": 24, "passed": false}

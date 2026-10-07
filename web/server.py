@@ -219,6 +219,19 @@ DEEP_RE = re.compile(
     r"|\bponder\b|\brack\s+your\s+brain\b"
     r"|\bdeep(?:ly)?\s+think(?:ing)?\b", re.I)
 
+# Memory capture intent (docs/PROTOCOL-memory.md, registered before
+# implementation): "remember this/that", "keep in mind", "from now on",
+# "forget X" scatter across think/deep/social/decide at the root (measured
+# 0.798-0.878, none reach the tool flow) — force think.tool so the
+# remember/forget tools are offered. Recall QUESTIONS ("do you remember
+# my name?") deliberately do not match — they are llm turns answered with
+# the digest. Checked LAST (after tool/deep) and skipped when
+# FACE_INTENT_RE matches: face talk stays camera-owned.
+MEMORY_RE = re.compile(
+    r"\bremember\s+(?:this|that|:)\b"
+    r"|\bkeep in mind\b|\bdon'?t forget\b|\bfrom now on\b"
+    r"|\bforget\s+(?:this|that|about|what|everything)\b", re.I)
+
 
 
 def native_manifest_lines():
@@ -235,6 +248,22 @@ def tool_manifest_directive() -> str:
             + "\n".join(native_manifest_lines()) +
             '\nReply with ONLY a JSON object: {"tool": "<name>", "args": {...}} '
             'or {"tool": null} if no tool fits. No other text.')
+
+
+# Memory-capture turns plan against THIS, not the gate shortlist
+# (docs/PROTOCOL-memory.md amendment 1): the shared manifest stays
+# byte-identical — arm 1 measured its 2 extra lines costing filesystem
+# 9 points on the frozen deployment gate — and memory never needs MCP
+# tools, so a tight 3-line manifest serves the 4B planner better.
+MEMORY_MANIFEST_DIRECTIVE = (
+    "Choose a tool for this request. Available tools:\n"
+    "- remember: store a fact or standing instruction the user wants kept "
+    "and honored; args: text (the fact or instruction)\n"
+    "- forget: delete something previously remembered; args: about (key "
+    "words from it)\n"
+    "- note: save a note for later; args: text (the note)\n"
+    'Reply with ONLY a JSON object: {"tool": "<name>", "args": {...}} '
+    'or {"tool": null} if no tool fits. No other text.')
 
 
 def parse_tool_json(text):
@@ -461,6 +490,16 @@ def validate_tool(name, args) -> dict:
         if not text:
             raise ValueError("note needs text")
         return {"text": text[:500]}
+    if name == "remember":
+        text = str(args.get("text") or "").strip()
+        if not text:
+            raise ValueError("remember needs text")
+        return {"text": text[:300]}
+    if name == "forget":
+        about = str(args.get("about") or "").strip()
+        if not about:
+            raise ValueError("forget needs about")
+        return {"about": about[:120]}
     if name == "detect":
         raw = args.get("labels")
         if not isinstance(raw, list):
@@ -575,6 +614,19 @@ def load_memory() -> list:
             return json.load(f)
     except (OSError, ValueError):
         return []
+
+
+def memory_digest_line():
+    """One volatile line of what the assistant remembers (facts + notes,
+    newest last, bounded) — docs/PROTOCOL-memory.md. Rides the CURRENT
+    turn's directive (never the byte-stable system block, never history —
+    history keeps the raw utterance, the camera_line precedent) and never
+    the tool planner prompt (MS-20: no answer-side text in plan calls)."""
+    items = [it for it in load_memory() if it.get("type") in ("fact", "note")]
+    if not items:
+        return None
+    texts = [str(it.get("text") or "")[:120] for it in items[-8:]]
+    return "(You remember: " + " / ".join(texts) + ")"
 
 
 def _now(offset_s=0) -> str:
@@ -1211,6 +1263,18 @@ class Session:
                 spec = dict(WALKER.cfg["nodes"]["root"]["classes"]["deep"])
                 cls, spec["_class"] = "deep", "deep"
                 note = "deep intercept"
+            elif spec.get("action") != "vision" \
+                    and not FACE_INTENT_RE.search(utterance) \
+                    and MEMORY_RE.search(utterance):
+                # memory capture intent (see MEMORY_RE); last in the chain,
+                # face management keeps its vision routing. The turn plans
+                # against the scoped memory manifest (amendment 1) — not
+                # the shared manifest or the MCP gate shortlist.
+                spec = dict(WALKER.cfg["nodes"]["root"]["classes"]["think"])
+                spec.update(WALKER.cfg["nodes"]["think"]["classes"]["tool"])
+                spec["_plan_directive"] = "memory"
+                cls, spec["_class"] = "think.tool", "tool"
+                note = "memory intercept"
             if spec.get("action") == "subtree":
                 # the same embedding walks the child node (numpy only);
                 # the child's action params win, its feedback key refines
@@ -1269,7 +1333,7 @@ class Session:
         if reply is None and spec.get("action") == "vision" and frame_b64:
             reply = await self.vision_reply(utterance, frame_b64, spec)
         if reply is None and spec.get("action") == "tool":
-            reply, tool_skip = await self.tool_flow(utterance, fb)
+            reply, tool_skip = await self.tool_flow(utterance, fb, spec)
             skip_tts = skip_tts or tool_skip
             if reply is None:
                 # nothing fit the manifest (or JSON failed twice): honest
@@ -1283,6 +1347,10 @@ class Session:
         if reply is None and spec.get("action") == "ir":
             reply, skip_tts = await self.ir_flow(utterance, fb)
         deep_meta = None
+        # memory digest, computed once for both answer paths (deep prepends
+        # it to the utterance it passes on; local llm composes it into the
+        # directive below) — docs/PROTOCOL-memory.md
+        mem_line = memory_digest_line()
         if reply is None and spec.get("deep"):
             # Rev 1 (PROTOCOL-deep-agents.md): deep turns can now act
             # through legs, so the turn itself gets the tracks' code-
@@ -1299,16 +1367,20 @@ class Session:
                 # Never falls through to the generic path below —
                 # deep_turn owns the fallback itself (a second generation
                 # would duplicate).
-                reply, deep_meta = await self.deep_turn(utterance, spec)
+                reply, deep_meta = await self.deep_turn(
+                    (mem_line + " " if mem_line else "") + utterance, spec)
                 if reply is None:
                     # hard local failure: error event + gate already done
                     return
         if reply is None:
             open_think = bool(spec.get("think"))
+            directive = spec.get("directive")
+            if mem_line:
+                directive = f"{directive} {mem_line}" if directive else mem_line
             out = {}
             try:
                 async for kind, payload in self.stream_local(
-                        self.history, utterance, spec.get("directive"),
+                        self.history, utterance, directive,
                         spec.get("max_tokens", 96), open_think, t0, out):
                     if kind == "start":
                         first = payload
@@ -1827,11 +1899,13 @@ class Session:
             await self.send({"type": "response_delta", "text": reply})
         return reply, meta
 
-    async def tool_flow(self, utterance, fb=None):
+    async def tool_flow(self, utterance, fb=None, spec=None):
         """Manifest-JSON generation -> validate -> execute -> confirm.
         One retry on invalid JSON. Returns (reply, skip_tts), or
         (None, False) when nothing fit (caller falls back to an honest
-        answer). The plan/confirm generations are internal: only the
+        answer). spec (optional) carries the memory intercept's scoped
+        plan directive (docs/PROTOCOL-memory.md amendment 1). The
+        plan/confirm generations are internal: only the
         confirmation enters history and TTS. Stage 3
         (PROTOCOL-deep-agents.md decisions 25-27): ir_research/browse
         DELEGATE — the tracks' own intake spawns (background task,
@@ -1850,8 +1924,10 @@ class Session:
             return parse_tool_json(r.json()["choices"][0]["text"])
 
         plan = None
-        d0 = (MCP_GATE.directive_for(utterance)
-              if MCP_GATE is not None else tool_manifest_directive())
+        d0 = MEMORY_MANIFEST_DIRECTIVE \
+            if spec is not None and spec.get("_plan_directive") == "memory" \
+            else (MCP_GATE.directive_for(utterance)
+                  if MCP_GATE is not None else tool_manifest_directive())
         for directive in (d0, TOOL_RETRY_DIRECTIVE):
             try:
                 # MS-20 (PROTOCOL-deep-agents.md, adopted 2026-10-07): plan
@@ -2220,6 +2296,26 @@ class Session:
             append_memory({"type": "note", "text": args["text"],
                            "created": _now()})
             return f"note saved: {args['text']}"
+        if name == "remember":
+            append_memory({"type": "fact", "id": uuid.uuid4().hex[:8],
+                           "text": args["text"], "created": _now()})
+            return f"remembered: {args['text']}"
+        if name == "forget":
+            # facts + notes only: reminders are scheduled behavior with
+            # their own lifecycle, not knowledge to keyword-delete
+            about = args["about"].lower()
+            keep, gone = [], []
+            for it in load_memory():
+                t = str(it.get("text") or "")
+                if it.get("type") in ("fact", "note") and about in t.lower():
+                    gone.append(t)
+                else:
+                    keep.append(it)
+            if not gone:
+                return "nothing matching to forget"
+            with open(MEMORY_PATH, "w") as f:
+                json.dump(keep, f, indent=1)
+            return f"forgot {len(gone)}: " + "; ".join(g[:60] for g in gone)
         if name == "detect":
             return await self.run_detect(args["labels"])
         if name == "face_enroll":

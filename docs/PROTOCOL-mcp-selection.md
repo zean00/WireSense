@@ -1169,3 +1169,40 @@ is the user's call. When enabled with <= 20 MCP tools total the gate
 runs flat; the four-server set (41 tools) runs through the cached index.
 
 Files: tools/mcp_eval/results/{filesystem,time,everything,git}.b9.{jsonl,verdict}.
+
+## INCIDENT (2026-10-07): the gate ground flaps — unpinned npx/uvx spawns
+
+During the memory-feature deployment gate (PROTOCOL-memory.md B4a) the
+filesystem re-run FAILED (pos 0.5625, bar 0.60) against the registered
+0.6406 PASS, while git (0.7031) and time (0.7500) re-ran IDENTICAL to
+registration — four verdict rows each, byte-stable. The flapping is in
+the ground, not any code change:
+
+- The gate cache is keyed on a content hash of the spawned tools/list
+  (registered ground: 473e375b). During investigation, back-to-back
+  spawn sets produced the cached hash on one run and a fresh rebuild on
+  the next; an instrumented replication produced yet another payload
+  hash. Fresh rebuilds are deterministic per tool set (rerun3 ≡ rerun4
+  byte-identical, 88+64+88 rows), so a rebuild itself proves the spawned
+  tool set differed from the cached one.
+- npm and PyPI show no new releases (filesystem 2026.8.31, time/git
+  2026.8.18), so the flap is between locally cached package versions and
+  the registry's current resolution: `npx -y` / `uvx` re-resolve against
+  registry metadata whose local TTLs expire, then swing back.
+- On the new (freshly-resolved) ground filesystem not only loses 5 pos
+  cases, it gains schema failures — the newly-resolved server version
+  changed tool schemas. The registered 0.6406 was measured on the older
+  cached ground and does not transfer.
+
+Consequence for the registered policy (PASS enables, verdicts are
+version-scoped): filesystem is currently enabled on a ground where its
+deployment gate FAILS. Per policy it should be re-cleared or parked;
+disabling it is a config edit — the user's call.
+
+Resolution path (recommended, not yet applied — web/config.json is the
+user's live file): pin each MCP server version in the spawn command
+(e.g. `npx -y @modelcontextprotocol/server-filesystem@<ver>` /
+`uvx mcp-server-time==<ver>`), then re-run the three frozen gates on the
+pinned ground as the new registered verdicts. Pinning makes the cached
+index and every future spawn agree by construction, which is what the
+cache hash assumed all along.
