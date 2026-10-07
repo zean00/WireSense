@@ -30,6 +30,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 WEB = os.path.join(ROOT, "web")
 sys.path.insert(0, WEB)
+os.chdir(WEB)  # server.py's MODELS = "../models" assumes cwd=web (prod)
 import server as ws  # noqa: E402  (build_prompt / system_block / DecideReadout)
 
 LLAMA = ws.LLAMA
