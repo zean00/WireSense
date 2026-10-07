@@ -171,7 +171,7 @@ def main():
         assert ref_pn <= n_ctx - GEN_HEADROOM
         rows = []
         for i, final in enumerate(finals):
-            complete(base, prompt_for([], DISPOSER), 8)
+            complete(base, prompt_for(DISPOSER, []), 8)
             cold = complete(base, prompt_for(final, history), 96,
                             stream=True)
             cold.update({"arm": "COLD", "scenario": i, "rep": 0})
