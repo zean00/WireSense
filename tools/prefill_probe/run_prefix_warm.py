@@ -59,7 +59,7 @@ def complete(prompt, mt, cache=True, timeout=300, stream=False):
     ttft = None
     chunks, timings = [], None
     req = dict(prompt=prompt, max_tokens=mt, temperature=0,
-               cache_prompt=cache, id_slot=SLOT)
+               cache_prompt=cache, id_slot=SLOT, stream=stream)
     if stream:
         with requests.post(f"{LLAMA}/v1/completions", json=req,
                            stream=True, timeout=timeout) as r:
