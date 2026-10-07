@@ -71,3 +71,33 @@ Not in scope: user-scoped memory namespaces, automatic extraction of
 preferences from ordinary chat, editing notes by voice, reminder
 cancellation, memory injected into vision/browser/ir answers, face memory
 (governed by PROTOCOL-face-recognition.md).
+
+## Amendment 1 (2026-10-07, before the pivot arm runs): manifest growth REJECTED, intercept-scoped plan directive adopted instead
+
+Arm 1 (TOOL_MANIFEST +2 lines, fresh re-run of the three frozen .b9
+evals — the runner's resume cache was archived to results/*.pre-memory.jsonl
+first so the run was genuine):
+
+```
+filesystem pos 35/64 = 0.5469 (bar 0.60) FAIL   [was 0.6406 registered]
+git        pos 45/64 = 0.7031 PASS  neg 21/24
+time       pos 24/32 = 0.7500 PASS  neg 21/24
+```
+
+Two extra manifest lines perturb planner selection on UNRELATED MCP turns —
+the exact currency the deployment gate guards. B4 rejects arm 1; the
+remember/forget lines come OUT of TOOL_MANIFEST.
+
+Arm 2 (adopted design): the shared manifest stays byte-identical (the
+pre-memory gate results remain authoritative, no prompt drift by
+construction). The MEMORY_RE intercept marks the turn
+(`spec["_plan_directive"] = "memory"`), and tool_flow plans memory turns
+against a dedicated MEMORY_MANIFEST_DIRECTIVE — remember / forget / note
++ the standard null contract — instead of the gate shortlist. Memory
+capture never needs MCP tools, and the 3-line manifest is easier for the
+4B planner than 30. validate_tool/run_tool branches unchanged. tool_flow
+gains an optional spec arg (mcp_smoke's 2-arg calls stay valid).
+
+Bars re-stated for arm 2: B1-B3, B5 unchanged; B4 becomes (a) the three
+frozen .b9 gates re-run fresh on the reverted manifest and PASS, (b) the
+capability suite (27 scenarios incl. 3 memory) all green.
