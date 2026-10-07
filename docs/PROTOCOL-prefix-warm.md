@@ -246,3 +246,105 @@ prompt_n); ambient GPU load from the live production server possible;
 no audio/TTS path; the largest rung exercises ~94% of the slot's 8192
 context — any server-side context-shift warnings in
 /tmp/llama-server.log around that rung would be disclosed if found.
+
+# AMENDMENT RESULTS (adjudicated 2026-10-07)
+
+Data: tools/prefill_probe/results_large_ctx.json (git_head 7c6c4c2,
+started 20:56:49, finished 21:09, 3 reps × 8 finals × 3 arms × 4 rungs =
+288 commits). Stats: tools/prefill_probe/analyze_large_ctx.py (post-data,
+read-only). Launch assertions passed: fixture sha256 matched, slot
+n_ctx = 8192, every rung ≤ 8064 prompt tokens (max 7651).
+
+## D2 TRIGGERED — reuse fires at scale
+
+96 rows with cache_n > 0: every FREE and WARM commit at rungs 4096 and
+7680. Zero at rungs 1024 and 2048; COLD cache_n = 0 at every rung
+(disposer precedes it — nothing shared to serve).
+
+Measured serve amounts (median):
+- rung 4096 (full ≈ 4054): FREE served 2001–2010, re-prefilled 2048;
+  WARM served 1992, re-prefilled ~2062.
+- rung 7680 (full ≈ 7647): FREE served 5594–5603, re-prefilled 2048;
+  WARM served 5585, re-prefilled ~2062.
+
+The re-prefill residual is pinned at ~2048 tokens at both rungs — the
+`-ub 2048` value in the running server's flags (attribution hypothesis,
+labeled; the pinned residual is the measured fact). All reuse data across
+the three probes fits one rule: **a divergent continuation is served
+max(0, LCP − ~2048) tokens — the trailing ~2048 are always re-prefilled.**
+The identical-replay shape (prompt exactly the cached prompt, the
+pre-registration probing) is served in full (924-token replay = 26 ms).
+
+This CORRECTS the registered-run verdict's mechanism record: "mid-
+sequence rewind never fires on this build" was true only of the tested
+sub-2048-LCP regime. It fires once the shared prefix exceeds ~2048
+tokens. Probe 1 (120/120), part 1 (60/60), part 2 (432/432), and rungs
+1024/2048 were all in the sub-threshold regime; nothing in them is
+invalidated, but the mechanism conclusion does not scale — exactly the
+contingency D2 was written for.
+
+## D1 — the COLD prefill curve (headline)
+
+| prompt_n | COLD TTFT | FREE TTFT | WARM TTFT | warm_ms |
+|---|---|---|---|---|
+| 1008 | 440.1 | 444.6 | 444.6 | 549.5 |
+| 1998 | 892.5 | 886.2 | 890.7 | 1007.2 |
+| 4054 | 1793.5 | 949.9 | 974.7 | 1896.3 |
+| 7647 | 3431.1 | 1048.2 | 1082.9 | 3537.7 |
+
+- Marginal COLD cost is LINEAR through 7647 tokens with no quadratic
+  onset: 0.457 / 0.438 / 0.456 ms/token between consecutive rungs
+  (flash-attn, chunked prefill).
+- LSQ over the four rungs plus the registered run's 734-token point:
+  TTFT ≈ −8 + 0.449·prompt_n ms (the negative intercept is a fit
+  artifact; clamp to the ~40 ms floor). Extrapolation, labeled, beyond
+  7651: ~4.4 s @ 16K, ~9 s @ 32K, **~14.5 s @ 50K, ~21.5 s @ 65,536**
+  (the server's slot cap makes 100K unreachable without a restart).
+- The shipped steady state (FREE) flattens instead: once the history
+  prefix crosses ~2048 tokens, per-turn TTFT ≈ 0.95–1.05 s REGARDLESS of
+  context size (949.9 @ 4054, 1048.2 @ 7647) — the 2048-token re-prefill
+  floor dominates.
+
+## Re-adjudication under the original R1 rules (per D2)
+
+- WARM ≤ COLD − 100 ms at the two largest rungs: PASS (−818.8, −2348.2).
+- WARM ≤ FREE + 10 ms at the two largest rungs: **FAIL (+24.8, +34.7)**.
+- WARM ≤ COLD + 10 ms at the 49-token rung (registered run): PASS
+  (−0.3).
+
+R1 fails on the FREE-parity clause. The registered R2 conditions are met
+(WARM − COLD ≥ 25 ms only at ≥~1000-token contexts; an R1 clause
+otherwise fails) → **R2 REGISTERED CANDIDATE, no production change, page
+untouched** — with the measured reason stated plainly, because it changes
+what the "standing plan" is: the FREE clause fails not because warming is
+marginal but because **the shipped cache_prompt=true path already
+captures the entire benefit natively** — same serve amounts, 25–35 ms
+less per turn, and none of the warm request's 0.55–3.5 s of GPU time
+during speech. Warming is strictly dominated at every rung. The standing
+plan for when prompts grow is therefore: do nothing — the reuse arrives
+on its own once the turn-to-turn shared prefix exceeds ~2048 tokens (i.e.
+prompts above ~2100 tokens). The registerable follow-up is the 2048-token
+re-prefill floor (~0.95 s at any large context): whether a --cache-reuse
+restart (user-owned) removes or shrinks it — that would help the FREE
+path, not warming.
+
+## Identity
+
+- COLD == FREE: 24/24 at every rung (and 144/144 cells in the registered
+  run) — the native reuse path measured output-clean throughout.
+- COLD == WARM: 24/24 at 1024/2048/7680; **18/24 at 4096 — the 25%
+  divergence flag threshold, flagged**: 6 WARM cells rewrote outputs
+  (fp-reorder at the served boundary), some substantively ("cold water"
+  → "hot water" in the cold-brew cell). The explicit-warm boundary
+  (empty-user-turn tail) is the fragile one; the native path's boundary
+  measured clean. A further reason warming stays retired.
+
+## Disclosures
+
+Same as the amendment, plus: the D3 expectation ("stays dead") was
+falsified in part — reuse fires at scale — and the adjudication followed
+the registered D2 re-open path rather than the expected D3 record. The
+ubatch attribution of the 2048-token residual is a labeled hypothesis;
+the residual's measured constancy (2048/2062 across 96 commits at two
+rungs) is the fact relied on. No server restart, no flag changes;
+production untouched throughout.
