@@ -348,3 +348,80 @@ ubatch attribution of the 2048-token residual is a labeled hypothesis;
 the residual's measured constancy (2048/2062 across 96 commits at two
 rungs) is the fact relied on. No server restart, no flag changes;
 production untouched throughout.
+
+## AMENDMENT 2 — does --cache-reuse remove the 2048-token floor?
+(pre-registered 2026-10-08, committed before any sandbox data)
+
+Question: the standing lever after the large-context run is a
+--cache-reuse restart (user-owned). Before recommending a production
+restart, measure whether the flag actually delivers on THIS build.
+Constraint: the GPU is full (7513/8151 MiB, production), so a second
+GPU instance cannot exist; production :8998 (root pid 336728) stays
+untouched per standing rule.
+
+Sandbox (pre-data platform facts):
+
+- Binary: /home/sahal/.local/bin/llama-server (the user's own build —
+  the production binary; --help confirms the flag exists: "--cache-reuse
+  N  min chunk size to attempt reusing from the cache via KV shifting,
+  requires prompt caching to be enabled (default: 0)").
+- Instance: MY OWN process on 127.0.0.1:8999, CPU-only, run as sahal —
+  launched and killed by me; production unharmed regardless of outcome.
+- Flags: mirror production where mechanism-relevant — same model file,
+  -b 8192 -ub 2048 --embedding --pooling last — minus GPU specifics:
+  -ngl 0 (CPU; 16 threads), -c 16384 -np 1 (KV f16; single slot so every
+  request lands the same cache, mirroring the probes' id_slot pinning),
+  no flash-attn/KV-quant (CUDA-only), no mmproj (text probes only).
+  kv cache f16 ≈ 2.4 GB + weights 2.9 GB fits the 10 GB available RAM.
+- A/B: identical instance launched TWICE — baseline (no flag), then
+  treatment (--cache-reuse 1, the most aggressive chunk size). The only
+  delta is the flag. Baseline also validates the harness: it must
+  reproduce the known GPU pattern (cache_n = 0 for divergent LCP < 2048,
+  ~LCP−2048 served above), on different hardware.
+- DISCLOSED LIMIT: CPU sandbox measures MECHANISM — served tokens,
+  residual size, output identity — not milliseconds. GPU projections
+  use the measured GPU marginal (0.44–0.46 ms/token) applied to the
+  measured residual. Absolute TTFTs here are CPU-scaled and
+  non-comparable to the 8998 tables.
+
+Design (frozen):
+
+- E1 — sub-2048 regime, both instances (the shipped-size question):
+  (a) filler pairs sharing L ∈ {50, 154} words, populator mt ∈ {8, 1}
+  (the poison quirk), 2 reps; (b) history-LCP ≈ 1008 tokens (k=25
+  large-fixture history): populator (filler utterance, mt=8) → commit
+  (final_0, mt=8), 2 reps. Descriptive: does the flag make rewind fire
+  where the no-flag build serves nothing?
+- E2 — rung-4096 A/B, both instances: history k=104 (prompt ≈ 4054
+  tokens, the floor regime), 4 entry-V finals (scenarios 0–3), 1 rep,
+  arms COLD/FREE/WARM exactly as the registered large run (disposer →
+  commit mt=96 stream; populator mt=8 → commit; disposer → warm
+  prompt_for("", history) mt=8 → commit; warm_ms recorded). Per-commit:
+  TTFT, prompt_n, prompt_ms, cache_n, predicted_n, text.
+- E3 (conditional): rung-7680 (k=196) on the TREATMENT instance only,
+  same shape, run iff E2 shows serving (else the floor question is
+  already answered negatively). Descriptive replication at scale.
+- Known overlap, disclosed: with the flag, "COLD" commits share the
+  system-block LCP (~30–45 tokens) with the preceding disposer — any
+  treatment COLD serve quantifies it; on 8998 COLD cache_n was 0
+  everywhere (comparator).
+
+Pre-registered verdict rules:
+
+- FR1 FLAG DELIVERS: treatment FREE at E2 serves ≥ 3900 of ~4054
+  (residual ≤ ~128 tokens) — i.e. the 2048-token floor is gone, not
+  just shrunk → the production restart becomes a real registered
+  candidate; GPU projection = residual × 0.45 ms/token.
+- FR2 PARTIAL: treatment FREE serves strictly more than the no-flag
+  rule predicts (LCP − 2048 ≈ 2006) but residual > 128 tokens → record
+  the served/residual curve; candidate with quantified benefit.
+- FR3 NO DELIVERY: treatment FREE served within ~64 tokens of 2006 →
+  flag does not deliver the floor removal on this build; recorded,
+  restart not recommended on this evidence.
+- Identity: within-instance across-arm cells reported; a treatment
+  divergence rate > 25% flagged prominently; cross-instance COLD
+  equality descriptive.
+
+Runner: tools/prefill_probe/run_cache_reuse.py (--out per phase);
+launch assertions: /health 200, total_slots == 1, n_ctx ≥ 4192, and
+every E2 prompt_n ≤ n_ctx − 128.
