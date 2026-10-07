@@ -978,3 +978,27 @@ fewer wrong-executions; a winner that cannot fire a wrong tool on the
 weather frame AND keeps reminder correct is required, else the suite ships
 with the best arm and the remainder is a documented wart. No manifest text
 changes (decision 28 holds); this decides ONLY the history argument.
+
+**MS-20 RESULTS (2026-10-07).** Battery: tools/capability_suite/ms20_battery.py,
+36 plan calls (12 frames x 3 arms), production shortlists, temp 0, fixture
+history = the suite's 10 tool-turn pairs; per-frame picks in
+tools/capability_suite/ms20_rows.json.
+
+```
+H:  correct 11/12, wrong-exec 1 (weather -> time__get_current_time), null-fall 0
+L2: correct 12/12, wrong-exec 0, null-fall 0
+N:  correct 11/12, wrong-exec 1 ("Remind me to stretch in five seconds" -> timer), null-fall 0
+```
+
+**ADJUDICATION: ADOPT L2** (last 2 history pairs) per the registered rule:
+highest correct-tool rate, zero wrong-executions, and the required pair of
+properties holds — weather stays null AND reminder stays reminder. The two
+edge failures of the extremes are exactly the two the suite caught live
+(H: weather->time executing with a hallucinated readback; N: reminder->timer
+parking a wrong tool). Mechanism reading (not part of the adopt rule): L2
+carries the confirm-turn pattern ("Just to confirm — ...") that keeps
+reminder/timer apart without the deep-history tool bleed. Cost: none beyond
+status quo (one plan call; prompt is shorter than H). DECISION 28 holds —
+no manifest or directive text changed; only the history argument went from
+self.history to self.history[-2:] in tool_flow's single manifest plan call.
+Suite re-run follows as the e2e check.

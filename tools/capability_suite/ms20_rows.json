@@ -1,0 +1,254 @@
+[
+ [
+  "H",
+  "Remind me to stretch in five seconds",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "H",
+  "Remind me to call mom tomorrow at nine",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "H",
+  "Remind me to water the plants in an hour",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "H",
+  "Remind me to take out the trash when I get home",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "H",
+  "Set a timer for 10 minutes",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "H",
+  "Start a 30 second timer",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "H",
+  "Set a countdown for two minutes",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "H",
+  "Make a note that the meeting moved to Friday",
+  "note",
+  "note",
+  "correct"
+ ],
+ [
+  "H",
+  "Take a note: buy milk tomorrow",
+  "note",
+  "note",
+  "correct"
+ ],
+ [
+  "H",
+  "What time is it in Tokyo?",
+  "time__get_current_time",
+  "time__get_current_time",
+  "correct"
+ ],
+ [
+  "H",
+  "What's the time in Berlin right now?",
+  "time__get_current_time",
+  "time__get_current_time",
+  "correct"
+ ],
+ [
+  "H",
+  "What's the weather in Jakarta?",
+  null,
+  "time__get_current_time",
+  "wrong_exec"
+ ],
+ [
+  "L2",
+  "Remind me to stretch in five seconds",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "L2",
+  "Remind me to call mom tomorrow at nine",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "L2",
+  "Remind me to water the plants in an hour",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "L2",
+  "Remind me to take out the trash when I get home",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "L2",
+  "Set a timer for 10 minutes",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "L2",
+  "Start a 30 second timer",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "L2",
+  "Set a countdown for two minutes",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "L2",
+  "Make a note that the meeting moved to Friday",
+  "note",
+  "note",
+  "correct"
+ ],
+ [
+  "L2",
+  "Take a note: buy milk tomorrow",
+  "note",
+  "note",
+  "correct"
+ ],
+ [
+  "L2",
+  "What time is it in Tokyo?",
+  "time__get_current_time",
+  "time__get_current_time",
+  "correct"
+ ],
+ [
+  "L2",
+  "What's the time in Berlin right now?",
+  "time__get_current_time",
+  "time__get_current_time",
+  "correct"
+ ],
+ [
+  "L2",
+  "What's the weather in Jakarta?",
+  null,
+  null,
+  "correct"
+ ],
+ [
+  "N",
+  "Remind me to stretch in five seconds",
+  "reminder",
+  "timer",
+  "wrong_exec"
+ ],
+ [
+  "N",
+  "Remind me to call mom tomorrow at nine",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "N",
+  "Remind me to water the plants in an hour",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "N",
+  "Remind me to take out the trash when I get home",
+  "reminder",
+  "reminder",
+  "correct"
+ ],
+ [
+  "N",
+  "Set a timer for 10 minutes",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "N",
+  "Start a 30 second timer",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "N",
+  "Set a countdown for two minutes",
+  "timer",
+  "timer",
+  "correct"
+ ],
+ [
+  "N",
+  "Make a note that the meeting moved to Friday",
+  "note",
+  "note",
+  "correct"
+ ],
+ [
+  "N",
+  "Take a note: buy milk tomorrow",
+  "note",
+  "note",
+  "correct"
+ ],
+ [
+  "N",
+  "What time is it in Tokyo?",
+  "time__get_current_time",
+  "time__get_current_time",
+  "correct"
+ ],
+ [
+  "N",
+  "What's the time in Berlin right now?",
+  "time__get_current_time",
+  "time__get_current_time",
+  "correct"
+ ],
+ [
+  "N",
+  "What's the weather in Jakarta?",
+  null,
+  null,
+  "correct"
+ ]
+]
