@@ -376,7 +376,7 @@
 <section id="loop">
   <div class="wrap">
     <div class="eyebrow rv">the loop</div>
-    <h2 class="rv">Seven stages, <span class="accent">one warm cache</span>.</h2>
+    <h2 class="rv">Seven stages, <span class="accent">one decision tree</span>.</h2>
     <p class="lede rv">Every turn travels this path. Click a stage to see what actually happens — including what happens when <strong>you talk over the assistant</strong>.</p>
     <div class="pipe-track rv" id="pipe"></div>
     <div class="stage-detail rv" id="pipe-detail">
@@ -438,10 +438,10 @@
   <div class="wrap">
     <div class="eyebrow rv">the load-bearing discipline</div>
     <h2 class="rv">Two-zone context: <span class="accent">freeze the prefix</span>, stream the suffix.</h2>
-    <p class="lede rv">A byte-stable KV-cached prefix carries the conversation; only the volatile suffix ever changes. Nearly every routing rule below it — mode directives, the memory digest — exists to keep that prefix warm.</p>
+    <p class="lede rv">A byte-stable prefix carries the conversation; only the volatile suffix ever changes. Byte-stability is the point: a prefix that never rewrites is cacheable, and the rules below — mode directives, the memory digest — exist to protect it.</p>
     <div class="zone-card rv">
       <div class="zone-bar">
-        <div class="zone-prefix"><b>frozen prefix — byte-stable</b><span>system block + history + vision context · KV-cached across turns · never rewritten mid-session</span></div>
+        <div class="zone-prefix"><b>frozen prefix — byte-stable</b><span>system block + history + vision context · byte-stable across turns · never rewritten mid-session</span></div>
         <div class="zone-suffix"><b>volatile suffix</b><span>streaming utterance, LCP-trimmed · mode directives ride the turn</span></div>
       </div>
     </div>
@@ -561,6 +561,11 @@
         <h3>Flat-28, adopted by rule<span class="tag">pre-registered</span></h3>
         <p>The never-measured 21–40-tool band got its first point: flat beats the gate at 28 (<b>fs 0.6094 · git 0.6875 · time 0.7500</b>). Decision rule committed before data; one-case margin disclosed; policy amended — gates run the exact enabled set.</p>
       </div>
+      <div class="lentry retract rv">
+        <div class="date">2026-10-07</div>
+        <h3>The prefill retraction<span class="tag">retraction</span></h3>
+        <p>This page credited "incremental prefill" as a latency stage. It isn't shipped: entry V measured partial-warming and retired it (warm/cold prompt-time ratio 1.0–1.08), and a fresh probe re-confirmed on the production path — first token <b>~75 ms</b>, ~95% of it the one commit-time prefill, the slot cache serving <b>0 of 120</b> commits. Commit-only stands.</p>
+      </div>
       <div class="lentry rv">
         <div class="date">always</div>
         <h3>Regression is a capability<span class="tag">suite</span></h3>
@@ -577,7 +582,7 @@
     <h2 class="rv">Four rules that <span class="accent">everything else obeys</span>.</h2>
     <div class="pr-grid" style="margin-top:34px">
       <div class="pr rv"><span class="num">01</span><div><h3>GPU for the LLM only</h3><p>The 8 GB budget belongs to the 4B model. ASR, TTS, detection and faces run as CPU sidecars — latency by design, not afterthought.</p></div></div>
-      <div class="pr rv"><span class="num">02</span><div><h3>Two-zone context</h3><p>Frozen prefix, byte-stable across turns, KV-cached; volatile suffix trimmed and delta-decoded. Prefix discipline is load-bearing.</p></div></div>
+      <div class="pr rv"><span class="num">02</span><div><h3>Two-zone context</h3><p>Frozen prefix, byte-stable across turns; volatile suffix trimmed and delta-decoded. Prefix discipline is load-bearing.</p></div></div>
       <div class="pr rv"><span class="num">03</span><div><h3>The decide layer is learned, not timers</h3><p>State-head readouts over the frozen encoder decide endpointing, routing, and eager response — replacing silence timeouts everywhere.</p></div></div>
       <div class="pr rv"><span class="num">04</span><div><h3>One execution discipline</h3><p>Experiments get pre-registered protocols; components get validation harnesses. Results are append-only, retractions included.</p></div></div>
     </div>
@@ -683,9 +688,9 @@
     {id:"mic", name:"Mic + VAD", tag:"silero · cpu", ic:ic.mic,
      title:"Mic & voice activity", text:"A same-origin capture worklet streams 16 kHz mono PCM. Silero VAD (CPU) gates what reaches ASR, and mic health is visible in the debug panel — dead input is a first-class state, not a silent failure."},
     {id:"asr", name:"Streaming ASR", tag:"phonon-2 · cpu", ic:ic.wave,
-     title:"Partial hypotheses, replaced whole", text:"Phonon-2 streams WebSocket partials where each partial is the whole-hypothesis replacement — the UI text and the LLM prefill both simply track the latest hypothesis. No partial-merge heuristics to get wrong."},
-    {id:"prefill", name:"Incremental prefill", tag:"warm KV", ic:ic.stack,
-     title:"The utterance prefills while you speak", text:"As partials arrive, the volatile suffix of the two-zone context is prefilled into the warm KV cache. By the time you finish the sentence, the model has already read most of it."},
+     title:"Partial hypotheses, replaced whole", text:"Phonon-2 streams WebSocket partials where each partial is the whole-hypothesis replacement — the UI text and the per-partial routing readout both simply track the latest hypothesis. No partial-merge heuristics to get wrong."},
+    {id:"assemble", name:"Prompt assembly", tag:"two-zone · commit-only", ic:ic.stack,
+     title:"The model is called once — at commit", text:"Partials feed the routing readout, never the LLM: nothing is prefilled while you speak. The two-zone prompt stays at ~80–100 tokens, so the one commit-time prefill lands the first token in ~75 ms. Warming was prototyped, measured twice, retired twice — see the ledger."},
     {id:"decide", name:"Decide layer", tag:"learned heads", ic:ic.brain,
      title:"Endpointing, routing, eager response — learned", text:"CLM-style state/action heads read out over the frozen slot-6 embedding to decide when you finished, whether to answer eagerly, and which behavior class this turn belongs to. No silence timeouts anywhere — the same heads walk the whole decision tree below."},
     {id:"gen", name:"Generation", tag:"streamed · think split", ic:ic.spark,
@@ -736,7 +741,7 @@
       mech:["delegate","background agent"], out:"The tool planner picks ir_research, which spawns the IR agent in the background — depth-3 fetches with query reformulation — and answers out-of-turn, budget-guarded, with evidence.",
       why:"delegates must stand on their own words (Rev G)"},
     quantum:{q:"Think hard about quantum tunneling.", nodes:["root","deep"], edges:["e-root-deep"],
-      mech:["learned","learned head + DEEP_RE"], out:"Escalates to the external big-model provider (openai-chat / responses / anthropic dialects). Streaming reasoning still renders locally; the small model stays warm for the next turn.",
+      mech:["learned","learned head + DEEP_RE"], out:"Escalates to the external big-model provider (openai-chat / responses / anthropic dialects). Streaming reasoning still renders locally; the local slot is untouched by the detour.",
       why:"\"think hard\" misrouted to IR once — now an intercept too"},
     morning:{q:"Hey, good morning!", nodes:["root","social"], edges:["e-root-social"],
       mech:["learned","learned head"], out:"Warm and brief, no filler, no tool machinery. The social class is deliberately small — a greeting should never cost a planner call.",
