@@ -941,3 +941,40 @@ holds); cost is one extra slot-5 plan call on delegate picks only.
 bars). Known warts carried: the malformed-marker bimodality above;
 DA2-A's one serving-variance failure (run 1) recorded and cleared on
 both post-amendment runs.
+
+## MS-20 (registered 2026-10-07, before data): manifest plan history — H / L2 / N
+
+The capability coverage suite (tools/capability_suite/run_suite.py, first
+full run) caught the Rev G prediction going live with a grown manifest:
+"What's the weather in Jakarta?" (routes think.tool, fits no tool) picked
+time__get_current_time off session history and the confirm turn hallucinated
+weather from the clock result ("The weather in Jakarta is currently
+Wednesday"). Rev G's battery ran against the four-native-tool manifest,
+where a bled plan still fell through to null; with 28 MCP tools shortlisted
+(weather-adjacent time pools), the bleed now EXECUTES a wrong tool. The same
+suite run shows the other edge: history-free planning (arm N, deployed in
+the same session as a candidate fix) mis-picked timer for "Remind me to
+stretch in five seconds" (label stretch, seconds 5) — with history the same
+utterance parked reminder correctly in runs 1-3. The bleed has costs in
+BOTH directions; this is a measurement, not a preference.
+
+Arms (gen_plan history argument, everything else byte-identical, temp 0,
+production directive_for shortlists, fixture history = the suite's exact
+10 tool-turn pairs, each item one independent plan call):
+- H: full fixture history (the pre-suite shipped condition; Rev G decision 29)
+- L2: last 2 pairs of the same fixture
+- N: empty history (MS-16b-2 eval condition; the candidate fix)
+
+12 frames: 4 reminder ("Remind me to stretch in five seconds", "Remind me to
+call mom tomorrow at nine", "Remind me to water the plants in an hour",
+"Remind me to take out the trash when I get home"), 3 timer, 2 note, 2 time
+("What time is it in Tokyo?", "What's the time in Berlin right now?"),
+1 weather-null. Metric: correct-tool rate per arm (expectation table fixed
+above), plus wrong-executions (a fired tool call that is not the expected
+tool — weather->time counts, reminder->timer counts) vs null-falls.
+
+ADOPT RULE: the arm with the highest correct-tool rate wins; ties broken by
+fewer wrong-executions; a winner that cannot fire a wrong tool on the
+weather frame AND keeps reminder correct is required, else the suite ships
+with the best arm and the remainder is a documented wart. No manifest text
+changes (decision 28 holds); this decides ONLY the history argument.
