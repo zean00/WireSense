@@ -425,3 +425,37 @@ Pre-registered verdict rules:
 Runner: tools/prefill_probe/run_cache_reuse.py (--out per phase);
 launch assertions: /health 200, total_slots == 1, n_ctx ≥ 4192, and
 every E2 prompt_n ≤ n_ctx − 128.
+
+### AMENDMENT 2 operational note (still pre-treatment-data)
+
+Ops incidents before any treatment row: (1) the baseline server's
+wrapper pid vs actual server pid differ — kills must be verified by
+`ss` port release, not wrapper exit; (2) first treatment launch failed
+to bind (old instance still up) — the "healthy" 200 it saw was the old
+process; port ownership now verified by `ss -ltnp` before probing;
+(3) baseline runner crashed twice on an arg-swapped disposer call
+(fixed, e92f51d/e48dd4a) and once on a relative --out under the
+runner's chdir (fixed by absolute path) — three wasted baseline
+attempts, no data written, fourth attempt archived clean
+(results_cache_reuse_baseline.json); (4) ops calibration pre-baseline:
+CPU prefill ≈ 13.2 ms/token at 4045 tokens (13× GPU) — disclosed
+sandbox scaling.
+
+Treatment constraint discovered at runtime: with -np 1 the context has
+kv_unified=false and the server logs "cache_reuse is not supported by
+this context, it will be disabled" — unified KV is the enabling
+co-condition (--help: kv-unified "default: enabled if number of slots
+is auto"; an explicit -np pins it off). Revised treatment:
+**baseline flags + -kvu + --cache-reuse 1** — this combo IS the
+practical production-restart candidate. A treatment instance is valid
+only if its startup log does NOT contain the disable line.
+
+Attribution arm A3 (conditional, registered): baseline flags + -kvu
+WITHOUT --cache-reuse, E1+E2 only — run iff treatment shows serving
+beyond the no-flag rule (treatment E2 FREE cache_n > 2064 = no-flag
+2006 + noise band), to attribute the effect to kv-unified alone vs the
+reuse flag. Recommendation differs: if A3 serves equally, the restart
+needs only -kvu.
+
+E3 remains conditional on treatment serving (run on the treatment
+instance).
