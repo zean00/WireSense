@@ -459,3 +459,53 @@ needs only -kvu.
 
 E3 remains conditional on treatment serving (run on the treatment
 instance).
+
+# AMENDMENT 2 RESULT — --cache-reuse is architecturally unavailable
+(adjudicated 2026-10-08)
+
+The treatment phase was never executed because it cannot be: the server
+hard-disables n_cache_reuse at context init when
+`!llama_memory_can_shift(memory)` — tools/server/server-context.cpp:736
+in this build — and can_shift is FALSE for qwen35, at the source:
+
+1. The model carries `qwen35.rope.dimension_sections = [11, 11, 10, 0]`
+   (model metadata, sandbox log) — 4-section M-RoPE.
+2. `llama_hparams::n_pos_per_embd()` returns 4 for MROPE/IMROPE
+   (src/llama-hparams.cpp:204-206).
+3. `llama_kv_cache::get_can_shift()` returns false when
+   n_pos_per_embd() > 1 (src/llama-kv-cache.cpp:1149-1157) — K-shift is
+   undefined when positions are 4-dimensional. All hybrid memory
+   wrappers (this model: 8 attention + 32 Gated-DeltaNet layers) defer
+   to the attention cache's answer (llama-memory-hybrid*.cpp:122-131).
+
+Observed at runtime, matching the source: both treatment launches
+logged "cache_reuse is not supported by this context, it will be
+disabled" — plain -np 1 and with -kvu (kv_unified=true did not clear
+it; that constraint was real but secondary). Production adds -mm
+(multimodal): the mmproj branch (server-context.cpp:726) disables
+cache_reuse there too — the flag is double-gated off in production.
+
+Verdict: FR1/FR2 are unreachable; the registered outcome is the FR3
+class with a stronger, source-level reason — **--cache-reuse is
+architecturally unavailable for Qwen3.5-4B on this build**. No restart
+configuration (flags, port, GPU, slot count) can enable it. A3
+(attribution) and E3 are moot. The 2048-token re-prefill floor is a
+FIXED cost of this model on this build at large contexts — GPU steady
+state ~0.95–1.05 s TTFT for any prompt above ~2100 tokens. Remaining
+levers are outside this build: an upstream llama.cpp that implements
+section-aware K-shift for M-RoPE models, or prompt structure that keeps
+stable prefixes short.
+
+Baseline phase (retained, cross-hardware validation): CPU sandbox, no
+flag — E1: cache_n = 0 in 10/10 (filler LCP 76/180, populator mt 8 and
+1, and history-LCP ≈ 1008). E2 (k=105, prompt ≈ 4094): COLD cache_n=0
+TTFT 52.4 s (CPU-scaled); FREE served 2042–2047, re-prefilled 2048;
+WARM served 2033, re-prefilled ~2062 — the no-flag rule (serve
+max(0, LCP−2048)) replicates exactly on different hardware; identity
+4/4 cells.
+
+Disclosures: sandbox was CPU-only (GPU full — 7513/8151 MiB);
+production :8998 untouched throughout; the disabled-flag treatment
+instances were killed without probing any request; four baseline
+attempts (three ops incidents, all disclosed in the op-note) preceded
+the archived run; no production config change; nothing to implement.
