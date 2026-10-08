@@ -19,10 +19,25 @@ norm_router_text → /v1/embeddings (id_slot 6, production embedding
 slot) → arm-C heads (project) → L2-normalized class centroids
 (models/router_embeddings.npz + arm_C_heads.npz), argmax cosine.
 Frozen items: ROOT_EVAL 62, THINK_EVAL 26. Registered bars: root
-56/62, think 24/26. The file is imported, never modified. Production
-readout shape confirmed: DecideReadout.embed(build_prompt(history,
-partial)) — the readout input is the full prompt text; shipped history
-is just tiny (digest two-zone).
+56/62, think 24/26. The file is imported, never modified.
+
+CORRECTION (pre-adjudication, first run): this protocol initially
+stated the production readout embeds build_prompt(history, partial).
+That is wrong for the ROUTER: shipped live turns embed the BARE
+normalized utterance (server.py:1217 and the TreeWalker contract —
+whose docstring already records that prompt/history-shaped vectors
+"were measured and dropped (domain shift cost two route misses in the
+first live trial)"). The build_prompt-based score() exists only in the
+streaming-loop decide() path (server.py:1065), not the router.
+Consequence for this probe: BARE is not just the harness shape, it IS
+the shipped production shape; PROMPT0/HIST arms measure hypothetical
+input-shape changes, exactly the registered question. The first run's
+Part A already replicated the docstring's two-miss anecdote at scale
+(prompt-shaped inputs collapse root to 33–42/62 and think to 10/26);
+the correction is committed before any adjudication, with a full
+re-run (Part B crashed on a runner bug — history passed as a bare
+string instead of a (user, assistant) pair; no results JSON was
+written by the crashed run).
 
 ## Questions
 

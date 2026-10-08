@@ -22,8 +22,9 @@ from collections import defaultdict
 import numpy as np
 import requests
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
-for p in (ROOT, os.path.join(ROOT, "tools"),
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+for p in (os.path.join(ROOT, "web"), ROOT,
+          os.path.join(ROOT, "tools"),
           os.path.join(ROOT, "tools", "prefill_probe")):
     sys.path.insert(0, p)
 os.chdir(os.path.join(ROOT, "web"))   # server.py's MODELS=../models
@@ -31,7 +32,7 @@ import server as ws  # noqa: E402
 os.chdir(ROOT)                        # eval_router constants are ROOT-relative
 
 from eval_router import EVAL, THINK_EVAL, norm_router_text, LLAMA  # noqa
-from large_fixture import PAIRS  # noqa: E402  sha-pinned fixture
+from large_fixture import PAIRS_LARGE as PAIRS  # noqa: E402  sha-pinned
 
 TREE = os.path.join(ROOT, "tools", "decision_tree.json")
 REFS = os.path.join(ROOT, "models", "router_embeddings.npz")
@@ -206,7 +207,7 @@ def main():
 
     # ---- Part B ----
     for cond, mk in (("BARE", lambda t1, u: u),
-                     ("HIST1", lambda t1, u: prompt_for([t1], u))):
+                     ("HIST1", lambda t1, u: prompt_for([(t1, "")], u))):
         res = {}
         for kind in ("vision", "tool", "control"):
             node = "think" if kind == "tool" else "root"
