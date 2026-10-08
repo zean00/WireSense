@@ -36,6 +36,35 @@ DEFAULT_SYSTEM = ("You are wiresense, a concise voice assistant. "
                   "Answer in one or two short sentences.")
 PROVIDERS = ("openai-chat", "openai-responses", "anthropic")
 
+# input budget when the provider won't report the model's context and
+# the config doesn't pin one (conservative; fits the common local
+# serving default). Disclosed in the startup log line either way.
+DEFAULT_MODEL_CTX = 8192
+GEN_RESERVE = 64          # slack over max_tokens for the round's answer
+CHARS_PER_TOKEN = 4       # provider-agnostic estimate (no shared tokenizer)
+
+
+def est_tokens(text):
+    return max(1, (len(text) + CHARS_PER_TOKEN - 1) // CHARS_PER_TOKEN)
+
+
+def parse_model_ctx(models_json, model):
+    """Context window for `model` from a /models payload, or None.
+    Key layout varies by server: llama.cpp meta.{context_length,
+    n_ctx_train}, vLLM max_model_len, Anthropic context_window."""
+    for m in (models_json or {}).get("data", []):
+        if m.get("id") != model:
+            continue
+        for path in (("meta", "context_length"), ("meta", "n_ctx_train"),
+                     ("context_length",), ("max_model_len",),
+                     ("context_window",), ("meta", "n_ctx")):
+            v = m
+            for k in path:
+                v = v.get(k) if isinstance(v, dict) else None
+            if isinstance(v, (int, float)) and v >= 2048:
+                return int(v)
+    return None
+
 
 def load_config(path=None):
     p = path or os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -76,6 +105,72 @@ class DeepThink:
         self.max_tokens = int(cfg.get("max_tokens", 700))
         self.cfg = cfg
         self.key = os.environ.get(cfg.get("api_key_env", "")) or None
+        ctx = cfg.get("context_tokens")
+        if ctx is not None:
+            ctx = int(ctx)
+            if ctx < 2048:
+                raise ValueError("context_tokens must be >= 2048")
+        self._ctx_pinned = ctx
+        self._budget = None
+        self.last_fit = {"kept": 0, "dropped": 0}   # per stream() call
+
+    def input_budget(self):
+        """Prompt-token ceiling for one deep request: config pin, else
+        the model's reported context (detected once, best effort), else
+        the default — minus the generation reserve. Resolved lazily so
+        a slow or absent models endpoint never blocks startup."""
+        if self._budget is None:
+            if self._ctx_pinned is not None:
+                ctx, src = self._ctx_pinned, "config"
+            else:
+                try:
+                    ctx = parse_model_ctx(self._get_models(), self.model)
+                    src = "provider"
+                except Exception:
+                    ctx = None
+                    src = "unreachable"
+                if ctx is None:
+                    ctx, src = DEFAULT_MODEL_CTX, "default"
+            budget = max(1024, ctx - self.max_tokens - GEN_RESERVE)
+            print(f"deep_think: input budget {budget} tokens "
+                  f"(model ctx {ctx} [{src}], gen reserve "
+                  f"{self.max_tokens + GEN_RESERVE})")
+            self._budget = budget
+        return self._budget
+
+    def _get_models(self):
+        url = (f"{self.base_url}/v1/models" if self.provider == "anthropic"
+               else f"{self.base_url}/models")
+        r = requests.get(url, headers=self._headers(), timeout=10)
+        r.raise_for_status()
+        return r.json()
+
+    def _fit_messages(self, system, conv):
+        """Clip the conversation to the input budget: final user turn
+        always kept, history dropped oldest-first, leading assistant
+        turns shed (Anthropic rejects assistant-first). Message count
+        kept coarse (per-message est + 4-token overhead)."""
+        budget = self.input_budget()
+        used = est_tokens(system) + 6
+        keep, dropped = [], 0
+        for i in range(len(conv) - 1, -1, -1):
+            role, text = conv[i]
+            c = est_tokens(text) + 4
+            if i < len(conv) - 1 and used + c > budget:
+                dropped += 1
+                continue
+            if i < len(conv) - 1:
+                used += c
+            keep.append((role, text))
+        keep.reverse()
+        while keep and keep[0][0] == "assistant":
+            keep.pop(0)
+            dropped += 1
+        if dropped:
+            print(f"deep_think: history clipped, dropped {dropped} "
+                  f"turn(s) to fit {budget}-token budget")
+        self.last_fit = {"kept": len(keep), "dropped": dropped}
+        return keep
 
     @property
     def available(self):
@@ -93,7 +188,9 @@ class DeepThink:
         return h
 
     def _wire(self, utterance, directive, history, system):
-        """-> (url, payload). history is (user, assistant) text pairs."""
+        """-> (url, payload). history is (user, assistant) text pairs,
+        clipped to the input budget (oldest dropped first) so an
+        agentic round never overflows the serving model's window."""
         user = f"{utterance}\n({directive})" if directive else utterance
         conv = []
         for u, a in history:
@@ -101,6 +198,7 @@ class DeepThink:
             if a:
                 conv.append(("assistant", a))
         conv.append(("user", user))
+        conv = self._fit_messages(system, conv)
         if self.provider == "openai-chat":
             return (f"{self.base_url}/chat/completions",
                     {"model": self.model,

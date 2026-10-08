@@ -138,3 +138,30 @@ and the bench cannot demonstrate the deep route's intended value
   TTS; metrics carry {model, ttft_ms 3810.1, ms 4204, fallback false}
 - bench: local 10/10 (median 13.8 s) vs deep 9/10 (median 5.0 s);
   bar FAILED on the `>= local` clause — see Revision 2
+
+## Implementation note (2026-10-07): external-provider context budget
+
+The deep tier now bounds what it sends to the external LLM so an agentic
+multi-round task cannot overflow the serving model's window. Engineering
+change, gated by tools/test_deep_think.py (no eval data involved; frozen
+evals untouched).
+
+- Budget resolution (once, lazily, at first stream): `context_tokens` in
+  the deep_think config block pins it; otherwise auto-detected from the
+  provider's models endpoint (llama.cpp `meta.context_length` /
+  `meta.n_ctx_train`, vLLM `max_model_len`, Anthropic `context_window`);
+  fallback 8192 when the endpoint is unreachable. Prompt budget =
+  ctx − max_tokens − 64 (gen reserve), floored at 1024. Logged once at
+  resolution ("model ctx N [config|provider|default]").
+- Clipping (per stream call, all three wire dialects): token estimate is
+  chars/4 (provider-agnostic heuristic — no shared tokenizer across
+  dialects; disclosed as an estimate, budget keeps slack via the reserve).
+  Newest-first walk over history; oldest turns dropped first; the final
+  user turn is always kept even if oversized (a single turn larger than
+  the budget is the provider's error to reject); a leading assistant turn
+  is shed after clipping (anthropic rejects assistant-first conversations).
+  `last_fit` records kept/dropped for metrics; drops are logged.
+- Local fallback path unchanged: build_prompt/server-side window stays the
+  local server's own contract; this budget only guards the external wire.
+- `context_tokens` < 2048 is a config error (deep feature off, not a
+  crash), matching from_config's invalid-config contract.

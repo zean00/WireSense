@@ -127,6 +127,86 @@ deep = deep_think.from_config({"deep_think": {
     "model": "m", "api_key_env": "T_TEST_KEY"}})
 check("anthropic with key -> on", deep is not None)
 check("defaults", deep.timeout_s == 120 and deep.max_tokens == 700)
+check("bad context_tokens -> off", deep_think.from_config({"deep_think": {
+    "enabled": True, "provider": "openai-chat", "base_url": "x",
+    "model": "m", "context_tokens": 100}}) is None)
+
+print("context budget:")
+check("est_tokens floors at 1", deep_think.est_tokens("") == 1
+      and deep_think.est_tokens("abc") == 1)
+check("est_tokens rounds up", deep_think.est_tokens("abcd") == 1
+      and deep_think.est_tokens("abcde") == 2)
+llama_payload = {"data": [{"id": "m", "meta":
+                           {"context_length": 65536, "n_ctx_train": 65536}}]}
+check("llama.cpp meta.context_length",
+      deep_think.parse_model_ctx(llama_payload, "m") == 65536)
+check("llama.cpp meta.n_ctx fallback",
+      deep_think.parse_model_ctx({"data": [{"id": "m",
+                                            "meta": {"n_ctx": 8192}}]},
+                                 "m") == 8192)
+check("vllm max_model_len",
+      deep_think.parse_model_ctx({"data": [{"id": "m",
+                                            "max_model_len": 32768}]},
+                                 "m") == 32768)
+check("anthropic context_window",
+      deep_think.parse_model_ctx({"data": [{"id": "m",
+                                            "context_window": 200000}]},
+                                 "m") == 200000)
+check("model absent -> None",
+      deep_think.parse_model_ctx(llama_payload, "other") is None)
+check("empty payload -> None", deep_think.parse_model_ctx({}, "m") is None)
+check("sub-2048 fields ignored",
+      deep_think.parse_model_ctx({"data": [{"id": "m",
+                                            "context_window": 1024}]},
+                                 "m") is None)
+
+pin = deep_think.DeepThink({"provider": "openai-chat",
+                            "base_url": "http://x/v1", "model": "m",
+                            "context_tokens": 8192})
+check("budget = ctx - max_tokens - reserve",
+      pin.input_budget() == 8192 - 700 - 64, pin.input_budget())
+check("budget cached", pin.input_budget() == pin._budget)
+tight = deep_think.DeepThink({"provider": "openai-chat",
+                              "base_url": "http://x/v1", "model": "m",
+                              "context_tokens": 2048, "max_tokens": 1984})
+check("budget floors at 1024", tight.input_budget() == 1024,
+      tight.input_budget())
+
+print("history clipping:")
+hist = [(f"question number {i} " + "x" * 60,
+         "answer " + "y" * 60) for i in range(30)]
+url, payload = pin._wire("final ask", None, hist, "SYS")
+check("fits -> all kept", len(payload["messages"]) == 2 * 30 + 2
+      and pin.last_fit == {"kept": 61, "dropped": 0}, pin.last_fit)
+# budget 1284 tokens; each pair ~ (61..)/4 + 4 + (67)/4 + 4 ~= 36 -> 30
+# pairs ~= 1075 + system + final ask fits; shrink the budget hard:
+url, payload = tight._wire("final ask", None, hist, "SYS")
+n = len(payload["messages"])
+check("overflow -> clipped to budget", n < 2 * 30 + 2 and n >= 3
+      and n % 2 == 0, n)  # system + even pairs + final user
+check("newest pair survives",
+      payload["messages"][-3]["content"].startswith("question number 29"),
+      payload["messages"][-3]["content"][:30])
+check("oldest pair dropped first",
+      all("question number 0" != m["content"][:17]
+          for m in payload["messages"][1:-1]))
+check("final user always last",
+      payload["messages"][-1] == {"role": "user", "content": "final ask"})
+check("last_fit recorded",
+      pin.last_fit["dropped"] == 0
+      and tight.last_fit["kept"] == n - 1 and tight.last_fit["dropped"] > 0,
+      tight.last_fit)
+# leading assistant shed (anthropic rejects assistant-first): a huge final
+# assistant fits the budget but squeezes its own user turn out
+huge = deep_think.DeepThink({"provider": "anthropic", "base_url": "http://x",
+                             "model": "m", "api_key_env": "T_TEST_KEY",
+                             "context_tokens": 2048, "max_tokens": 1984})
+url, payload = huge._wire("final ask", None,
+                          [("q" * 40, "z" * 4000)], "SYS")
+check("leading assistant shed",
+      payload["messages"] == [{"role": "user", "content": "final ask"}]
+      and huge.last_fit["dropped"] >= 1, (payload["messages"],
+                                          huge.last_fit))
 
 print(f"\n{'ALL PASS' if not FAILS else f'{len(FAILS)} FAIL: {FAILS}'}")
 sys.exit(1 if FAILS else 0)
