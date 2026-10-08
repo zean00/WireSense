@@ -80,6 +80,17 @@ generate). The decide layer may commit BEFORE `final` (semantic endpointing)
 CLM-style heads on the frozen Qwen3.5-4B NVFP4 encoder (dim-2560
 last-token embeddings; heads ≈ 20M params each):
 
+> **Model-bound artifacts (2026-10-07).** The heads and router refs now
+> live in-repo (`models/arm_C_heads.npz`, `models/router_embeddings.npz`).
+> This section's "NVFP4 encoder" is the 2026-10-03 wording — since the
+> 2026-10-04 fault the encoder is the interim Qwen3.5-4B UD-Q4_K_XL
+> (`--embedding --pooling last`, dim-2560), which the tracked artifacts
+> were recorded against. They are valid ONLY for that model + quant +
+> pooling; any swap changes the embedding space and silently invalidates
+> them (routing degrades to chance without an error). Re-record
+> (`make record-router`) and re-pass the frozen evals (`make eval-router`)
+> before serving.
+
 - **Endpointing** — state-head readout over the streaming context:
   "utterance semantically complete?" Replaces silence timeouts; runs every
   partial without touching generation.

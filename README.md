@@ -16,7 +16,7 @@ mic 16kHz → VAD → streaming ASR (partials) → incremental LLM prefill
 | Role    | Component                          | Size   | License    | Notes |
 |---------|------------------------------------|--------|------------|-------|
 | LLM     | Qwen3.5-4B UD-Q4_K_XL GGUF         | ~2.7GB | Apache-2.0 | served by llama.cpp (`--embedding --pooling last` gives the decide layer its encoder); interim engine after the NVFP4 fault (docs/INCIDENT-2026-10-04-GPU.md) |
-| Decide  | CLM-style state/action heads       | ~40MB  | project    | from refleqwen entry U; frozen-encoder contrastive heads |
+| Decide  | CLM-style state/action heads       | ~31MB tracked | project    | from refleqwen entry U; frozen-encoder contrastive heads; weights tracked in-repo (`models/arm_C_heads.npz`, `models/router_embeddings.npz`) — **model-bound, see disclaimer below** |
 | ASR     | FermionResearch/Phonon-2           | 164MB  | CC-BY-4.0  | streaming WS `partial` = whole-hypothesis replacement; 16kHz mono PCM |
 | TTS     | hexgrad/Kokoro-82M (ONNX)          | 326MB  | Apache-2.0 | sentence-chunked streaming, 24kHz |
 | Vision  | Qwen3.5-4B mmproj-F16 (unsloth GGUF) | 672MB  | Apache-2.0 | same llama-server via `--mmproj`; frame per vision turn, ~1 GiB VRAM |
@@ -66,7 +66,17 @@ reuse the root's embedding (numpy only, no second embed). Both refs
 (`models/router_embeddings.npz`, keyed `<node>.<class>`, recorded by
 `make record-router` from the tree config) and live text pass through
 `norm_router_text` — refs must match ASR text style (lowercase,
-punctuation-free) or the class margins collapse. Mode directives ride the
+punctuation-free) or the class margins collapse.
+
+**Heads/refs are model-bound (2026-10-07, tracked in-repo).**
+`models/arm_C_heads.npz` (29 MB) and `models/router_embeddings.npz`
+(2 MB) are valid ONLY against the encoder they were recorded from:
+Qwen3.5-4B UD-Q4_K_XL served with `--embedding --pooling last`
+(2560-dim slot-6 readouts). Any change of LLM, quantization, or pooling
+produces a different embedding space and silently invalidates every
+head and pool — routing keeps "working" but at chance accuracy. After
+any such swap: `make record-router`, then re-pass the frozen evals
+(`make eval-router`) before serving. Mode directives ride the
 current user turn (never the system block), so the KV prefix stays warm
 across mode switches.
 

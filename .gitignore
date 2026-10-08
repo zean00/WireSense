@@ -1,5 +1,7 @@
 .venv/
-models/
+models/*
+!models/arm_C_heads.npz
+!models/router_embeddings.npz
 audio/
 __pycache__/
 *.pyc
