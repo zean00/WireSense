@@ -493,7 +493,7 @@
       <div class="cap rv">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13h6L9 22l8.5-11h-6L13 2z"/></svg></div>
         <h3>Deep-think escalation</h3>
-        <p>"Think hard about…" escalates to a bigger external model through pluggable dialects (openai-chat / responses / anthropic) — off by default, on your terms, streaming the reasoning back.</p>
+        <p>"Think hard about…" escalates to a bigger external model through pluggable dialects (openai-chat / responses / anthropic) — off by default, on your terms, streaming the reasoning back. Agentic history is clipped to the provider's real serving window — detected from <code>/props</code>, never the training bound.</p>
       </div>
       <div class="cap rv">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
@@ -519,7 +519,7 @@
       <div class="comp-row"><span class="role">Vision</span><span class="name">Qwen3.5-4B mmproj-F16</span><span class="size">672 MB</span><span class="lic">Apache-2.0</span><span class="note">same llama-server via --mmproj; ~1 GiB VRAM</span></div>
       <div class="comp-row"><span class="role">Detect</span><span class="name">OmDet-Turbo-Tiny (ONNX)</span><span class="size">~780 MB</span><span class="lic">Apache-2.0</span><span class="note">CPU sidecar :8011; split enc/dec graphs</span></div>
       <div class="comp-row"><span class="role">Face</span><span class="name">YuNet + SFace (OpenCV Zoo)</span><span class="size">~39 MB</span><span class="lic">Apache-2.0</span><span class="note">opt-in; embeddings only, stored locally</span></div>
-      <div class="comp-row"><span class="role">Deep</span><span class="name">external provider (config)</span><span class="size">—</span><span class="lic">—</span><span class="note">optional big-model think route; off by default</span></div>
+      <div class="comp-row"><span class="role">Deep</span><span class="name">external provider (config)</span><span class="size">—</span><span class="lic">—</span><span class="note">optional big-model think route; history bounded to the provider's serving window; off by default</span></div>
     </div>
   </div>
 </section>
@@ -612,6 +612,7 @@
           <a href="./PROTOCOL-memory.md">Memory</a>
           <a href="./PROTOCOL-capability-suite.md">Capability suite</a>
           <a href="./PROTOCOL-deep-agents.md">Deep agents</a>
+          <a href="./PROTOCOL-deep-think.md">Deep think</a>
         </div>
       </div>
     </div>
@@ -741,7 +742,7 @@
       mech:["delegate","background agent"], out:"The tool planner picks ir_research, which spawns the IR agent in the background — depth-3 fetches with query reformulation — and answers out-of-turn, budget-guarded, with evidence.",
       why:"delegates must stand on their own words (Rev G)"},
     quantum:{q:"Think hard about quantum tunneling.", nodes:["root","deep"], edges:["e-root-deep"],
-      mech:["learned","learned head + DEEP_RE"], out:"Escalates to the external big-model provider (openai-chat / responses / anthropic dialects). Streaming reasoning still renders locally; the local slot is untouched by the detour.",
+      mech:["learned","learned head + DEEP_RE"], out:"Escalates to the external big-model provider (openai-chat / responses / anthropic dialects). Streaming reasoning still renders locally; the local slot is untouched by the detour — and history rides the wire only up to the provider's serving window (oldest dropped first).",
       why:"\"think hard\" misrouted to IR once — now an intercept too"},
     morning:{q:"Hey, good morning!", nodes:["root","social"], edges:["e-root-social"],
       mech:["learned","learned head"], out:"Warm and brief, no filler, no tool machinery. The social class is deliberately small — a greeting should never cost a planner call.",

@@ -22,7 +22,7 @@ mic 16kHz → VAD → streaming ASR (partials) → incremental LLM prefill
 | Vision  | Qwen3.5-4B mmproj-F16 (unsloth GGUF) | 672MB  | Apache-2.0 | same llama-server via `--mmproj`; frame per vision turn, ~1 GiB VRAM |
 | Detect  | OmDet-Turbo-Tiny (ONNX, CPU)        | ~780MB | Apache-2.0 | open-vocab detector sidecar :8011 (`web/omdet_sidecar.py`); split enc/dec graphs + numpy top-900 selection |
 | Face    | YuNet + SFace (OpenCV Zoo, CPU)     | ~39MB  | Apache-2.0 | opt-in face recognition (`web/faces.py`); embeddings only, local `web/faces.json` (gitignored); off by default |
-| Deep    | external provider (config)          | —      | —          | optional big-model think route (`web/deep_think.py`, `web/config.json`); openai-chat / openai-responses / anthropic dialects; off by default |
+| Deep    | external provider (config)          | —      | —          | optional big-model think route (`web/deep_think.py`, `web/config.json`); openai-chat / openai-responses / anthropic dialects; agentic history clipped to the provider's serving window (2026-10-07); off by default |
 
 **English-first** by design; other languages are a later extension (both ASR
 and TTS choices above are English-only — revisit then).
@@ -283,7 +283,8 @@ the local think path — byte-identical pre-deep behavior.
 ```json
 {"deep_think": {"enabled": true, "provider": "openai-chat",
   "base_url": "http://host:8995/v1", "model": "…",
-  "api_key_env": "WIRESENSE_DEEP_KEY", "timeout_s": 120, "max_tokens": 700}}
+  "api_key_env": "WIRESENSE_DEEP_KEY", "timeout_s": 120, "max_tokens": 700,
+  "context_tokens": 32768}}
 ```
 
 `provider` is one of **openai-chat** (`/chat/completions`; doubles as the
@@ -307,6 +308,29 @@ regex-checked, no LLM judge): the pre-registered bar "deep ≥ 7/10 AND
 made**; the frozen set stays frozen. The one measured deep advantage is
 wall-clock: 2.6× faster overall, ~4.1 s to first answer vs the local think
 trace. For this question regime: keep it off.
+
+**Context budget (2026-10-07).** Agentic rounds no longer pass unbounded
+history to the external model. Before each streamed round the prompt is
+bounded to the provider's real serving window, resolved once: a
+`context_tokens` config pin wins; else llama.cpp `/props`
+(`default_generation_settings.n_ctx`, the per-slot serving window); else
+exact serving keys from `/models` (vLLM `max_model_len`, Anthropic
+`context_window`); else 8192. Training bounds (`n_ctx_train`) are
+deliberately ignored — measurement caught them overstating the serving
+window 32× on the production build. Budget = window − `max_tokens` − 64;
+history drops oldest-first to fit, the final user turn is always kept,
+and a leading assistant turn is shed (anthropic refuses assistant-first).
+Verified on the wire (`tools/deep_budget_probe.py`, mock provider records
+the payloads; results in `tools/results_deep_budget.json`): at the
+tightest measured window the true-token margin was 479; the chars/4
+estimate is 20–23% conservative on dialogue (code text undercounts ~2× —
+pin `context_tokens` with slack for code-heavy history). An oversized
+final turn is sent intact and is the provider's error to reject.
+Incident, disclosed: the probe's first run killed the production :8998
+server with an oversized `/tokenize` body (silent crash, fork build
+b8821); restored with identical flags; the probe now clamps tokenize
+bodies ≤ 24K chars. Full numbers and the detection revision:
+`docs/PROTOCOL-deep-think.md`.
 - **Backchannels** — during long user speech (>6 s, max 2/turn), a listening
   cue ("Uh-huh.", "And then?") is selected 1-NN from the partial's embedding
   and spoken while the user is still talking; the browser mic runs echo

@@ -124,6 +124,13 @@ agreed 2026-10-05:
    delta, deltas continue across rounds). Only this final text enters
    history and TTS.
 
+   *(Implementation note, 2026-10-07: the provider-bound copy of that
+   history is now clipped to the external model's serving window before
+   the wire — oldest-first, final user turn kept; the local history and
+   TTS text are untouched. Detection order, measured numbers and the
+   training-bound incident: docs/PROTOCOL-deep-think.md, revision
+   2026-10-07.)*
+
 9. **Continuation notes (registered verbatim; the note rides the user
    turn, the continuation directive rides after it).**
    - findings: `[Research findings for '<query>' (outcome:

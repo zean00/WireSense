@@ -26,6 +26,14 @@ Serving note: llama-server's slot prompt cache gives frozen-prefix behavior
 for free over HTTP; explicit stable-margin control requires in-process
 bindings (llama-cpp-rs / incremental-chat pattern). Prototype over HTTP first.
 
+The same discipline now bounds the external tier (2026-10-07): before a
+deep round leaves the machine, its history is clipped to the provider's
+real serving window (llama.cpp `/props` per-slot n_ctx, else exact
+serving keys in `/models`; training bounds ignored) — oldest dropped
+first, final user turn always kept. What the local context retains and
+what the external model receives are budgeted separately
+(docs/PROTOCOL-deep-think.md).
+
 ## 2. Streaming contracts (as validated against the component docs)
 
 Phonon-2 `fermion serve` (protocol confirmed 2026-10-03 against server
