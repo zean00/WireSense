@@ -38,6 +38,8 @@ GEN_HEADROOM = 128         # commits are mt=96; require prompt_n <= 8064
 FILLER = "one more thing to remember, please"
 DISPOSER = ("tell me about a place no one lives, just to clear the slot")
 MODE = dict(directive=None, open_think=False, max_tokens=96)
+# frozen artifacts from the rewire repo (github.com/zean00/rewire),
+# local checkout: /home/sahal/workspace/refleqwen
 SCEN_DIR = ("/home/sahal/workspace/refleqwen/eval/reports/entry_v"
             "/scenarios")
 

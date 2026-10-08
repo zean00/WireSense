@@ -75,7 +75,7 @@ Mapping to the incremental-prefill loop: `partial` → TextChanged (re-tokenize
 generate). The decide layer may commit BEFORE `final` (semantic endpointing)
 — that is the latency lever.
 
-## 3. Decide layer (adopted from refleqwen entry U)
+## 3. Decide layer (adopted from rewire entry U)
 
 CLM-style heads on the frozen Qwen3.5-4B NVFP4 encoder (dim-2560
 last-token embeddings; heads ≈ 20M params each):

@@ -36,6 +36,8 @@ DISPOSER = ("tell me about a place no one lives, just to clear the slot")
 FILLER_TOKS = "word " * 160
 E1_L = [50, 154]
 MODE = dict(directive=None, open_think=False)
+# frozen artifacts from the rewire repo (github.com/zean00/rewire),
+# local checkout: /home/sahal/workspace/refleqwen
 SCEN_DIR = ("/home/sahal/workspace/refleqwen/eval/reports/entry_v"
             "/scenarios")
 

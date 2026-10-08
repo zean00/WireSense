@@ -16,7 +16,7 @@ mic 16kHz → VAD → streaming ASR (partials) → incremental LLM prefill
 | Role    | Component                          | Size   | License    | Notes |
 |---------|------------------------------------|--------|------------|-------|
 | LLM     | Qwen3.5-4B UD-Q4_K_XL GGUF         | ~2.7GB | Apache-2.0 | served by llama.cpp (`--embedding --pooling last` gives the decide layer its encoder); interim engine after the NVFP4 fault (docs/INCIDENT-2026-10-04-GPU.md) |
-| Decide  | CLM-style state/action heads       | ~31MB tracked | project    | from refleqwen entry U; frozen-encoder contrastive heads; weights tracked in-repo (`models/arm_C_heads.npz`, `models/router_embeddings.npz`) — **model-bound, see disclaimer below** |
+| Decide  | CLM-style state/action heads       | ~31MB tracked | project    | from rewire entry U; frozen-encoder contrastive heads; weights tracked in-repo (`models/arm_C_heads.npz`, `models/router_embeddings.npz`) — **model-bound, see disclaimer below** |
 | ASR     | FermionResearch/Phonon-2           | 164MB  | CC-BY-4.0  | streaming WS `partial` = whole-hypothesis replacement; 16kHz mono PCM |
 | TTS     | hexgrad/Kokoro-82M (ONNX)          | 326MB  | Apache-2.0 | sentence-chunked streaming, 24kHz |
 | Vision  | Qwen3.5-4B mmproj-F16 (unsloth GGUF) | 672MB  | Apache-2.0 | same llama-server via `--mmproj`; frame per vision turn, ~1 GiB VRAM |
@@ -39,7 +39,7 @@ and TTS choices above are English-only — revisit then).
    frozen encoder decide endpointing, think-vs-quick routing, and eager
    response — replacing silence timeouts.
 4. **One execution discipline.** Experiments get pre-registered protocols
-   (the refleqwen house style); components get validation harnesses under
+   (the rewire house style); components get validation harnesses under
    `tools/`.
 
 ## Web UI (2026-10-04)
@@ -591,5 +591,5 @@ and ends honestly stuck; audio-in/STT/camera/face stay out of suite scope.
 - [ ] TTS + barge-in
 - [ ] Vision context
 
-Related: [refleqwen](../refleqwen) — the decide/thesis program and entry U
-(the state/action heads this project adopts).
+Related: [rewire](https://github.com/zean00/rewire) — the decide/thesis
+program and entry U (the state/action heads this project adopts).

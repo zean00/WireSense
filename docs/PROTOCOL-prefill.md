@@ -3,7 +3,7 @@
 Origin: the About page (docs/index.html, commit 8beb249) credits the third
 pipeline stage with "the utterance prefills while you speak … the model has
 already read most of it". That describes a mechanism the project already
-tested and RETIRED: entry V (refleqwen, eval/reports/entry_v/, adjudicated
+tested and RETIRED: entry V (rewire, eval/reports/entry_v/, adjudicated
 2026-10-03) ran partial-warming vs commit-only on llama-server under a
 pre-registered identity gate — warming failed the gate (4/16 identical
 outputs) and the timing band (warm/cold prompt_ms ratio 1.0–1.08; 0–4
@@ -37,7 +37,7 @@ Q2. Does partial-warming (the page-claimed mechanism, entry-V replay
   data-free). Imports web/server.py's `build_prompt`/`system_block`/
   `DecideReadout` in-process (same pattern as tools/capability_suite).
 - Utterances: the 8 frozen entry-V scenarios
-  (refleqwen/eval/reports/entry_v/scenarios/scenario_0{0..7}.json) — final
+  (rewire/eval/reports/entry_v/scenarios/scenario_0{0..7}.json) — final
   texts 46–89 chars, 4–10 partials each (n=58 partials). Byte-frozen
   artifacts; reused, not regenerated.
 - History: ONE fixed exchange, constant across every arm and rep

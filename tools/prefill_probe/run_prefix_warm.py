@@ -30,6 +30,8 @@ from history_fixture import PAIRS  # noqa: E402
 
 LLAMA = ws.LLAMA
 SLOT = 1
+# frozen artifacts from the rewire repo (github.com/zean00/rewire),
+# local checkout: /home/sahal/workspace/refleqwen
 SCEN_DIR = ("/home/sahal/workspace/refleqwen/eval/reports/entry_v"
             "/scenarios")
 K_LADDER = [0, 3, 8, 16, 32, 64]          # history PAIRS

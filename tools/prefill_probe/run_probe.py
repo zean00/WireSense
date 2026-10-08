@@ -35,6 +35,8 @@ import server as ws  # noqa: E402  (build_prompt / system_block / DecideReadout)
 
 LLAMA = ws.LLAMA
 SLOT = 1                      # probe slot; production owns 4/5/6
+# frozen artifacts from the rewire repo (github.com/zean00/rewire),
+# local checkout: /home/sahal/workspace/refleqwen
 SCEN_DIR = ("/home/sahal/workspace/refleqwen/eval/reports/entry_v"
             "/scenarios")
 THINK_DIRECTIVE = "Reason step by step, then give a clear, concise answer."
