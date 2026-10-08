@@ -50,20 +50,32 @@ def est_tokens(text):
 
 def parse_model_ctx(models_json, model):
     """Context window for `model` from a /models payload, or None.
-    Key layout varies by server: llama.cpp meta.{context_length,
-    n_ctx_train}, vLLM max_model_len, Anthropic context_window."""
+    Only SERVING bounds are trusted: llama.cpp meta.context_length /
+    context_length, vLLM max_model_len, OpenAI-style context_window.
+    Training bounds (meta.n_ctx_train) are deliberately ignored — a
+    262K-trained model can be served at 8192/slot; trusting the train
+    number set a budget 32x too wide in measurement (see protocol doc,
+    revision 2026-10-07)."""
     for m in (models_json or {}).get("data", []):
         if m.get("id") != model:
             continue
-        for path in (("meta", "context_length"), ("meta", "n_ctx_train"),
-                     ("context_length",), ("max_model_len",),
-                     ("context_window",), ("meta", "n_ctx")):
+        for path in (("meta", "context_length"), ("context_length",),
+                     ("max_model_len",), ("context_window",)):
             v = m
             for k in path:
                 v = v.get(k) if isinstance(v, dict) else None
             if isinstance(v, (int, float)) and v >= 2048:
                 return int(v)
     return None
+
+
+def parse_props(props_json):
+    """Serving window per request from a llama.cpp /props payload:
+    default_generation_settings.n_ctx is the per-slot context — the
+    true per-request bound for the chat dialect."""
+    n = ((props_json or {}).get("default_generation_settings")
+         or {}).get("n_ctx")
+    return int(n) if isinstance(n, (int, float)) and n >= 2048 else None
 
 
 def load_config(path=None):
@@ -116,19 +128,16 @@ class DeepThink:
 
     def input_budget(self):
         """Prompt-token ceiling for one deep request: config pin, else
-        the model's reported context (detected once, best effort), else
-        the default — minus the generation reserve. Resolved lazily so
-        a slow or absent models endpoint never blocks startup."""
+        the serving window detected from the provider (llama.cpp /props
+        per-slot n_ctx, else exact keys from /models — resolved once,
+        best effort), else the default — minus the generation reserve.
+        Resolved lazily so a slow or absent endpoint never blocks
+        startup."""
         if self._budget is None:
             if self._ctx_pinned is not None:
                 ctx, src = self._ctx_pinned, "config"
             else:
-                try:
-                    ctx = parse_model_ctx(self._get_models(), self.model)
-                    src = "provider"
-                except Exception:
-                    ctx = None
-                    src = "unreachable"
+                ctx, src = self._detect_ctx()
                 if ctx is None:
                     ctx, src = DEFAULT_MODEL_CTX, "default"
             budget = max(1024, ctx - self.max_tokens - GEN_RESERVE)
@@ -137,6 +146,29 @@ class DeepThink:
                   f"{self.max_tokens + GEN_RESERVE})")
             self._budget = budget
         return self._budget
+
+    def _detect_ctx(self):
+        """-> (ctx, source) from the provider, or (None, None).
+        llama.cpp /props first (per-slot serving window; /models on the
+        same server only carries the training bound), then the exact
+        serving keys in /models."""
+        try:
+            root = self.base_url[:-3] if self.base_url.endswith("/v1") \
+                else self.base_url
+            r = requests.get(f"{root}/props", headers=self._headers(),
+                             timeout=10)
+            n = parse_props(r.json())
+            if n is not None:
+                return n, "props"
+        except Exception:
+            pass
+        try:
+            n = parse_model_ctx(self._get_models(), self.model)
+            if n is not None:
+                return n, "models"
+        except Exception:
+            pass
+        return None, None
 
     def _get_models(self):
         url = (f"{self.base_url}/v1/models" if self.provider == "anthropic"

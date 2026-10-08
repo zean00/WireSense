@@ -165,3 +165,54 @@ evals untouched).
   local server's own contract; this budget only guards the external wire.
 - `context_tokens` < 2048 is a config error (deep feature off, not a
   crash), matching from_config's invalid-config contract.
+
+### Revision (2026-10-07, post-measurement): detection order fixed by live probe
+
+Measurement (tools/deep_budget_probe.py, ALL PASS, results in
+tools/results_deep_budget.json) caught a real flaw in the version above:
+on the production llama.cpp build (b8821), /models carries only
+`meta.n_ctx_train` — 262144 — while the serving window is 65536 total,
+8192 per slot. Trusting it would have set a budget 32x too wide, i.e.
+no clipping where clipping matters. Detection is now:
+
+1. `context_tokens` config pin (unchanged);
+2. llama.cpp `/props` `default_generation_settings.n_ctx` — the
+   per-slot serving window, the exact per-request bound (source
+   "props");
+3. serving bounds from /models only (`context_length`, vLLM
+   `max_model_len`, `context_window`) — training bounds
+   (`n_ctx_train`) deliberately ignored (source "models");
+4. 8192 default.
+
+Measured (mock openai-chat provider records the wire; :8998 supplies
+the real /props, /models and tokenizer):
+
+- A: props 8192 detected on :8998; models-only train bound correctly
+  rejected; mock models-path (4096) detected.
+- B: 283-pair / ~12.8K-est-token history clipped on the wire to 146
+  messages, fitter accounting 3311 ≤ 3332; TRUE tokens 2917 → true
+  prompt + max_tokens = 3617 vs 4096 window, margin 479 tokens.
+- C: config pin (8192) beats provider detection; same history keeps
+  328 messages vs 146 at the 4096 window.
+- D: unreachable provider falls back to 8192 [default].
+- E: deep_turn-style 6-round growth: per-round wire est pinned
+  3288–3330 ≤ 3332 while round_hist grows every round. Note: kept
+  MESSAGE count may drift up as small new turns replace larger old
+  ones — tokens are the invariant, not messages.
+- F: an oversized final user turn is sent intact (est 10K vs 4096
+  window) — disclosed overflow, provider's error to reject.
+- G: chars/4 vs the production tokenizer on the dialogue corpus:
+  ratio 1.20–1.23 at every size (0–128 pairs) — the estimate is
+  20–23% conservative, so the budget holds in true tokens. Recorded,
+  not gated: Python-source text ratios 0.57 (chars/4 UNDERCOUNTS code
+  ~2x) — code-heavy deep histories are a known weak spot; pin
+  `context_tokens` with slack for such workloads.
+
+INCIDENT (disclosed): the first probe run sent a ~40K-char (~10K-token)
+body to :8998's /tokenize, which silently killed the production server
+(no log entry after the previous request's 200; process gone). Restored
+with identical flags via /home/sahal/.local/bin/llama-server (same
+binary, same args; now running as sahal rather than root — no sudo was
+available; log continues in /tmp/llama_server_8998.log). The probe now
+refuses tokenize bodies > 24K chars and measures the F case by
+estimate only. Capability suite re-run after restoration: 27/27.

@@ -10,7 +10,7 @@
     "api_key_env": "WIRESENSE_DEEP_KEY",
     "timeout_s": 120,
     "max_tokens": 700,
-    "_comment_ctx": "context_tokens (optional) pins the serving model's window; omit it to auto-detect from the provider's /models endpoint (llama.cpp meta.context_length, vLLM max_model_len, Anthropic context_window), falling back to 8192 when unreachable. The prompt budget is context minus max_tokens minus a 64-token reserve; agentic history is dropped oldest-first to fit (final user turn always kept).",
+    "_comment_ctx": "context_tokens (optional) pins the serving model's window; omit it to auto-detect from the provider — llama.cpp /props per-slot serving window first, else serving bounds from /models (llama.cpp context_length, vLLM max_model_len, Anthropic context_window; training bounds like n_ctx_train are deliberately ignored) — falling back to 8192 when unreachable. The prompt budget is context minus max_tokens minus a 64-token reserve; agentic history is dropped oldest-first to fit (final user turn always kept).",
     "context_tokens": 32768
   },
   "face": {

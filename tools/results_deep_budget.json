@@ -1,0 +1,120 @@
+{
+ "date": "2026-10-07",
+ "mock": "127.0.0.1:8013/v1",
+ "llama": "127.0.0.1:8998",
+ "checks": {
+  "A1 props serving window detected": true,
+  "A2 models-only train bound rejected": true,
+  "A3 budget = props ctx - max_tokens - 64": true,
+  "A4 mock ctx via models path (no props handler)": true,
+  "B1 final user turn last, intact": true,
+  "B2 system first": true,
+  "B3 newest pair survives": true,
+  "B4 oldest dropped": true,
+  "B5 payload fits fitter accounting": true,
+  "B6 true tokens + max_tokens fit window": true,
+  "B7 answer round-trips": true,
+  "C1 pin wins": true,
+  "C2 larger budget keeps more turns": true,
+  "C3 pinned payload fits its budget": true,
+  "D1 default budget": true,
+  "E1 round 0 fits": true,
+  "E1b round 0 final ask last": true,
+  "E2 round 1 fits": true,
+  "E2b round 1 final ask last": true,
+  "E3 round 2 fits": true,
+  "E3b round 2 final ask last": true,
+  "E4 round 3 fits": true,
+  "E4b round 3 final ask last": true,
+  "E5 round 4 fits": true,
+  "E5b round 4 final ask last": true,
+  "E6 round 5 fits": true,
+  "E6b round 5 final ask last": true,
+  "E7 payload est bounded across rounds": true,
+  "F1 oversized final turn sent intact": true,
+  "G1 estimate conservative on dialogue corpus": true,
+  "G2 measured corpus fits with reserve": true
+ },
+ "llama_model": "Qwen3.5-4B-UD-Q4_K_XL.gguf",
+ "llama_ctx_props": 8192,
+ "llama_ctx_train_rejected": null,
+ "llama_budget": 7428,
+ "B": {
+  "hist_pairs": 283,
+  "wire_msgs": 146,
+  "fit_est": 3311,
+  "true_tokens": 2917,
+  "margin_vs_window": 479,
+  "kept": {
+   "kept": 145,
+   "dropped": 422
+  }
+ },
+ "C": {
+  "msgs": 328,
+  "fit_est": 7424
+ },
+ "E": [
+  {
+   "round": 0,
+   "hist_pairs": 94,
+   "wire_msgs": 148,
+   "fit_est": 3300,
+   "kept": 147,
+   "dropped": 42
+  },
+  {
+   "round": 1,
+   "hist_pairs": 95,
+   "wire_msgs": 150,
+   "fit_est": 3315,
+   "kept": 149,
+   "dropped": 42
+  },
+  {
+   "round": 2,
+   "hist_pairs": 96,
+   "wire_msgs": 152,
+   "fit_est": 3330,
+   "kept": 151,
+   "dropped": 42
+  },
+  {
+   "round": 3,
+   "hist_pairs": 97,
+   "wire_msgs": 152,
+   "fit_est": 3288,
+   "kept": 151,
+   "dropped": 44
+  },
+  {
+   "round": 4,
+   "hist_pairs": 98,
+   "wire_msgs": 155,
+   "fit_est": 3326,
+   "kept": 154,
+   "dropped": 43
+  },
+  {
+   "round": 5,
+   "hist_pairs": 99,
+   "wire_msgs": 156,
+   "fit_est": 3318,
+   "kept": 155,
+   "dropped": 44
+  }
+ ],
+ "F": {
+  "est_tokens": 10000
+ },
+ "G": {
+  "ratios_by_pairs": {
+   "0": 1.2,
+   "4": 1.212,
+   "16": 1.202,
+   "64": 1.229,
+   "128": 1.196
+  },
+  "code_ratio": 0.566
+ }
+}

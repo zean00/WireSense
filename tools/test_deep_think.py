@@ -140,10 +140,10 @@ llama_payload = {"data": [{"id": "m", "meta":
                            {"context_length": 65536, "n_ctx_train": 65536}}]}
 check("llama.cpp meta.context_length",
       deep_think.parse_model_ctx(llama_payload, "m") == 65536)
-check("llama.cpp meta.n_ctx fallback",
+check("n_ctx_train ignored (training bound, not serving)",
       deep_think.parse_model_ctx({"data": [{"id": "m",
-                                            "meta": {"n_ctx": 8192}}]},
-                                 "m") == 8192)
+                                            "meta": {"n_ctx_train": 262144}}]},
+                                 "m") is None)
 check("vllm max_model_len",
       deep_think.parse_model_ctx({"data": [{"id": "m",
                                             "max_model_len": 32768}]},
@@ -159,6 +159,13 @@ check("sub-2048 fields ignored",
       deep_think.parse_model_ctx({"data": [{"id": "m",
                                             "context_window": 1024}]},
                                  "m") is None)
+props = {"default_generation_settings": {"n_ctx": 8192}, "total_slots": 8}
+check("props serving window", deep_think.parse_props(props) == 8192)
+check("props junk -> None", deep_think.parse_props({}) is None
+      and deep_think.parse_props({"default_generation_settings":
+                                  {"n_ctx": 512}}) is None
+      and deep_think.parse_props({"default_generation_settings":
+                                  {"n_ctx": "big"}}) is None)
 
 pin = deep_think.DeepThink({"provider": "openai-chat",
                             "base_url": "http://x/v1", "model": "m",
