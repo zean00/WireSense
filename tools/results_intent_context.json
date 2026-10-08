@@ -1,0 +1,1158 @@
+{
+ "protocol": "docs/PROTOCOL-intent-context.md",
+ "fixture_sha256": "b42bde63a0108bc0ccbfedfd7f3c2f5312c948d4aa1d05a5d363ad4cb20b84c4",
+ "part_a": {
+  "BARE": {
+   "root": {
+    "acc": 0.9032258064516129,
+    "n": 62,
+    "misses": [
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "How long would it take to read a 400 page book?"
+     },
+     {
+      "gold": "think",
+      "pred": "deep",
+      "t2": "Turn this recipe into a shopping list."
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Draft a cover letter for a barista job."
+     },
+     {
+      "gold": "decide",
+      "pred": "think",
+      "t2": "Choose a name for my goldfish."
+     },
+     {
+      "gold": "decide",
+      "pred": "deep",
+      "t2": "Which of these two resumes is stronger?"
+     },
+     {
+      "gold": "decide",
+      "pred": "vision",
+      "t2": "Do I sound better in the red shirt or the gray one?"
+     }
+    ]
+   },
+   "think": {
+    "acc": 0.9230769230769231,
+    "n": 26,
+    "misses": [
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Count the vowels in onomatopoeia."
+     },
+     {
+      "gold": "deep",
+      "pred": "long_think",
+      "t2": "Deep think how we could double our revenue this year."
+     }
+    ]
+   }
+  },
+  "PROMPT0": {
+   "root": {
+    "acc": 0.532258064516129,
+    "n": 62,
+    "misses": [
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Plan my week around three meetings."
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Add a calendar event for lunch tomorrow at noon."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "How long would it take to read a 400 page book?"
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Turn this recipe into a shopping list."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "Explain how a bill becomes law, step by step."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "Write a haiku about autumn."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "How much would a 30 kilogram suitcase weigh on Mars?"
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Draft a cover letter for a barista job."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "Count the vowels in the word extraordinary."
+     },
+     {
+      "gold": "decide",
+      "pred": "direct",
+      "t2": "Which should I learn first, guitar or piano?"
+     },
+     {
+      "gold": "decide",
+      "pred": "direct",
+      "t2": "Choose a name for my goldfish."
+     },
+     {
+      "gold": "decide",
+      "pred": "direct",
+      "t2": "Which of these two resumes is stronger?"
+     },
+     {
+      "gold": "decide",
+      "pred": "direct",
+      "t2": "What should I name my bakery?"
+     },
+     {
+      "gold": "decide",
+      "pred": "direct",
+      "t2": "Is it a good idea to move cities for love?"
+     },
+     {
+      "gold": "social",
+      "pred": "think",
+      "t2": "My back has been hurting all week and I'm so over it."
+     },
+     {
+      "gold": "social",
+      "pred": "decide",
+      "t2": "I adopted a cat yesterday and I'm completely in love."
+     },
+     {
+      "gold": "social",
+      "pred": "decide",
+      "t2": "The winter months are always hard for me."
+     },
+     {
+      "gold": "vision",
+      "pred": "decide",
+      "t2": "Do these shoes go with this outfit?"
+     },
+     {
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "Is my tie crooked?"
+     },
+     {
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "What is this plant I'm showing you?"
+     },
+     {
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "Can you read the label on this bottle?"
+     },
+     {
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "What do you see on my desk right now?"
+     },
+     {
+      "gold": "vision",
+      "pred": "think",
+      "t2": "Am I holding the wrench the right way?"
+     },
+     {
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "Is the picture hanging straight behind me?"
+     },
+     {
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "What does the error on my screen say?"
+     },
+     {
+      "gold": "deep",
+      "pred": "direct",
+      "t2": "Think this over carefully before you answer me."
+     },
+     {
+      "gold": "deep",
+      "pred": "direct",
+      "t2": "Give this hard question your best thinking."
+     },
+     {
+      "gold": "deep",
+      "pred": "direct",
+      "t2": "Think it through fully, then answer me."
+     },
+     {
+      "gold": "deep",
+      "pred": "direct",
+      "t2": "Ponder this carefully and give me a considered answer."
+     }
+    ]
+   },
+   "think": {
+    "acc": 0.3846153846153846,
+    "n": 26,
+    "misses": [
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "How long would it take to read a 400 page book?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Turn this recipe into a shopping list."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Write a haiku about autumn."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "If today is Tuesday, what day is it in 100 days?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Work out the tip on an 84 dollar bill."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Explain how a bill becomes law, step by step."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "How much would a 30 kilogram suitcase weigh on Mars?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Plan my week around three meetings."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Count the vowels in onomatopoeia."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Draft a cover letter for a barista job."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Think hard about whether my proof holds water."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Take your time with this puzzle and solve it properly."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Deep think how we could double our revenue this year."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "This is a hard one, think it through fully before answering."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Reason through the physics of why planes fly, carefully."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Use your deepest thinking on this math problem."
+     }
+    ]
+   }
+  },
+  "HIST3": {
+   "root": {
+    "acc": 0.5967741935483871,
+    "n": 62,
+    "misses": [
+     {
+      "gold": "direct",
+      "pred": "social",
+      "t2": "Say goodbye in French."
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Add a calendar event for lunch tomorrow at noon."
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Turn this recipe into a shopping list."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "Write a haiku about autumn."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "How much would a 30 kilogram suitcase weigh on Mars?"
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Draft a cover letter for a barista job."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "Count the vowels in the word extraordinary."
+     },
+     {
+      "gold": "decide",
+      "pred": "think",
+      "t2": "What do you think, window seat or aisle?"
+     },
+     {
+      "gold": "decide",
+      "pred": "social",
+      "t2": "Help me pick a birthday gift for my sister."
+     },
+     {
+      "gold": "decide",
+      "pred": "social",
+      "t2": "Is it better to exercise in the morning or evening?"
+     },
+     {
+      "gold": "decide",
+      "pred": "direct",
+      "t2": "Which of these two resumes is stronger?"
+     },
+     {
+      "gold": "social",
+      "pred": "decide",
+      "t2": "I got the job! I start on Monday!"
+     },
+     {
+      "gold": "social",
+      "pred": "think",
+      "t2": "The winter months are always hard for me."
+     },
+     {
+      "gold": "vision",
+      "pred": "social",
+      "t2": "Do these shoes go with this outfit?"
+     },
+     {
+      "gold": "vision",
+      "pred": "social",
+      "t2": "Is my tie crooked?"
+     },
+     {
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "What is this plant I'm showing you?"
+     },
+     {
+      "gold": "vision",
+      "pred": "decide",
+      "t2": "What do you see on my desk right now?"
+     },
+     {
+      "gold": "vision",
+      "pred": "think",
+      "t2": "Am I holding the wrench the right way?"
+     },
+     {
+      "gold": "vision",
+      "pred": "decide",
+      "t2": "What does the error on my screen say?"
+     },
+     {
+      "gold": "deep",
+      "pred": "decide",
+      "t2": "Think this over carefully before you answer me."
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Give this hard question your best thinking."
+     },
+     {
+      "gold": "deep",
+      "pred": "decide",
+      "t2": "Take your time and really work this one out."
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Use your sharpest reasoning on this one."
+     },
+     {
+      "gold": "deep",
+      "pred": "decide",
+      "t2": "Think it through fully, then answer me."
+     },
+     {
+      "gold": "deep",
+      "pred": "decide",
+      "t2": "Ponder this carefully and give me a considered answer."
+     }
+    ]
+   },
+   "think": {
+    "acc": 0.3846153846153846,
+    "n": 26,
+    "misses": [
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "How long would it take to read a 400 page book?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Turn this recipe into a shopping list."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Write a haiku about autumn."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "If today is Tuesday, what day is it in 100 days?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Work out the tip on an 84 dollar bill."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Explain how a bill becomes law, step by step."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "How much would a 30 kilogram suitcase weigh on Mars?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Plan my week around three meetings."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Count the vowels in onomatopoeia."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Draft a cover letter for a barista job."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Think hard about whether my proof holds water."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Take your time with this puzzle and solve it properly."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Deep think how we could double our revenue this year."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "This is a hard one, think it through fully before answering."
+     },
+     {
+      "gold": "deep",
+      "pred": "long_think",
+      "t2": "Reason through the physics of why planes fly, carefully."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Use your deepest thinking on this math problem."
+     }
+    ]
+   }
+  },
+  "HIST8": {
+   "root": {
+    "acc": 0.6774193548387097,
+    "n": 62,
+    "misses": [
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "How cold does it get on the moon at night?"
+     },
+     {
+      "gold": "direct",
+      "pred": "social",
+      "t2": "Say goodbye in French."
+     },
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "How many legs does a spider have?"
+     },
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "How far is the moon from Earth?"
+     },
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "What's twelve times twelve?"
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Add a calendar event for lunch tomorrow at noon."
+     },
+     {
+      "gold": "decide",
+      "pred": "think",
+      "t2": "What do you think, window seat or aisle?"
+     },
+     {
+      "gold": "decide",
+      "pred": "direct",
+      "t2": "Which of these two resumes is stronger?"
+     },
+     {
+      "gold": "decide",
+      "pred": "think",
+      "t2": "What should I name my bakery?"
+     },
+     {
+      "gold": "social",
+      "pred": "decide",
+      "t2": "I got the job! I start on Monday!"
+     },
+     {
+      "gold": "social",
+      "pred": "think",
+      "t2": "The winter months are always hard for me."
+     },
+     {
+      "gold": "vision",
+      "pred": "think",
+      "t2": "What is this plant I'm showing you?"
+     },
+     {
+      "gold": "vision",
+      "pred": "decide",
+      "t2": "What do you see on my desk right now?"
+     },
+     {
+      "gold": "vision",
+      "pred": "decide",
+      "t2": "What does the error on my screen say?"
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Think this over carefully before you answer me."
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Give this hard question your best thinking."
+     },
+     {
+      "gold": "deep",
+      "pred": "social",
+      "t2": "Take your time and really work this one out."
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Use your sharpest reasoning on this one."
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Think it through fully, then answer me."
+     },
+     {
+      "gold": "deep",
+      "pred": "decide",
+      "t2": "Ponder this carefully and give me a considered answer."
+     }
+    ]
+   },
+   "think": {
+    "acc": 0.3846153846153846,
+    "n": 26,
+    "misses": [
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "How long would it take to read a 400 page book?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Turn this recipe into a shopping list."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Write a haiku about autumn."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "If today is Tuesday, what day is it in 100 days?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Work out the tip on an 84 dollar bill."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Explain how a bill becomes law, step by step."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "How much would a 30 kilogram suitcase weigh on Mars?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Plan my week around three meetings."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Count the vowels in onomatopoeia."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Draft a cover letter for a barista job."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Think hard about whether my proof holds water."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Take your time with this puzzle and solve it properly."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Deep think how we could double our revenue this year."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "This is a hard one, think it through fully before answering."
+     },
+     {
+      "gold": "deep",
+      "pred": "long_think",
+      "t2": "Reason through the physics of why planes fly, carefully."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Use your deepest thinking on this math problem."
+     }
+    ]
+   }
+  },
+  "HIST16": {
+   "root": {
+    "acc": 0.5967741935483871,
+    "n": 62,
+    "misses": [
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "How cold does it get on the moon at night?"
+     },
+     {
+      "gold": "direct",
+      "pred": "social",
+      "t2": "Say goodbye in French."
+     },
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "How many legs does a spider have?"
+     },
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "Tell me a fun fact about octopuses."
+     },
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "What language do they speak in Brazil?"
+     },
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "How far is the moon from Earth?"
+     },
+     {
+      "gold": "direct",
+      "pred": "think",
+      "t2": "What's twelve times twelve?"
+     },
+     {
+      "gold": "think",
+      "pred": "decide",
+      "t2": "Add a calendar event for lunch tomorrow at noon."
+     },
+     {
+      "gold": "think",
+      "pred": "direct",
+      "t2": "Write a haiku about autumn."
+     },
+     {
+      "gold": "decide",
+      "pred": "think",
+      "t2": "What do you think, window seat or aisle?"
+     },
+     {
+      "gold": "decide",
+      "pred": "direct",
+      "t2": "Which of these two resumes is stronger?"
+     },
+     {
+      "gold": "decide",
+      "pred": "think",
+      "t2": "What should I name my bakery?"
+     },
+     {
+      "gold": "social",
+      "pred": "decide",
+      "t2": "I got the job! I start on Monday!"
+     },
+     {
+      "gold": "social",
+      "pred": "think",
+      "t2": "The winter months are always hard for me."
+     },
+     {
+      "gold": "social",
+      "pred": "think",
+      "t2": "I finally defended my dissertation yesterday."
+     },
+     {
+      "gold": "social",
+      "pred": "think",
+      "t2": "I think my neighbors hate me now."
+     },
+     {
+      "gold": "social",
+      "pred": "vision",
+      "t2": "Some days I just feel invisible at work."
+     },
+     {
+      "gold": "vision",
+      "pred": "think",
+      "t2": "What is this plant I'm showing you?"
+     },
+     {
+      "gold": "vision",
+      "pred": "decide",
+      "t2": "What do you see on my desk right now?"
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Think this over carefully before you answer me."
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Give this hard question your best thinking."
+     },
+     {
+      "gold": "deep",
+      "pred": "decide",
+      "t2": "Take your time and really work this one out."
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Use your sharpest reasoning on this one."
+     },
+     {
+      "gold": "deep",
+      "pred": "think",
+      "t2": "Think it through fully, then answer me."
+     },
+     {
+      "gold": "deep",
+      "pred": "decide",
+      "t2": "Ponder this carefully and give me a considered answer."
+     }
+    ]
+   },
+   "think": {
+    "acc": 0.3846153846153846,
+    "n": 26,
+    "misses": [
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "How long would it take to read a 400 page book?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Turn this recipe into a shopping list."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Write a haiku about autumn."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "If today is Tuesday, what day is it in 100 days?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Work out the tip on an 84 dollar bill."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Explain how a bill becomes law, step by step."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "How much would a 30 kilogram suitcase weigh on Mars?"
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Plan my week around three meetings."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Count the vowels in onomatopoeia."
+     },
+     {
+      "gold": "long_think",
+      "pred": "tool",
+      "t2": "Draft a cover letter for a barista job."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Think hard about whether my proof holds water."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Take your time with this puzzle and solve it properly."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Deep think how we could double our revenue this year."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "This is a hard one, think it through fully before answering."
+     },
+     {
+      "gold": "deep",
+      "pred": "long_think",
+      "t2": "Reason through the physics of why planes fly, carefully."
+     },
+     {
+      "gold": "deep",
+      "pred": "tool",
+      "t2": "Use your deepest thinking on this math problem."
+     }
+    ]
+   }
+  }
+ },
+ "part_b": {
+  "BARE": {
+   "vision": {
+    "acc": 0.7,
+    "n": 10,
+    "misses": [
+     {
+      "t1": "Here's the fiddle leaf I just bought.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "how much light does it need?"
+     },
+     {
+      "t1": "I'm holding up my grandmother's ring.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "what karat is it?"
+     },
+     {
+      "t1": "Here's the label on the bottle.",
+      "gold": "vision",
+      "pred": "think",
+      "t2": "how many milligrams per serving?"
+     }
+    ]
+   },
+   "tool": {
+    "acc": 0.875,
+    "n": 8,
+    "misses": [
+     {
+      "t1": "Set a timer for twenty minutes.",
+      "gold": "tool",
+      "pred": "long_think",
+      "t2": "and another one for ten minutes after it."
+     }
+    ]
+   },
+   "control": {
+    "acc": 0.5,
+    "n": 6,
+    "misses": [
+     {
+      "t1": "My sister just moved to Lisbon.",
+      "gold": "direct",
+      "pred": "decide",
+      "t2": "what's the best time of year to visit there?"
+     },
+     {
+      "t1": "Training for my first ten k.",
+      "gold": "direct",
+      "pred": "think",
+      "t2": "what pace should long runs be?"
+     },
+     {
+      "t1": "Reading a biography of Ada Lovelace.",
+      "gold": "direct",
+      "pred": "vision",
+      "t2": "what did she actually invent or create?"
+     }
+    ]
+   }
+  },
+  "HIST1": {
+   "vision": {
+    "acc": 0.0,
+    "n": 10,
+    "misses": [
+     {
+      "t1": "Here's the fiddle leaf I just bought.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "how much light does it need?"
+     },
+     {
+      "t1": "I'm holding up my grandmother's ring.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "what karat is it?"
+     },
+     {
+      "t1": "This is the circuit I wired yesterday.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "do you see any loose connection?"
+     },
+     {
+      "t1": "Look at this rash on my arm.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "does it look serious?"
+     },
+     {
+      "t1": "Here's my resume on the screen.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "is the layout okay on it?"
+     },
+     {
+      "t1": "I'm showing you my car's engine bay.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "what is that leaking?"
+     },
+     {
+      "t1": "This is the painting I made.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "which colors did I use most?"
+     },
+     {
+      "t1": "Here's the label on the bottle.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "how many milligrams per serving?"
+     },
+     {
+      "t1": "Look at my desk setup.",
+      "gold": "vision",
+      "pred": "decide",
+      "t2": "is the monitor too low?"
+     },
+     {
+      "t1": "The barber gave me a fade.",
+      "gold": "vision",
+      "pred": "direct",
+      "t2": "is the back even?"
+     }
+    ]
+   },
+   "tool": {
+    "acc": 1.0,
+    "n": 8,
+    "misses": []
+   },
+   "control": {
+    "acc": 1.0,
+    "n": 6,
+    "misses": []
+   }
+  }
+ },
+ "latency_ms": {
+  "BARE:root": {
+   "median": 27.700000000000003,
+   "n": 62
+  },
+  "BARE:think": {
+   "median": 24.55,
+   "n": 26
+  },
+  "PROMPT0:root": {
+   "median": 31.85,
+   "n": 62
+  },
+  "PROMPT0:think": {
+   "median": 33.3,
+   "n": 26
+  },
+  "HIST3:root": {
+   "median": 85.15,
+   "n": 62
+  },
+  "HIST3:think": {
+   "median": 85.0,
+   "n": 26
+  },
+  "HIST8:root": {
+   "median": 164.6,
+   "n": 62
+  },
+  "HIST8:think": {
+   "median": 163.8,
+   "n": 26
+  },
+  "HIST16:root": {
+   "median": 307.35,
+   "n": 62
+  },
+  "HIST16:think": {
+   "median": 306.1,
+   "n": 26
+  },
+  "ANAPH-BARE:vision": {
+   "median": 25.95,
+   "n": 10
+  },
+  "ANAPH-BARE:tool": {
+   "median": 26.85,
+   "n": 8
+  },
+  "ANAPH-BARE:control": {
+   "median": 25.25,
+   "n": 6
+  },
+  "ANAPH-HIST1:vision": {
+   "median": 38.85,
+   "n": 10
+  },
+  "ANAPH-HIST1:tool": {
+   "median": 37.95,
+   "n": 8
+  },
+  "ANAPH-HIST1:control": {
+   "median": 39.099999999999994,
+   "n": 6
+  }
+ },
+ "prompt_n": {
+  "BARE:root": 8,
+  "BARE:think": 8,
+  "PROMPT0:root": 38,
+  "PROMPT0:think": 38,
+  "HIST3:root": 152,
+  "HIST3:think": 152,
+  "HIST8:root": 312,
+  "HIST8:think": 312,
+  "HIST16:root": 592,
+  "HIST16:think": 592,
+  "ANAPH-BARE:vision": 5,
+  "ANAPH-BARE:tool": 5,
+  "ANAPH-BARE:control": 8,
+  "ANAPH-HIST1:vision": 53,
+  "ANAPH-HIST1:tool": 51,
+  "ANAPH-HIST1:control": 55
+ },
+ "finished": "2026-10-08 08:26:00"
+}

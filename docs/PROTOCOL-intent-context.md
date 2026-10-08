@@ -110,3 +110,79 @@ production embeddings — probes run while voice is idle; embeddings
 wall-time includes HTTP overhead (~similar to the readout path);
 no production config or code change; results append to
 tools/results_intent_context.json only.
+
+# RESULTS (adjudicated 2026-10-08)
+
+Data: tools/results_intent_context.json (run 2, after the runner fix;
+run 1's Part A was byte-identical where it printed — same arm numbers —
+and no JSON was written by the crashed run). Harness validation: BARE
+root 56/62, think 24/26 — EXACTLY the registered numbers.
+
+## Part A — raw history poisons the readout (RD2 fires, maximally)
+
+| arm | shape | prompt_n | root | think | emb ms (median) |
+|---|---|---|---|---|---|
+| BARE | utterance alone (shipped) | 8 | **56/62 = 90.3%** | **24/26 = 92.3%** | 24.6–27.7 |
+| PROMPT0 | two-zone shape, no history | 38 | 33/62 = 53.2% | 10/26 = 38.5% | 31.9–33.3 |
+| HIST3 | +3 pairs | 152 | 37/62 = 59.7% | 10/26 = 38.5% | ~85 |
+| HIST8 | +8 pairs | 312 | 42/62 = 67.7% | 10/26 = 38.5% | ~164 |
+| HIST16 | +16 pairs | 592 | 37/62 = 59.7% | 10/26 = 38.5% | ~307 |
+
+Every prompt-shaped arm is ≤ BARE − 23 pts (think: −54 pts, all arms).
+PROMPT0 — the two-zone commit shape with ZERO history — already
+collapses: the poison is the input distribution (system block + ChatML
++ tail), not history per se. This quantifies, at eval scale, the
+TreeWalker docstring's recorded live finding ("prompt/history-shaped
+vectors were measured and dropped — domain shift cost two route misses
+in the first live trial"). The readout is a bare-utterance classifier;
+its reference embeddings live in that distribution only.
+
+## Part B — anaphora does not need history at the readout (RA2 fires,
+in the strong direction)
+
+| subset | BARE | HIST1 |
+|---|---|---|
+| vision-deictic (10) | 7/10 | **0/10** |
+| tool-anaphoric (8) | 7/8 | 8/8 |
+| controls (6) | 3/6 | 6/6 |
+| **aggregate (24)** | **17/24 = 70.8%** | **14/24 = 58.3%** |
+
+HIST1 − BARE = −12.5 pts: one turn of history makes intent inference
+WORSE, not better. The vision subset is the mechanism made visible —
+every deictic item flips to direct once the t1 context rides along
+(the history text swamps the utterance in the shared embedding
+space). The bare readout already classifies deictic utterances at
+70.8% on their lexical class cues alone ("how much light does it
+need" is vision-shaped regardless of what "it" is). The two cells
+where HIST1 "improved" (tool +1, controls +3) are inside small-n noise
+and swamped by the vision collapse. RA1's precondition (RD1) fails;
+the confidence-gated double-readout candidate is DEAD — its re-readout
+input would poison, not inform.
+
+## Latency (Q3)
+
+Embedding cost tracks the prefill line: ~25–28 ms at 5–8 tokens,
+307 ms at 592 tokens (≈0.49 ms/token + small floor — consistent with
+the measured 0.45). History would multiply every readout 6–12× for a
+−12.5 to −54 pt accuracy change.
+
+## Verdict
+
+The context-poor root decision layer is now measured fact, not design
+taste: the shipped input shape (bare normalized utterance) is the
+BEST measured input on both frozen and anaphora sets, by 12.5–54
+points, at the lowest latency. History has no role at the routing
+layer on this machinery. Entity and anaphora resolution belong
+downstream — the LLM at commit, which sees history + digest. If
+history-aware routing were ever wanted, the registered path is a NEW
+readout (re-record all signature pools over prompt-shaped embeddings,
+new protocol, new eval bars), not an input flag — and nothing in this
+data suggests it would win.
+
+## Ops incidents (disclosed)
+
+Run 1 crashed in Part B (history passed as a bare string instead of a
+(user, assistant) pair) after two path/import bugs pre-launch; no
+results JSON was written by any crashed run; run 2 is the archived
+dataset. Production :8998 untouched; embeddings rode slot 6 while
+voice was idle, same as the registered harness.
