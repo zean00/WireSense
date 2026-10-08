@@ -2,109 +2,109 @@
  {
   "scenario": "direct_chat",
   "status": "PASS",
-  "ms": 1800,
+  "ms": 2005,
   "detail": "reply='Octopuses have three hearts and blue blood. They can also ch'"
  },
  {
   "scenario": "social",
   "status": "PASS",
-  "ms": 1947,
+  "ms": 1976,
   "detail": "reply ok"
  },
  {
   "scenario": "decide",
   "status": "PASS",
-  "ms": 3140,
+  "ms": 3104,
   "detail": "reply ok"
  },
  {
   "scenario": "long_think",
   "status": "PASS",
-  "ms": 13880,
+  "ms": 13401,
   "detail": "reply='A leap year has 366 days, which equals 86,400 seco'"
  },
  {
   "scenario": "timer_park_yes",
   "status": "PASS",
-  "ms": 2791,
+  "ms": 2680,
   "detail": "parked, YES executed"
  },
  {
   "scenario": "reminder_fire",
   "status": "PASS",
-  "ms": 9897,
+  "ms": 9849,
   "detail": "saved + fired on schedule"
  },
  {
   "scenario": "note",
   "status": "PASS",
-  "ms": 2050,
+  "ms": 2020,
   "detail": "saved"
  },
  {
   "scenario": "remember_store",
   "status": "PASS",
-  "ms": 1674,
+  "ms": 1695,
   "detail": "fact stored"
  },
  {
   "scenario": "remember_recall_fresh",
   "status": "PASS",
-  "ms": 1525,
+  "ms": 1637,
   "detail": "recalled via digest: \"You are allergic to peanuts. I don't have ca\""
  },
  {
   "scenario": "remember_forget",
   "status": "PASS",
-  "ms": 1711,
+  "ms": 1673,
   "detail": "removed: 'forgot 1: allergic to peanuts'"
  },
  {
   "scenario": "mcp_read",
   "status": "PASS",
-  "ms": 2796,
+  "ms": 2872,
   "detail": "content read"
  },
  {
   "scenario": "mcp_time",
   "status": "PASS",
-  "ms": 2520,
+  "ms": 2532,
   "detail": "result='{\\n  \"timezone\": \"Asia/Tokyo\",\\n  \"datetime\": \"2026-'"
  },
  {
   "scenario": "mcp_git",
   "status": "PASS",
-  "ms": 2456,
+  "ms": 2519,
   "detail": "status read"
  },
  {
   "scenario": "mcp_risky",
   "status": "PASS",
-  "ms": 3404,
+  "ms": 3405,
   "detail": "parked, YES executed"
  },
  {
   "scenario": "mcp_null_fallback",
   "status": "PASS",
-  "ms": 2622,
+  "ms": 2693,
   "detail": "fallback=\"I don't have access to live weather data, so I can\""
  },
  {
   "scenario": "deep_provider",
   "status": "PASS",
-  "ms": 14287,
+  "ms": 27709,
   "detail": "model=openai-chat:Qwen3.8-27B-S-mirai"
  },
  {
   "scenario": "deep_fallback",
   "status": "PASS",
-  "ms": 13830,
+  "ms": 13985,
   "detail": "local open-think fallback ok"
  },
  {
   "scenario": "vision_noframe",
   "status": "PASS",
-  "ms": 1311,
+  "ms": 1992,
   "detail": "reply=\"I cannot see anything right now as I don't have ca\""
  },
  {
@@ -116,49 +116,49 @@
  {
   "scenario": "clarify_resolution",
   "status": "PASS",
-  "ms": 1910,
+  "ms": 1854,
   "detail": "clarified + YES reran"
  },
  {
   "scenario": "backchannel",
   "status": "PASS",
-  "ms": 37,
+  "ms": 44,
   "detail": "I see."
  },
  {
   "scenario": "stop_controller",
   "status": "PASS",
-  "ms": 2015,
+  "ms": 1753,
   "detail": "stop + hold ok"
  },
  {
   "scenario": "history_carry",
   "status": "PASS",
-  "ms": 4003,
+  "ms": 4175,
   "detail": "reply='Your name is Sahal.'"
  },
  {
   "scenario": "fragment_rewrite",
   "status": "PASS",
-  "ms": 1587,
+  "ms": 1618,
   "detail": "rewrite=\"What is my sister's name?\""
  },
  {
   "scenario": "ir_flow",
   "status": "PASS",
-  "ms": 21206,
-  "detail": "depth=3 fetches=[{'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20pollen%20storage', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 279, 'ms': 213}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20pollen%20storage', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 194}, {'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20collection%20process', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 78}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20collection%20process', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 66}, {'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20collection', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 86}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20collection', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 66}]"
+  "ms": 19196,
+  "detail": "depth=3 fetches=[{'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20pollen%20storage', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 279, 'ms': 178}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20pollen%20storage', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 185}, {'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20collection%20process', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 145}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20collection%20process', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 96}, {'url': 'https://lite.duckduckgo.com/lite/?q=honey%20bee%20nectar%20collection', 'snapped': False, 'kind': 'serp', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 116}, {'url': 'https://html.duckduckgo.com/html/?q=honey%20bee%20nectar%20collection', 'snapped': False, 'kind': 'serp-fb', 'title': 'DuckDuckGo', 'chars': 201, 'ms': 83}]"
  },
  {
   "scenario": "browser_track",
   "status": "PASS",
-  "ms": 4771,
+  "ms": 5207,
   "detail": "steps=[]"
  },
  {
   "scenario": "mcp_dead_reconnect",
   "status": "PASS",
-  "ms": 3514,
+  "ms": 3532,
   "detail": "self-healed after kill"
  }
 ]
